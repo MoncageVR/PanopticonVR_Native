@@ -18,6 +18,7 @@ public:
 	AAABButton();
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
@@ -43,11 +44,24 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Values")
 	uint8 bIsButtonBPressed = 0;
 
-public:
-	virtual void Tick(float DeltaTime) override;
+private:
+	TArray<uint8> AnswerSaveList;
+	FTimerHandle NextAnswerCheckTimer;
+	FTimerHandle CooldownApplyTimer;
+
+	FString CorrectAnswerFirstCase = TEXT("1010");
+	FString CorrectAnswerSecondCase = TEXT("1001");
+
+	USoundBase* AButtonSFX;
+	USoundBase* BButtonSFX;
 
 private:
 	void ButtonMovement(UStaticMeshComponent* InActuallyMoveSMButton, FVector InTargetPos);
+	void NextAnswerNonInputClear();
+	void CheckCorrectAnswer();
+
+	void CoolDownApplyFunc(uint8 InCoolTimeFlag);
+	void CoolDownUnApplyFunc();
 
 protected:
 	UFUNCTION()

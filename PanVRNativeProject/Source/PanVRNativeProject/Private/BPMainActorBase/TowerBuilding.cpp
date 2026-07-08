@@ -111,6 +111,17 @@ ATowerBuilding::ATowerBuilding()
 		TBAudioPlayer->bAllowSpatialization = false;
 	}
 
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void ATowerBuilding::BeginPlay()
@@ -125,7 +136,7 @@ void ATowerBuilding::BeginPlay()
 	this->EquipmentRegistrable(this);
 	if (EquipmentWorldSubSystem)
 	{
-		EquipmentWorldSubSystem->OnEBMoveOrder.AddDynamic(this, &ATowerBuilding::ReceiveMoveTower);
+		EquipmentWorldSubSystem->FEBMoveOrderSignature.AddDynamic(this, &ATowerBuilding::HandleTowerReceiveByEB);
 	}
 
 	if (TBAudioPlayer && TowerMoveSFXCue)
@@ -155,7 +166,7 @@ void ATowerBuilding::SetTowerCurrFloorNum(int32 InCurrFloor)
 	ActuallyCurrFloorNum = InCurrFloor;
 }
 
-void ATowerBuilding::ReceiveMoveTower(FName InTag, int32 InFloor)
+void ATowerBuilding::HandleTowerReceiveByEB(FName InTag, int32 InFloor)
 {
 	if (InTag == FName("EB"))
 	{

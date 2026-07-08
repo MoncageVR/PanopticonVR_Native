@@ -9,7 +9,8 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
+				"Engine",
+				"AIModule"
 			]
 		}
 	],
@@ -31,9 +32,6 @@
 	],
 	"TargetPlatforms": [
 		"Android",
-		"IOS",
-		"Linux",
-		"Mac",
 		"PS4",
 		"PS5",
 		"Windows",

@@ -201,6 +201,18 @@ AATurnTable::AATurnTable()
 		TTSCAudioPlayer->SetAutoActivate(false);
 		TTSCAudioPlayer->bAllowSpatialization = false;
 	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AATurnTable::BeginPlay()
@@ -210,7 +222,7 @@ void AATurnTable::BeginPlay()
 	EquipmentRegistrable(this);
 	if (EquipmentWorldSubSystem)
 	{
-		EquipmentWorldSubSystem->OnGameStart.BindUObject(this, &AATurnTable::GameStartAfterPlaySoundBGM);
+		EquipmentWorldSubSystem->FGameStartSignature.BindUObject(this, &AATurnTable::HandleTTReceiveByGTWLever);
 	}
 
 	// TurnTable Default LP Spawn Function Call
@@ -565,7 +577,7 @@ void AATurnTable::PlaySoundBGM(int TempCueNum)
 	}
 }
 
-void AATurnTable::GameStartAfterPlaySoundBGM(bool TempGameStartFlag)
+void AATurnTable::HandleTTReceiveByGTWLever(bool TempGameStartFlag)
 {
 	if (AttachingLP && TTSCAudioPlayer)
 	{

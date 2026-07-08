@@ -252,6 +252,18 @@ AACarPanel::AACarPanel()
 		KeyHole->SetMaterial(0, MaterialFinder_Main.Object);
 		KeyHoleBody->SetMaterial(0, MaterialFinder_Main.Object);
 	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AACarPanel::BeginPlay()

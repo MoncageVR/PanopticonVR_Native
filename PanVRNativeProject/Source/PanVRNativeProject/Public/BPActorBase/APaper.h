@@ -44,7 +44,10 @@ private:
 	uint32 bIsPrinterAttaching = 0;
 	uint32 bIsStampAttaching = 0;
 	uint32 bIsFaxAttaching = 0;
+	uint32 bIsPrinting = 0;
 	uint32 bIsStamping = 0;
+
+	USoundBase* SFXPaperGrab;
 
 private:
 
@@ -53,12 +56,15 @@ public:
 	void SetIsPrinterAttaching(uint32 InFlag);
 	void SetIsStampAttaching(uint32 InFlag);
 	void SetIsFaxAttaching(uint32 InFlag);
+	void SetIsPrinting(uint32 InFlag);
+	void SetIsStamping(uint32 InFlag);
 #pragma endregion
 
 #pragma region Getter
 	uint32 GetIsPrinterAttaching();
 	uint32 GetIsStampAttaching();
 	uint32 GetIsFaxAttaching();
+	uint32 GetIsPrinting();
 	uint32 GetIsStamping();
 #pragma endregion
 };

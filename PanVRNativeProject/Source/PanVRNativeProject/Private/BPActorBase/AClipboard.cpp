@@ -27,4 +27,16 @@ AClipboard::AClipboard()
 	CL_Box_Paper->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CL_Box_Paper->SetGenerateOverlapEvents(true);
 	CL_Box_Paper->SetHiddenInGame(false);
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }

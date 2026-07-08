@@ -2,7 +2,9 @@
 
 
 #include "BPMainActorBase/JailBuilding.h"
+#include "CoreObj/VREquipmentWorldSubsystem.h"
 #include "Components/BoxComponent.h"
+#include "Components/TimelineComponent.h"
 
 AJailBuilding::AJailBuilding()
 {
@@ -51,15 +53,14 @@ AJailBuilding::AJailBuilding()
 	}
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_JailBody(TEXT("/Game/VRContent/Modeling/Building_Jail/Jail_Frame.Jail_Frame"));
-	JailMainBody = CreateDefaultSubobject<UStaticMeshComponent>("JailBody_SMComp");
-	if (JailMainBody)
+	if (ActorBaseMesh)
 	{
-		JailMainBody->Mobility = EComponentMobility::Static;
-		JailMainBody->SetupAttachment(StaticBuildingsRoot);
-		JailMainBody->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+		ActorBaseMesh->Mobility = EComponentMobility::Static;
+		ActorBaseMesh->SetupAttachment(StaticBuildingsRoot);
+		ActorBaseMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 		if (ModelingFinder_JailBody.Succeeded())
 		{
-			JailMainBody->SetStaticMesh(ModelingFinder_JailBody.Object);
+			ActorBaseMesh->SetStaticMesh(ModelingFinder_JailBody.Object);
 		}
 	}
 
@@ -160,7 +161,7 @@ AJailBuilding::AJailBuilding()
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Wall(TEXT("/Game/VRContent/Material/SRS_STAGE_WALL.SRS_STAGE_WALL"));
 	if (MaterialFinder_Wall.Succeeded())
 	{
-		JailMainBody->SetMaterial(0, MaterialFinder_Wall.Object);
+		ActorBaseMesh->SetMaterial(0, MaterialFinder_Wall.Object);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Main(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));
@@ -171,17 +172,166 @@ AJailBuilding::AJailBuilding()
 		Jail3FWeaponDoor->SetMaterial(0, MaterialFinder_Main.Object);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_Glove(TEXT("/Game/VRContent/Blueprints/TimelineCurve/Glove_MoveCurve.Glove_MoveCurve"));
+	if (CurveFinder_Glove.Succeeded())
+	{
+		MoveTheWeaponDoorFloatCurve = CurveFinder_Glove.Object;
+	}
+
+	UpwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("UpwardMoveTLComp");
+	DownwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("DownwardMoveTLComp");
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_GloveNJail(TEXT("/Game/VRContent/Sound/Wavs/Glove/sfx_glove.sfx_glove"));
+	if (SoundFinder_GloveNJail.Succeeded())
+	{
+		GloveNJailDoorOperationSFX = SoundFinder_GloveNJail.Object;
+	}
 }
 
 void AJailBuilding::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	this->EquipmentRegistrable(this);
+	if (EquipmentWorldSubSystem)
+	{
+		EquipmentWorldSubSystem->FEBMoveOrderSignature.AddDynamic(this, &AJailBuilding::HandleJailReceiveByEB);
+
+		// Glove ¡æ Jail : Bind
+		EquipmentWorldSubSystem->FCloseDoorSignature.BindUObject(this, &AJailBuilding::HandleJailReceiveByGlove);
+
+		// AB ¡æ Jail : Bind
+		EquipmentWorldSubSystem->FGloveOperationSignature.BindUObject(this, &AJailBuilding::HandleJailReceiveByABButton);
+	}
+	InitRefDoorNVector();
+
+	if (MoveTheWeaponDoorFloatCurve)
+	{
+		FOnTimelineFloat UpwardProgressFunc;
+		UpwardProgressFunc.BindUFunction(this, FName("UpwardMoveTheDoorPlayEvent"));
+		UpwardMoveTimelineComp->AddInterpFloat(MoveTheWeaponDoorFloatCurve, UpwardProgressFunc);
+
+		FOnTimelineEvent UpwardFinishedEvent;
+		UpwardFinishedEvent.BindUFunction(this, FName("UpwardMoveTheDoorFinishedEvent"));
+		UpwardMoveTimelineComp->SetTimelineFinishedFunc(UpwardFinishedEvent);
+
+		FOnTimelineFloat DownwardProgressFunc;
+		DownwardProgressFunc.BindUFunction(this, FName("DownwardMoveTheDoorPlayEvent"));
+		DownwardMoveTimelineComp->AddInterpFloat(MoveTheWeaponDoorFloatCurve, DownwardProgressFunc);
+
+		FOnTimelineEvent DownwardFinishedEvent;
+		DownwardFinishedEvent.BindUFunction(this, FName("DownwardMoveTheDoorFinishedEvent"));
+		DownwardMoveTimelineComp->SetTimelineFinishedFunc(DownwardFinishedEvent);
+	}
+
+	// Debug
+	/*FTimerHandle TempTimer;
+	GetWorldTimerManager().SetTimer(
+		TempTimer,
+		this,
+		&AJailBuilding::MoveTheDoorUpward,
+		2.0f,
+		false
+	);*/
+
+}
+
+void AJailBuilding::EquipmentRegistrable(AActor* InActor)
+{
+	Super::EquipmentRegistrable(InActor);
 }
 
 void AJailBuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AJailBuilding::InitRefDoorNVector()
+{
+	SMWeaponDoorArrs.Add(Jail1FWeaponDoor);
+	SMWeaponDoorArrs.Add(Jail2FWeaponDoor);
+	SMWeaponDoorArrs.Add(Jail3FWeaponDoor);
+
+	TargetDownVecArrs.Add(Jail1FWeaponDoor->GetRelativeLocation());
+	TargetDownVecArrs.Add(Jail2FWeaponDoor->GetRelativeLocation());
+	TargetDownVecArrs.Add(Jail3FWeaponDoor->GetRelativeLocation());
+
+	TargetUpVecArrs.Add(Jail1FWeaponDoor->GetRelativeLocation() + FVector(0.f, 0.f, 290.f));
+	TargetUpVecArrs.Add(Jail2FWeaponDoor->GetRelativeLocation() + FVector(0.f, 0.f, 290.f));
+	TargetUpVecArrs.Add(Jail3FWeaponDoor->GetRelativeLocation() + FVector(0.f, 0.f, 290.f));
+}
+
+void AJailBuilding::MoveTheDoorUpward()
+{
+	UpwardMoveTimelineComp->PlayFromStart();
+	mSoundPlayer->PlaySoundEffect(this, GloveNJailDoorOperationSFX, Jail1FWeaponDoor->GetComponentLocation());
+}
+
+void AJailBuilding::MoveTheDoorDownward()
+{
+	DownwardMoveTimelineComp->PlayFromStart();
+}
+
+void AJailBuilding::HandleJailReceiveByEB(FName InTag, int32 InFloor)
+{
+	if (InTag == FName("EB"))
+	{
+		CurrFloorNum = InFloor;
+	}
+}
+
+void AJailBuilding::UpwardMoveTheDoorPlayEvent(float Value)
+{
+	int32 ActuallyIndex = CurrFloorNum - 1;
+	SMWeaponDoorArrs[ActuallyIndex]->SetRelativeLocation(
+		FVector(
+			FMath::Lerp(
+				TargetDownVecArrs[ActuallyIndex],
+				TargetUpVecArrs[ActuallyIndex],
+				Value
+			)
+		)
+	);
+}
+
+void AJailBuilding::DownwardMoveTheDoorPlayEvent(float Value)
+{
+	int32 ActuallyIndex = CurrFloorNum - 1;
+	SMWeaponDoorArrs[ActuallyIndex]->SetRelativeLocation(
+		FVector(
+			FMath::Lerp(
+				TargetUpVecArrs[ActuallyIndex],
+				TargetDownVecArrs[ActuallyIndex],
+				Value
+			)
+		)
+	);
+}
+
+void AJailBuilding::UpwardMoveTheDoorFinishedEvent()
+{
+	if (IsValid(EquipmentWorldSubSystem))
+	{
+		EquipmentWorldSubSystem->NotifyPunchStartBroadCast(); 
+		// Jail ¡æ Glove : BroadCast Function
+	}
+}
+
+void AJailBuilding::DownwardMoveTheDoorFinishedEvent()
+{
+	//UE_LOG(LogTemp, Log, TEXT("Finish"));
+	EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(true);
+	return;
+}
+
+void AJailBuilding::HandleJailReceiveByGlove()
+{
+	MoveTheDoorDownward();
+}
+
+void AJailBuilding::HandleJailReceiveByABButton()
+{
+	EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(false);
+	MoveTheDoorUpward();
 }
 

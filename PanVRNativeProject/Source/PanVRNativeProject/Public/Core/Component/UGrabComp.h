@@ -16,9 +16,6 @@ enum class EGrabType : uint8
 	AutomaticObj UMETA(DisplayName = "AutomaticObj")
 };
 
-// Delegate Macro 
-//DECLARE_MULTICAST_DELEGATE_OneParam(FGCOnGrabbedSignature, const UMotionControllerComponent&)
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PANVRNATIVEPROJECT_API UUGrabComp : public USceneComponent
 {

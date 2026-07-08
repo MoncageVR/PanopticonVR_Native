@@ -40,6 +40,17 @@ AALP::AALP()
 
 	//CLLP->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AALP::BeginPlay()

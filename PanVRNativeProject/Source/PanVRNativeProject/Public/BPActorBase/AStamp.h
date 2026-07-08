@@ -85,6 +85,8 @@ private:
 
 	class AAPaper* AttachingPaper = nullptr;
 
+	USoundBase* SFXStampMove;
+
 private:
 	// InFlag 1 = OnGrabbed , InFlag 0 = OnDropped
 	void AdjustGCPosNRot(uint32 InFlag);

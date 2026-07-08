@@ -126,6 +126,18 @@ AAElevatorButton::AAElevatorButton()
 		PullSFX = SoundFinder_Pull.Object;
 		ButtonPressSFX = SoundFinder_ButtonPress.Object;
 	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AAElevatorButton::BeginPlay()
@@ -141,6 +153,12 @@ void AAElevatorButton::BeginPlay()
 	CLB3F->OnComponentEndOverlap.AddDynamic(this, &AAElevatorButton::EBBFOverlapEnd);
 
 	this->EquipmentRegistrable(this);
+
+	if (EquipmentWorldSubSystem)
+	{
+		// Jail ¡æ EB : Bind 
+		EquipmentWorldSubSystem->FEBOperateControlSignature.BindUObject(this, &AAElevatorButton::HandleEBReceiveByJail);
+	}
 }
 
 void AAElevatorButton::EquipmentRegistrable(AActor* InActor)
@@ -166,7 +184,6 @@ void AAElevatorButton::EBBOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 			if (OverlappedComp == CLB1F) // 1st Button Overlap Begin!
 			{
 				SetPressedFloorNum(1);
-
 			}
 			else if (OverlappedComp == CLB2F) // 2nd Button Overlap Begin!
 			{
@@ -179,10 +196,9 @@ void AAElevatorButton::EBBOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 
 			if (GetCurrFloorNum() != GetPressedFloorNum())
 			{
-				FName EBSignatureTag = FName("EB");
 				if (IsValid(EquipmentWorldSubSystem))
 				{
-					EquipmentWorldSubSystem->OnMoveByEBBroadCast(EBSignatureTag, this->GetPressedFloorNum());
+					EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
 					SetCurrFloorNum(PressedFloorNum);
 				}
 				else
@@ -330,7 +346,7 @@ void AAElevatorButton::UpdatePullingBackMoving()
 	);
 }
 
-void AAElevatorButton::SetEBColEnabled(uint32 InOperateFlag)
+void AAElevatorButton::SetEBColEnabled(uint8 InOperateFlag)
 {
 	if (InOperateFlag) // Collision Operate Possible
 	{
@@ -345,6 +361,13 @@ void AAElevatorButton::SetEBColEnabled(uint32 InOperateFlag)
 		CLB3F->SetGenerateOverlapEvents(false);
 	}
 }
+
+void AAElevatorButton::HandleEBReceiveByJail(uint8 InEBControlFlag)
+{
+	SetEBColEnabled(InEBControlFlag);
+}
+
+
 
 void AAElevatorButton::UpdatePullingBackMoveCompleted()
 {

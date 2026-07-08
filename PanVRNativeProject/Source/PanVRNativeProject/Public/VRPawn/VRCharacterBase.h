@@ -14,15 +14,10 @@ class PANVRNATIVEPROJECT_API AVRCharacterBase : public ACharacter
 public:
 	AVRCharacterBase();
 
-protected:
-	virtual void BeginPlay() override;
-
-public:	
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<class UCameraComponent> Camera;
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Components")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<class USceneComponent> Root;
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -36,4 +31,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void PlayerMoveDownInStage();
+
+protected:
+	virtual void BeginPlay() override;
+
+	virtual void PossessedBy(AController* NewController) override;
 };

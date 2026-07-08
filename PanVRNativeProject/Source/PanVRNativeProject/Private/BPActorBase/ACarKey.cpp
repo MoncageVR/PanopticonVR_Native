@@ -17,6 +17,18 @@ AACarKey::AACarKey()
 	ActorBaseMesh->SetCollisionProfileName(FName("PhysicsActor"));
 
 	GC->SetPrimitiveCompPhysics(true);
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AACarKey::BeginPlay()

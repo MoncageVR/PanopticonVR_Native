@@ -126,7 +126,10 @@ private:
 	// After Drop, EB Move Function to Default Position
 	void UpdatePullingBackMoving();
 
-	void SetEBColEnabled(uint32 InOperateFlag);
+	void SetEBColEnabled(uint8 InOperateFlag);
+
+	// Jail ¡æ EB : Receive Function
+	void HandleEBReceiveByJail(uint8 InEBControlFlag);
 
 public:
 #pragma region Getter

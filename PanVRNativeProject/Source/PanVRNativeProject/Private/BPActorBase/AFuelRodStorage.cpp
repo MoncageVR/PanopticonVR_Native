@@ -34,6 +34,18 @@ AAFuelRodStorage::AAFuelRodStorage()
 		FRCLStorage->SetBoxExtent(FVector(16.f, 21.f, 8.f));
 		FRCLStorage->SetHiddenInGame(false); // Debug
 	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AAFuelRodStorage::BeginPlay()

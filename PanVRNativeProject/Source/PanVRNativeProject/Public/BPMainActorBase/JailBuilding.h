@@ -3,21 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "ActorBase/VRActorBase.h"
+#include "Core/Interface/IEquipmentInitInterface.h"
 #include "JailBuilding.generated.h"
 
 UCLASS()
-class PANVRNATIVEPROJECT_API AJailBuilding : public AActor
+class PANVRNATIVEPROJECT_API AJailBuilding : public AVRActorBase
 {
 	GENERATED_BODY()
 	
 public:	
 	AJailBuilding();
+	virtual void EquipmentRegistrable(AActor* InActor) override;
 
-protected:
 	virtual void BeginPlay() override;
-
-public:	
 	virtual void Tick(float DeltaTime) override;
 
 protected:
@@ -42,9 +41,6 @@ protected:
 
 	// Static Mesh Variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
-	TObjectPtr<class UStaticMeshComponent> JailMainBody;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
 	TObjectPtr<class UStaticMeshComponent> JailExitDoor;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
@@ -65,4 +61,59 @@ protected:
 	// Collision Component Variable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
 	TObjectPtr<class UBoxComponent> CLSubdueHatch;
+
+#pragma region TimelineComp
+protected:
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> UpwardMoveTimelineComp;
+
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> DownwardMoveTimelineComp;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> MoveTheWeaponDoorFloatCurve;
+
+	UFUNCTION()
+	void UpwardMoveTheDoorPlayEvent(float Value);
+
+	UFUNCTION()
+	void DownwardMoveTheDoorPlayEvent(float Value);
+
+	UFUNCTION()
+	void UpwardMoveTheDoorFinishedEvent();
+
+	UFUNCTION()
+	void DownwardMoveTheDoorFinishedEvent();
+
+#pragma endregion
+
+	// Glove ¡æ Jail : Receive Function
+	UFUNCTION()
+	void HandleJailReceiveByGlove();
+
+	// AB ¡æ Jail : Receive Function
+	UFUNCTION()
+	void HandleJailReceiveByABButton();
+
+	UFUNCTION()
+	void HandleJailReceiveByEB(FName InTag, int32 InFloor);
+
+	
+
+private:
+	TArray<TObjectPtr<UStaticMeshComponent>> SMWeaponDoorArrs;
+	TArray<FVector> TargetDownVecArrs;
+	TArray<FVector> TargetUpVecArrs;
+
+	int32 CurrFloorNum = 3;
+
+	USoundBase* GloveNJailDoorOperationSFX;
+
+private:
+	void InitRefDoorNVector();
+
+	// Upward Move Call Function In Use Timeline PlayFromStart
+	void MoveTheDoorUpward();
+	// Downward Move Call Function In Use Timeline PlayFromStart
+	void MoveTheDoorDownward();
 };

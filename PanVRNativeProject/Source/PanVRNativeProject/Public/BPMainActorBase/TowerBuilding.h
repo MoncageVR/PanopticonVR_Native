@@ -58,7 +58,9 @@ protected:
 
 protected:
 	UFUNCTION()
-	void ReceiveMoveTower(FName InTag, int32 InFloor);
+	void HandleTowerReceiveByEB(FName InTag, int32 InFloor);
+
+	
 
 	UFUNCTION()
 	void ActuallyTowerMoveCompleted();

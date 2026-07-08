@@ -17,9 +17,7 @@ class PANVRNATIVEPROJECT_API UVRGameInstanceSubsystem : public UGameInstanceSubs
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
-	int testNum = 1;
-
-	
+public:
 #pragma region Setter
 	void SetWorldVolumeMultiplier(float TempVPlaySize);
 	void SetWorldVolumePitch(float TempVPlaySpeed);

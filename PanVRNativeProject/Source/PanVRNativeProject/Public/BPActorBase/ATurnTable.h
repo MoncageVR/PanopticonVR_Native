@@ -201,5 +201,5 @@ protected:
 
 public:
 	UFUNCTION()
-	void GameStartAfterPlaySoundBGM(bool TempGameStartFlag);
+	void HandleTTReceiveByGTWLever(bool TempGameStartFlag);
 };

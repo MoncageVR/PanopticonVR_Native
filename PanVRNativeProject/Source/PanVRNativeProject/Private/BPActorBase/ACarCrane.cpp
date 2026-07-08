@@ -67,6 +67,18 @@ AACarCrane::AACarCrane()
 		CLUFOSubdue->SetVisibility(true); // Debug
 		CLUFOSubdue->SetHiddenInGame(false); // Debug
 	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AACarCrane::BeginPlay()

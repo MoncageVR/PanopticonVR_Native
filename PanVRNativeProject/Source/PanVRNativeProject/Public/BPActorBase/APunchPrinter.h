@@ -89,6 +89,8 @@ private:
 	//class AAPaper* NewSpawnPaper = nullptr;
 	FTimerHandle NewSpawnTimer;
 
+	USoundBase* SFXPrinterMove;
+
 private:
 	void PPMoveEndFunc();
 

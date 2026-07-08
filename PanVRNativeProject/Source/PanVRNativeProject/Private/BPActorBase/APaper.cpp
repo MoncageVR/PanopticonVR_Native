@@ -51,6 +51,24 @@ AAPaper::AAPaper()
 	{
 		ActorBaseMesh->SetMaterial(0, MaterialFinder_Paper.Object);
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_PaperGrab(TEXT("/Game/VRContent/Sound/Wavs/FastGod/sfx_Paper_grab.sfx_Paper_grab"));
+	if (SoundFinder_PaperGrab.Succeeded())
+	{
+		SFXPaperGrab = SoundFinder_PaperGrab.Object;
+	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AAPaper::BeginPlay()
@@ -72,6 +90,8 @@ void AAPaper::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& Hand
 	GC->SetPrimitiveCompPhysics(false);
 	GetWorldTimerManager().PauseTimer(DestroySelfTimer);
 	bIsHanding = 1;
+
+	mSoundPlayer->PlaySoundEffect(this, SFXPaperGrab, ActorBaseMesh->GetComponentLocation());
 }
 
 void AAPaper::OnDropped()
@@ -123,7 +143,7 @@ void AAPaper::StampOn()
 {
 	UE_LOG(LogTemp, Log, TEXT("%s is Stamp On!!!"), *GetClass()->GetName());
 
-	bIsStamping = 1;
+	this->SetIsStamping(1);
 	
 	TR_CharPrinter->SetText(FText::FromString(TEXT("PLZ")));
 }
@@ -131,8 +151,11 @@ void AAPaper::StampOn()
 void AAPaper::SetIsPrinterAttaching(uint32 InFlag) { bIsPrinterAttaching = InFlag; }
 void AAPaper::SetIsStampAttaching(uint32 InFlag) { bIsStampAttaching = InFlag; }
 void AAPaper::SetIsFaxAttaching(uint32 InFlag) { bIsFaxAttaching = InFlag; }
+void AAPaper::SetIsPrinting(uint32 InFlag) { bIsPrinting = InFlag; }
+void AAPaper::SetIsStamping(uint32 InFlag) { bIsStamping = InFlag; }
 
 uint32 AAPaper::GetIsPrinterAttaching() { return bIsPrinterAttaching; }
 uint32 AAPaper::GetIsStampAttaching() { return bIsStampAttaching; }
 uint32 AAPaper::GetIsFaxAttaching() { return bIsFaxAttaching; }
+uint32 AAPaper::GetIsPrinting() { return bIsPrinting; }
 uint32 AAPaper::GetIsStamping() { return bIsStamping; }

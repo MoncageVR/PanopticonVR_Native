@@ -10,32 +10,47 @@ void UVREquipmentWorldSubsystem::PostInitialize()
 
 void UVREquipmentWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
-	
-
-	
 }
 
 void UVREquipmentWorldSubsystem::AddEquipmentArrs(IIEquipmentInitInterface* InActor)
 {
 	EquipmentArrs.Add(InActor);
-
-	//UE_LOG(LogTemp, Log, TEXT("ArrLength : %d"), EquipmentArrs.Num());
 }
 
-void UVREquipmentWorldSubsystem::OnGameStartBroadCast()
+void UVREquipmentWorldSubsystem::NotifyGameStartBroadCast()
 {
-	OnGameStart.ExecuteIfBound(true);
+	FGameStartSignature.ExecuteIfBound(true);
 }
 
-void UVREquipmentWorldSubsystem::OnMoveByEBBroadCast(FName InTag, int32 InTargetFloor)
+void UVREquipmentWorldSubsystem::NotifyPunchStartBroadCast()
 {
-	if (!OnEBMoveOrder.IsBound())
+	FPunchStartSignature.ExecuteIfBound();
+}
+
+void UVREquipmentWorldSubsystem::NotifyCloseDoorBroadCast()
+{
+	FCloseDoorSignature.ExecuteIfBound();
+}
+
+void UVREquipmentWorldSubsystem::NotifyGloveOperateBroadCast()
+{
+	FGloveOperationSignature.ExecuteIfBound();
+}
+
+void UVREquipmentWorldSubsystem::NotifyEBOperationControlBroadCast(uint8 InControlFlag)
+{
+	FEBOperateControlSignature.ExecuteIfBound(InControlFlag);
+}
+
+void UVREquipmentWorldSubsystem::NotifyMoveOrderBroadCast(FName InTag, int32 InTargetFloor)
+{
+	if (!FEBMoveOrderSignature.IsBound())
 	{
-		UE_LOG(LogTemp, Log, TEXT("Not Binding!"));
+		UE_LOG(LogTemp, Log, TEXT("EB Signature Not Binding!"));
 		return;
 	}
 	else
 	{
-		OnEBMoveOrder.Broadcast(InTag, InTargetFloor);
+		FEBMoveOrderSignature.Broadcast(InTag, InTargetFloor);
 	}
 }

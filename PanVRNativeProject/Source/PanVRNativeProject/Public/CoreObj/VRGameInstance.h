@@ -7,6 +7,7 @@
 #include "VRGameInstance.generated.h"
 
 class UVRGameInstanceSubsystem;
+class UPrisonerManagerSubsystem;
 
 /**
  * 
@@ -18,4 +19,12 @@ class PANVRNATIVEPROJECT_API UVRGameInstance : public UGameInstance
 
 public:
 	virtual void Init() override;
+
+public:
+#pragma region Getter
+	FORCEINLINE UPrisonerManagerSubsystem* GetPrisonerManager() const { return P_PrisonerManager; }
+#pragma endregion
+
+private:
+	class UPrisonerManagerSubsystem* P_PrisonerManager;
 };

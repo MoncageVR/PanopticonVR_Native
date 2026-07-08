@@ -21,5 +21,12 @@ void AVRCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerMoveUpNDownInStage(true);
+	//PlayerMoveUpNDownInStage(true);
+}
+
+void AVRCharacterBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	//PlayerMoveUpNDownInStage(true);
 }

@@ -62,6 +62,18 @@ AAGTWLever::AAGTWLever()
 		ActorBaseMesh->SetMaterial(0, MaterialFinder_Main.Object);
 		SM_Handle->SetMaterial(0, MaterialFinder_Main.Object);
 	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AAGTWLever::BeginPlay()
@@ -83,7 +95,7 @@ void AAGTWLever::Tick(float DeltaTime)
 
 void AAGTWLever::OverlapCapsuleBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp && OtherComp->ComponentHasTag(FName("RightCLBox")))
+	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
 	{
 		bIsHanding = true;
 	}
@@ -91,7 +103,7 @@ void AAGTWLever::OverlapCapsuleBegin(UPrimitiveComponent* OverlappedComp, AActor
 
 void AAGTWLever::OverlapCapsuleEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (OtherComp && OtherComp->ComponentHasTag(FName("RightCLBox")))
+	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
 	{
 		bIsHanding = false;
 	}
@@ -135,6 +147,7 @@ void AAGTWLever::OnDropped()
 
 	if (CheckGTWLeverOpationAngle())
 	{
+		UE_LOG(LogTemp, Log, TEXT("On Dropped Angle is IN Operate Angle!"));
 		SM_Handle->SetRelativeRotation(FRotator(-89.0f, 0.0f, 0.0f));
 		HandleCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -167,16 +180,15 @@ void AAGTWLever::OperateLever()
 
 bool AAGTWLever::CheckGTWLeverOpationAngle()
 {
-	bool TempResult = SM_Handle->GetRelativeRotation().Pitch <= -80.0f && SM_Handle->GetRelativeRotation().Pitch >= -89.0f;
-
+	bool TempResult = FMath::IsWithinInclusive(SM_Handle->GetRelativeRotation().Pitch, -89.0f, -80.0f);
 	return TempResult;
 }
 
 void AAGTWLever::CountForGameStart()
 {
-	DEBUG_PRINTSCREEN(100.0f, FColor::Black, TEXT("5Second Flow, Game Start!"));
+	//DEBUG_PRINTSCREEN(100.0f, FColor::Black, TEXT("5Second Flow, Game Start!"));
 
-	EquipmentWorldSubSystem->OnGameStartBroadCast();
+	EquipmentWorldSubSystem->NotifyGameStartBroadCast();
 
 	GetWorldTimerManager().PauseTimer(CountGameStartTimer);
 }

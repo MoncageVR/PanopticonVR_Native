@@ -61,6 +61,24 @@ AAPunchPrinter::AAPunchPrinter()
 		CLPPPaper->OnComponentEndOverlap.AddDynamic(this, &AAPunchPrinter::CLPPEntranceFOverlapEnd);
 		CLPPPaper->SetHiddenInGame(false); // Debug
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_Move(TEXT("/Game/VRContent/Sound/Wavs/FastGod/sfx_printer_move.sfx_printer_move"));
+	if (SoundFinder_Move.Succeeded())
+	{
+		SFXPrinterMove = SoundFinder_Move.Object;
+	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AAPunchPrinter::BeginPlay()
@@ -104,10 +122,13 @@ void AAPunchPrinter::CLPPOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 			}
 			else
 			{
+				mSoundPlayer->PlaySoundEffect(this, SFXPrinterMove, PPSandbag->GetComponentLocation());
 				PPMovementTimeline->PlayFromStart();
 				CLPPSandbag->SetGenerateOverlapEvents(false);
-				//NewSpawnPaper->GetRootComponent()->SetRelativeLocation(NewSpawnPaper->GetRootComponent()->GetRelativeLocation() + FVector(0.f, 1.5f, 0.f));
-				NewSpawnPaper->GetRootComponent()->SetRelativeLocation(FVector(0.f, 10.5f, -13.3f));
+				NewSpawnPaper->GetRootComponent()->SetRelativeLocation(NewSpawnPaper->GetRootComponent()->GetRelativeLocation() + FVector(0.f, 1.5f, 0.f));
+
+				// Move the paper to the target position at once : Debugging
+				//NewSpawnPaper->GetRootComponent()->SetRelativeLocation(FVector(0.f, 10.5f, -13.3f));
 			}
 		}
 		else
@@ -136,6 +157,8 @@ void AAPunchPrinter::CLPPEntranceFOverlapEnd(UPrimitiveComponent* OverlappedComp
 	{
 		if (NewSpawnPaper == OtherActor)
 		{
+			NewSpawnPaper->SetIsPrinting(1);
+
 			NewSpawnPaper = nullptr;
 
 			GetWorldTimerManager().SetTimer(

@@ -3,18 +3,15 @@
 
 #include "CoreObj/VRGameInstance.h"
 #include "CoreObj/VRGameInstanceSubsystem.h"
+#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
 
 void UVRGameInstance::Init()
 {
 	Super::Init();
 
-	//UE_LOG(LogTemp, Log, TEXT("VRGameInstance Initialize Success!"));
-
-
 	UVRGameInstanceSubsystem* tempVRGameInstanceSubSystem = GetSubsystem<UVRGameInstanceSubsystem>();
 
-	if (tempVRGameInstanceSubSystem)
-	{
-		//UE_LOG(LogTemp, Log, TEXT("VRGameInstanceSubSystem Referencing Success!"));
-	}
+	P_PrisonerManager = GetSubsystem<UPrisonerManagerSubsystem>();
 }
+
+

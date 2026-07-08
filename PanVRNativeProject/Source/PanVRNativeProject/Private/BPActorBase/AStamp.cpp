@@ -95,6 +95,24 @@ AAStamp::AAStamp()
 		SMStampHandle->SetMaterial(0, MaterialFinder_Main.Object);
 		SMStampHandleHead->SetMaterial(0, MaterialFinder_Main.Object);
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_Move(TEXT("/Game/VRContent/Sound/Wavs/FastGod/sfx_stamp_move.sfx_stamp_move"));
+	if (SoundFinder_Move.Succeeded())
+	{
+		SFXStampMove = SoundFinder_Move.Object;
+	}
+
+	TArray<UPrimitiveComponent*> AllComps;
+	GetComponents<UPrimitiveComponent>(AllComps);
+	for (UPrimitiveComponent* AllComp : AllComps)
+	{
+		if (!AllComp) continue;
+
+		if (AllComp->CanEverAffectNavigation())
+			AllComp->SetCanEverAffectNavigation(false);
+		else
+			continue;
+	}
 }
 
 void AAStamp::BeginPlay()
@@ -159,21 +177,24 @@ void AAStamp::AdjustGCPosNRot(uint32 InFlag)
 
 void AAStamp::CLPaperTargetOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherComp->ComponentHasTag(FName("Paper")))
+	if (!AttachingPaper)
 	{
-		if (IsValid(Cast<AAPaper>(OtherActor)))
+		if (OtherComp->ComponentHasTag(FName("Paper")))
 		{
-			AttachingPaper = Cast<AAPaper>(OtherActor);
-
-			if (AttachingPaper)
+			if (IsValid(Cast<AAPaper>(OtherActor)))
 			{
-				AttachingPaper->SetIsStampAttaching(1);
-				AttachingPaper->GC->GCTryRelease();
-				AttachingPaper->GC->SetPrimitiveCompPhysics(false);
-				AttachingPaper->AttachToComponent(CLPaperTarget, FAttachmentTransformRules::SnapToTargetIncludingScale);
+				AttachingPaper = Cast<AAPaper>(OtherActor);
 
-				CLStamp->SetGenerateOverlapEvents(true);
-				CLStamp->SetHiddenInGame(false); // Debug
+				if (AttachingPaper)
+				{
+					AttachingPaper->SetIsStampAttaching(1);
+					AttachingPaper->GC->GCTryRelease();
+					AttachingPaper->GC->SetPrimitiveCompPhysics(false);
+					AttachingPaper->AttachToComponent(CLPaperTarget, FAttachmentTransformRules::SnapToTargetIncludingScale);
+
+					CLStamp->SetGenerateOverlapEvents(true);
+					CLStamp->SetHiddenInGame(false); // Debug
+				}
 			}
 		}
 	}
@@ -201,6 +222,7 @@ void AAStamp::CLStampOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		if (!AttachingPaper->GetIsStamping())
 		{
+			mSoundPlayer->PlaySoundEffect(this, SFXStampMove, ActorBaseMesh->GetComponentLocation());
 			AttachingPaper->StampOn();
 		}
 	}

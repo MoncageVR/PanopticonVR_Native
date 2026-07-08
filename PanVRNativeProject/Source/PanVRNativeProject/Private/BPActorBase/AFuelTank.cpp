@@ -129,6 +129,8 @@ AAFuelTank::AAFuelTank()
 void AAFuelTank::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Log, TEXT("SourceTree Test Print Log")); // Debug
 }
 
 void AAFuelTank::Tick(float DeltaTimes)

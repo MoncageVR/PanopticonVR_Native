@@ -115,4 +115,6 @@ private:
 	USoundBase* SFXFuelTankMove;
 	USoundBase* SFXFuelRodIn;
 	USoundBase* SFXFuelRodOut;
+
+	int32 Debug_SourceTree_Test_Variable;
 };

@@ -22,8 +22,6 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("EscapeTargetVec"))))
 	{
 		PrisonerCharacterObj->GetRootComponent()->SetWorldRotation(FRotator(0.f, 90.0f, 0.f));
-
-		//UE_LOG(LogTemp, Log, TEXT("UAI_Task_Run Success Execute!!"));
 		PrisonerControllerObj->OnTaskFinished.Broadcast();
 		//return EBTNodeResult::Succeeded;
 	}
@@ -38,7 +36,7 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 
 const bool UUAITask_Run::HasReachedTargetPos(const FVector InChaVec, const FVector InTargetVec)
 {
-	bool XReturnValue, YReturnValue, ZReturnValue = false;
+	bool XReturnValue, YReturnValue = false;
 	if (FMath::IsNearlyEqual(InChaVec.X, InTargetVec.X, 5.0f))
 		XReturnValue = true;
 

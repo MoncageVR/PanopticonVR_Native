@@ -68,8 +68,14 @@ void APrisonerController::OnPossess(APawn* InPawn)
 	Debug_Upper_State.Empty();
 	Debug_Lower_State.Empty();
 
+	Debug_Upper_State.Add(3);
 	Debug_Upper_State.Add(2); // Move
+	Debug_Upper_State.Add(4); // Dangerous
+
+	Debug_Lower_State.Add(10);
 	Debug_Lower_State.Add(5); // Run
+	Debug_Lower_State.Add(13); // Escape
+
 	Debug_Length = Debug_Upper_State.Num();
 	Debug_CurrStateIndex = 0;
 
@@ -80,7 +86,7 @@ void APrisonerController::OnPossess(APawn* InPawn)
 		TempAnimInst = TempPrisonerCha->GetMesh()->GetAnimInstance();
 		if (TempAnimInst)
 		{
-			mPrisonerAnimInstancePtr = Cast< UPrisonerAnimInstance>(TempAnimInst);
+			mPrisonerAnimInstancePtr = Cast<UPrisonerAnimInstance>(TempAnimInst);
 		}
 	}
 

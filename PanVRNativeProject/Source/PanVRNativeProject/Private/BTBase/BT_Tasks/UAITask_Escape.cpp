@@ -15,8 +15,6 @@ EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		return EBTNodeResult::Failed;
 	}
 
-	//UE_LOG(LogTemp, Log, TEXT("UAI_Task_Escape Execute!!"));
-
 	// Animation : 4 : Dangerous(UpperState)
 	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4);
 
@@ -34,8 +32,5 @@ EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 void UUAITask_Escape::CallControlExitDoorFunction()
 {
-	UMapObjManagerSubsystem* TempMapObjManangerInst =
-		GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
-	if (!ensure(TempMapObjManangerInst)) return;
-	TempMapObjManangerInst->ControlExitDoorFunction();
+	MapObjManagerSubSystemInst->ControlExitDoorFunction();
 }

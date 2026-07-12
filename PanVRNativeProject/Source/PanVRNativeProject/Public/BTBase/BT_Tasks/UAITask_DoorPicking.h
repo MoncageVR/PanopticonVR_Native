@@ -27,12 +27,10 @@ protected:
 
 private:
 	UAnimMontage* DoorPickingMontage;
-	UAnimInstance* MyAnimInst;
 	FVector MontagePlayVec;
 	FRotator MontagePlayRot;
 
 private:
 	void CalMontagePlayTransform(float InSpawnYaw);
 	int32 AdjustPrisonerUniqueNum(int32 InTempUniqueNum);
-	class UMapObjManagerSubsystem* mMapObjManangerSubsystemPtr;
 };

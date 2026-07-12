@@ -21,12 +21,12 @@ EBTNodeResult::Type UUAITask_Anger::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	this->CalMonPlayTransform();
 
-	MapObjManagerSubSystemInst = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
-	PrisonerCharacterObj->GetCapsuleComponent()->SetWorldLocationAndRotation(MonPlayVec, MonPlayRot); // Execute For Anger State, Move the Prisoner to Spawn Location
+	//MapObjManagerSubSystemInst = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
+	PrisonerCharacterObj->GetRootComponent()->SetWorldLocationAndRotation(MonPlayVec, MonPlayRot); // Execute For Anger State, Move the Prisoner to Spawn Location
 
 	CachedOwnerComp = &OwnerComp;
 
-	MyAnimInst = PrisonerCharacterObj->GetMesh()->GetAnimInstance();
+	//MyAnimInst = PrisonerCharacterObj->GetMesh()->GetAnimInstance();
 	if (!ensure(MyAnimInst)) return EBTNodeResult::Failed;
 	MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Anger::OnAngerMontageEnded);
 	MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_Anger::OnAngerMontageEnded);
@@ -63,17 +63,17 @@ void UUAITask_Anger::OnAngerMontageEnded(UAnimMontage* Montage, bool bInterrupte
 
 void UUAITask_Anger::CalMonPlayTransform()
 {
-	UPrisonerManagerSubsystem* TempPrisonerManagerInst = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
-	if (!ensure(TempPrisonerManagerInst)) return;
+	//UPrisonerManagerSubsystem* TempPrisonerManagerInst = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
+	if (!ensure(PrisonerManagerSubSystemInst)) return;
 
 	int32 TempUniqueNum = PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum"));
 
 	MonPlayVec = FVector(
-		TempPrisonerManagerInst->GetFinalAllSpawnPositions()[TempUniqueNum].X,
-		TempPrisonerManagerInst->GetFinalAllSpawnPositions()[TempUniqueNum].Y,
-		PrisonerCharacterObj->GetCapsuleComponent()->GetComponentLocation().Z
+		PrisonerManagerSubSystemInst->GetFinalAllSpawnPositions()[TempUniqueNum].X,
+		PrisonerManagerSubSystemInst->GetFinalAllSpawnPositions()[TempUniqueNum].Y,
+		PrisonerCharacterObj->GetRootComponent()->GetComponentLocation().Z
 	);
-	MonPlayRot = FRotator(TempPrisonerManagerInst->GetFinalAllSpawnRoations()[TempUniqueNum]);
+	MonPlayRot = FRotator(PrisonerManagerSubSystemInst->GetFinalAllSpawnRoations()[TempUniqueNum]);
 }
 
 void UUAITask_Anger::CallHandleGratingFly()

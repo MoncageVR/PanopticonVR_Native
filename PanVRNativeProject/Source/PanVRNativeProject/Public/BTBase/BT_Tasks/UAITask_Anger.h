@@ -28,11 +28,9 @@ protected:
 	void OnAngerMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
-	UAnimInstance* MyAnimInst;
 	FVector MonPlayVec;
 	FRotator MonPlayRot;
 	FTimerHandle DelayGratingFlyTimer;
-	class UMapObjManagerSubsystem* MapObjManagerSubSystemInst;
 
 private:
 	void CalMonPlayTransform();

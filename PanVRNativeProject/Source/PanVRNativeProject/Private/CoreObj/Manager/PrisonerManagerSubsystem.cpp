@@ -152,7 +152,7 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		{
 			// Interact(3) - DoorPicking(8)
 			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 3);
-			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 9);
+			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 8);
 
 			// Move(2) - Run(5)
 			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 2);

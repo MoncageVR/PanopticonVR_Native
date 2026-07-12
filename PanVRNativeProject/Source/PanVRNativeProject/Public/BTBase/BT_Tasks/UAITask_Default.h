@@ -24,7 +24,6 @@ protected:
 
 
 private:
-	//int32 TempInt; // Debug
-	FVector SpawnPosition;// Debug
-	FVector PatrolTargetPosition; // Debug
+	FVector SpawnPosition;
+	FVector PatrolTargetPosition;
 };

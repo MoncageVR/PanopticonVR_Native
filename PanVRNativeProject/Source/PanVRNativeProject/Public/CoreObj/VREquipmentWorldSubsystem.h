@@ -18,22 +18,27 @@ DECLARE_DELEGATE_OneParam(FOnEBOperationControlDelegateVar, uint8);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEBMoveOrderDelegateVar, FName, InTag, int32, InTargetFloor);
 
 /**
- * 
+ *
  */
 UCLASS()
 class PANVRNATIVEPROJECT_API UVREquipmentWorldSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void PostInitialize() override;
-	
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+	void HandleAddEquipmentArrs(IIEquipmentInitInterface* InActor);
 
-	TArray<IIEquipmentInitInterface*> EquipmentArrs;
 
-	void AddEquipmentArrs(IIEquipmentInitInterface* InActor);
+public:
+#pragma region Getter
+	FORCEINLINE TArray<IIEquipmentInitInterface*> GetEquipmentArr() const { return EquipmentArrs; }
+#pragma endregion
 
+#pragma region Setter
+
+#pragma endregion
 
 public:
 #pragma region DELEGATE No Param Variables
@@ -71,5 +76,6 @@ public:
 	void NotifyMoveOrderBroadCast(FName InTag, int32 InTargetFloor);
 #pragma endregion
 
-
+private:
+	TArray<IIEquipmentInitInterface*> EquipmentArrs;
 };

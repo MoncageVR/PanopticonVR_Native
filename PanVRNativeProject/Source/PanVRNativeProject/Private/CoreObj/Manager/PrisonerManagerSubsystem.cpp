@@ -21,7 +21,7 @@ void UPrisonerManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UPrisonerManagerSubsystem::InitAllValues()
 {
 	InGamePrisonerTotalNum = 24;
-	PrisonerRunSpeed = 189.0f;
+	PrisonerRunSpeed = 500.0f; // Debug Value : 500.0f , Default Value = 189.0f;
 	Radius = 2000.0f;
 	ZPos = 321.0f;
 	HeightBetweenFloor = 950.0f;
@@ -145,13 +145,14 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		TempPrisonerCon->GetBBComp()->SetValueAsFloat(TEXT("RunningSpeed"), PrisonerRunSpeed); // Set Common Running Speed
 		TempPrisonerCon->GetBBComp()->SetValueAsVector(TEXT("EscapeTargetVec"), EscapeTargetPosition); // Set Common Escape Target Position
 		TempPrisonerCon->GetBBComp()->SetValueAsInt(TEXT("OppositeUniqueNum"), OppositeUniqueNumMaps[i]); // Set Individual Opposite Unique Number
+		TempPrisonerCon->GetBBComp()->SetValueAsVector(TEXT("RandomMoveTargetVec"), FVector(0, 0, 0)); // Set Individual RandomMove Target Position
 
 		// Debug!
 		if (i == 0)
 		{
 			// Interact(3) - DoorPicking(8)
 			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 3);
-			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 8);
+			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 9);
 
 			// Move(2) - Run(5)
 			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 2);

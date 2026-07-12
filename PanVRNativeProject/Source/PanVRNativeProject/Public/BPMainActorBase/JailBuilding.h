@@ -11,13 +11,16 @@ UCLASS()
 class PANVRNATIVEPROJECT_API AJailBuilding : public AVRActorBase
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AJailBuilding();
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+
+	// Call The MoveTheExitDoorSideward Handle Function, 
+	void HandleExitDoor();
 
 protected:
 	// Scene Component Variables
@@ -71,7 +74,13 @@ protected:
 	TObjectPtr<class UTimelineComponent> DownwardMoveTimelineComp;
 
 	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> SideWardsMoveTimelineComp;
+
+	UPROPERTY()
 	TObjectPtr<UCurveFloat> MoveTheWeaponDoorFloatCurve;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> MoveTheExitDoorFloatCurve;
 
 	UFUNCTION()
 	void UpwardMoveTheDoorPlayEvent(float Value);
@@ -84,6 +93,12 @@ protected:
 
 	UFUNCTION()
 	void DownwardMoveTheDoorFinishedEvent();
+
+	UFUNCTION()
+	void SidewardMoveTheExitDoorPlayEvent(float Value);
+
+	UFUNCTION()
+	void SidewardMoveTheExitDoorFinishedEvent();
 
 #pragma endregion
 
@@ -98,7 +113,7 @@ protected:
 	UFUNCTION()
 	void HandleJailReceiveByEB(FName InTag, int32 InFloor);
 
-	
+
 
 private:
 	TArray<TObjectPtr<UStaticMeshComponent>> SMWeaponDoorArrs;
@@ -116,4 +131,6 @@ private:
 	void MoveTheDoorUpward();
 	// Downward Move Call Function In Use Timeline PlayFromStart
 	void MoveTheDoorDownward();
+	// Sideward Move Call Function In Use Timeline PlayFromStart
+	void MoveTheExitDoorSideward();
 };

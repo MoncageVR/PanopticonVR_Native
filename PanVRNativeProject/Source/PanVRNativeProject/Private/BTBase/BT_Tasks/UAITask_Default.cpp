@@ -7,6 +7,7 @@
 UUAITask_Default::UUAITask_Default()
 {
 	NodeName = TEXT("BTTask_Default");
+	bCreateNodeInstance = true;
 }
 
 EBTNodeResult::Type UUAITask_Default::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)

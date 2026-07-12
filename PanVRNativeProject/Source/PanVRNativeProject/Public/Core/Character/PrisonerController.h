@@ -9,13 +9,13 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskFinishedVar);
 
 /**
- * 
+ *
  */
 UCLASS()
 class PANVRNATIVEPROJECT_API APrisonerController : public AAIController
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY()
 	FOnTaskFinishedVar OnTaskFinished;
@@ -25,11 +25,27 @@ public:
 
 	virtual void Tick(float DeltaTimes) override;
 
+#pragma region DebugVariables
+public:
+	UPROPERTY(VisibleAnywhere)
+	TArray<uint8> Debug_Upper_State;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<uint8> Debug_Lower_State;
+
+	UPROPERTY(VisibleAnywhere)
+	int32 Debug_Length;
+
+	UPROPERTY(VisibleAnywhere)
+	int32 Debug_CurrStateIndex;
+#pragma endregion
+
 public:
 #pragma region Getter
-	FORCEINLINE class UBehaviorTree* GetBT() { return BehaviorTreeAsset; }
-	FORCEINLINE class UBlackboardData* GetBB() { return BlackboardAsset; }
-	FORCEINLINE class UBlackboardComponent* GetBBComp() { return BlackboardComp; }
+	FORCEINLINE class UBehaviorTree* GetBT() const { return BehaviorTreeAsset; }
+	FORCEINLINE class UBlackboardData* GetBB() const { return BlackboardAsset; }
+	FORCEINLINE class UBlackboardComponent* GetBBComp() const { return BlackboardComp; }
+	FORCEINLINE class UPrisonerAnimInstance* GetPrisonerAnimInstance() const { return mPrisonerAnimInstancePtr; }
 #pragma endregion
 
 #pragma region Setter
@@ -41,7 +57,7 @@ public:
 	UFUNCTION()
 	void HandleNextTask();
 
-	
+
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
@@ -56,9 +72,8 @@ protected:
 	class UBlackboardComponent* BlackboardComp;
 
 private:
-	TArray<uint8> Debug_Upper_State;
-	TArray<uint8> Debug_Lower_State;
-	int32 Debug_Length;
-	int32 Debug_CurrStateIndex;
+
+	UAnimInstance* AnimInstancePtr;
+	class UPrisonerAnimInstance* mPrisonerAnimInstancePtr;
 
 };

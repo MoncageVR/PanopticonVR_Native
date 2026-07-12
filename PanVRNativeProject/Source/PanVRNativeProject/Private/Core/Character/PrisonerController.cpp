@@ -2,6 +2,8 @@
 
 
 #include "Core/Character/PrisonerController.h"
+#include "Core/Character/PrisonerCharacter.h"
+#include "Core/Animation/PrisonerAnimInstance.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"      
 #include "BehaviorTree/BlackboardComponent.h"
@@ -28,35 +30,61 @@ APrisonerController::APrisonerController()
 	}
 
 	// Debug
-	Debug_Upper_State.Add(3); // Interact
-	Debug_Upper_State.Add(2); // Move
-	Debug_Upper_State.Add(4); // Dangerous
 
-	Debug_Lower_State.Add(8); // DoorPicking
-	Debug_Lower_State.Add(5); // Run
-	Debug_Lower_State.Add(13); // Escape
+	//Debug_Upper_State.Add(3); // Interact
+	//Debug_Upper_State.Add(3); // Interact
+	//Debug_Upper_State.Add(2); // Move
+	//Debug_Upper_State.Add(2); // Move
+	//Debug_Upper_State.Add(4); // Dangerous
 
-	Debug_Length = Debug_Upper_State.Num();
-	Debug_CurrStateIndex = 0;
+	//Debug_Lower_State.Add(10); // Anger
+	//Debug_Lower_State.Add(8); // DoorPicking
+	//Debug_Lower_State.Add(4); // RandomMove
+	//Debug_Lower_State.Add(5); // Run
+	//Debug_Lower_State.Add(13); // Escape
+
+	//Debug_Length = Debug_Upper_State.Num();
+	//Debug_CurrStateIndex = 0;
+	// Debug
 
 	OnTaskFinished.AddDynamic(this, &APrisonerController::HandleNextTask);
 }
 
 void APrisonerController::HandleNextTask()
 {
-	if (Debug_Length - 1 == Debug_CurrStateIndex)
+	if (Debug_Length == Debug_CurrStateIndex)
 	{
 		return;
 	}
-
-	Debug_CurrStateIndex++;
 	BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), Debug_Upper_State[Debug_CurrStateIndex]);
 	BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), Debug_Lower_State[Debug_CurrStateIndex]);
+	Debug_CurrStateIndex++;
 }
 
 void APrisonerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
+
+	Debug_Upper_State.Empty();
+	Debug_Lower_State.Empty();
+
+	Debug_Upper_State.Add(2); // Move
+	Debug_Lower_State.Add(5); // Run
+	Debug_Length = Debug_Upper_State.Num();
+	Debug_CurrStateIndex = 0;
+
+	APrisonerCharacter* TempPrisonerCha = Cast<APrisonerCharacter>(this->GetCharacter());
+	UAnimInstance* TempAnimInst = nullptr;
+	if (TempPrisonerCha)
+	{
+		TempAnimInst = TempPrisonerCha->GetMesh()->GetAnimInstance();
+		if (TempAnimInst)
+		{
+			mPrisonerAnimInstancePtr = Cast< UPrisonerAnimInstance>(TempAnimInst);
+		}
+	}
+
+	if (!ensure(TempPrisonerCha) && !ensure(TempAnimInst) && !ensure(mPrisonerAnimInstancePtr)) return;
 
 	if (BlackboardAsset)
 	{

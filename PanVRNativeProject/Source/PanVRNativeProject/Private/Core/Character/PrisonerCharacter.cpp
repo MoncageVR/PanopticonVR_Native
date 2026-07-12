@@ -55,8 +55,6 @@ APrisonerCharacter::APrisonerCharacter()
 	{
 		this->GetMesh()->SetAnimClass(ABPFinder_Prisoner.Class);
 	}
-
-	//this->GetMesh()->SetAnimClass()
 }
 
 void APrisonerCharacter::BeginPlay()

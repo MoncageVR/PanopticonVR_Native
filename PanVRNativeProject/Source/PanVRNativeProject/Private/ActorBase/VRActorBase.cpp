@@ -6,6 +6,7 @@
 #include "Core/Debug/FDebugLib.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
 #include "CoreObj/VRGameInstanceSubsystem.h"
+#include "Core/Interface/IEquipmentInitInterface.h"
 
 AVRActorBase::AVRActorBase()
 {
@@ -30,7 +31,7 @@ void AVRActorBase::EquipmentRegistrable(AActor* InActor)
 	{
 		return;
 	}
-	
+
 	if (InActor->Implements<UIEquipmentInitInterface>())
 	{
 		IIEquipmentInitInterface* TempActor = Cast<IIEquipmentInitInterface>(InActor);
@@ -40,7 +41,13 @@ void AVRActorBase::EquipmentRegistrable(AActor* InActor)
 
 			if (EquipmentWorldSubSystem)
 			{
-				EquipmentWorldSubSystem->AddEquipmentArrs(TempActor);
+				EquipmentWorldSubSystem->HandleAddEquipmentArrs(TempActor);
+				//UE_LOG(LogTemp, Log, TEXT("EquipmentWorldSubsystme Cast Success!"));
+			}
+			else
+			{
+				//UE_LOG(LogTemp, Log, TEXT("EquipmentWorldSubsystme not Valid!"));
+				return;
 			}
 		}
 	}
@@ -50,7 +57,6 @@ void AVRActorBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-
 
 void HVRSoundPlayer::PlaySoundEffect(UObject* PlayEquipment, USoundBase* Sound, FVector TempPlayPos)
 {

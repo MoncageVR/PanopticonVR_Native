@@ -25,4 +25,9 @@ protected:
 
 private:
 	class UVRGameInstance* MyVRGameInstance;
+
+	FTimerHandle Debug_Delay_Timer;
+
+private:
+	void Debug_StartPlay_Delay_Func(); // Debug
 };

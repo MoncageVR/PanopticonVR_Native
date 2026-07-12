@@ -26,10 +26,10 @@ public:
 	FORCEINLINE int32 GetPrisonerTotalNum() const { return InGamePrisonerTotalNum; }
 	FORCEINLINE float GetPrisonerSpeed() const { return PrisonerRunSpeed; }
 	FORCEINLINE TMap<uint8, uint8> GetOppositeUniqueNumMaps() const { return OppositeUniqueNumMaps; }
+	FORCEINLINE TArray<FRotator> GetBaseSpawnRotations() const { return BaseSpawnRotations; }
+	FORCEINLINE TArray<FVector> GetBaseSpawnPositions() const { return BaseSpawnPositions; }
 #pragma endregion
 #pragma region Setter
-
-
 
 #pragma endregion
 

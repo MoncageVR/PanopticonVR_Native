@@ -3,10 +3,14 @@
 
 #include "BTBase/BT_Tasks/UAITask_DoorPicking.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
+#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/MapObjManagerSubsystem.h"
+#include "BPMainActorBase/AGrating.h"
 
 UUAITask_DoorPicking::UUAITask_DoorPicking()
 {
 	NodeName = TEXT("BTTask_DoorPicking");
+	bCreateNodeInstance = true;
 
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> AMFinder_DoorPicking(TEXT("/Game/VRContent/Prisoner/PrisonerAnimation/TargetAnim/Montages/Retarget_DoorPicking_Anim_Montage.Retarget_DoorPicking_Anim_Montage"));
 	if (AMFinder_DoorPicking.Succeeded())
@@ -22,12 +26,78 @@ EBTNodeResult::Type UUAITask_DoorPicking::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Failed;
 	}
 
-	UAnimInstance* AnimInst = PrisonerCharacterObj->GetMesh()->GetAnimInstance();
-	UE_LOG(LogTemp, Log, TEXT("UAI_Task_DoorPicking Execute!!"));
-	AnimInst->Montage_Play(DoorPickingMontage);
-	
-	// You need to create logic to execute the Broadcast function after the montage playback ends.
-	// PrisonerControllerObj->OnTaskFinished.Broadcast();
+	UPrisonerManagerSubsystem* TempPrisonerMananger = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
+	if (TempPrisonerMananger)
+	{
+		int32 TempUniqueNum = AdjustPrisonerUniqueNum(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));
+		CalMontagePlayTransform(TempPrisonerMananger->GetBaseSpawnRotations()[TempUniqueNum].Yaw);
+		MontagePlayRot = TempPrisonerMananger->GetFinalAllSpawnRoations()[TempUniqueNum];
+	}
+
+	mMapObjManangerSubsystemPtr = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
+	if (!ensure(mMapObjManangerSubsystemPtr)) return EBTNodeResult::Failed;
+
+	MyAnimInst = PrisonerCharacterObj->GetMesh()->GetAnimInstance();
+	if (!MyAnimInst || !DoorPickingMontage)
+		return EBTNodeResult::Failed;
+
+	if (MyAnimInst)
+	{
+		CachedOwnerComp = &OwnerComp;
+		PrisonerCharacterObj->GetRootComponent()->SetWorldLocationAndRotation(MontagePlayVec, MontagePlayRot);
+
+		MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_DoorPicking::OnDoorPickingMontageEnded);
+		MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_DoorPicking::OnDoorPickingMontageEnded);
+
+		MyAnimInst->Montage_Play(DoorPickingMontage);
+	}
 
 	return EBTNodeResult::InProgress;
+}
+
+void UUAITask_DoorPicking::OnDoorPickingMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == DoorPickingMontage)
+	{
+		if (mMapObjManangerSubsystemPtr)
+		{
+			int TempIndex = PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum"));
+
+			AAGrating* TempGrating = mMapObjManangerSubsystemPtr->GetGratingsMap()[TempIndex];
+			TempGrating->GratingOpen();
+		}
+
+		if (MyAnimInst)
+			MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_DoorPicking::OnDoorPickingMontageEnded);
+
+		if (PrisonerControllerObj)
+			PrisonerControllerObj->OnTaskFinished.Broadcast();
+
+		if (CachedOwnerComp)
+		{
+			EBTNodeResult::Type Result = bInterrupted ? EBTNodeResult::Failed : EBTNodeResult::Succeeded;
+			FinishLatentTask(*CachedOwnerComp, Result);
+		}
+	}
+}
+
+void UUAITask_DoorPicking::CalMontagePlayTransform(float InSpawnYaw)
+{
+	float TempRadianAngle = FMath::DegreesToRadians(InSpawnYaw);
+
+	MontagePlayVec = FVector(
+		FMath::Cos(TempRadianAngle) * 1650.0f,
+		FMath::Sin(TempRadianAngle) * 1650.0f,
+		PrisonerCharacterObj->GetRootComponent()->GetComponentLocation().Z
+	);
+}
+
+int32 UUAITask_DoorPicking::AdjustPrisonerUniqueNum(int32 InBBUniqueNum)
+{
+	if (InBBUniqueNum >= 16)
+		return (InBBUniqueNum - 16);
+	else if (InBBUniqueNum >= 8)
+		return (InBBUniqueNum - 8);
+	else
+		return InBBUniqueNum;
 }

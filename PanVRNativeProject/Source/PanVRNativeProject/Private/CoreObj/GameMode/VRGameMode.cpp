@@ -4,6 +4,7 @@
 #include "CoreObj/GameMode/VRGameMode.h"
 #include "CoreObj/VRGameInstance.h"
 #include "CoreObj/Manager/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/MapObjManagerSubsystem.h"
 #include "Core/Character/PrisonerCharacter.h"
 #include "Core/Character/PrisonerController.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -34,11 +35,31 @@ void AVRGameMode::StartPlay()
 	MyVRGameInstance = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
 	if (MyVRGameInstance)
 	{
-		UPrisonerManagerSubsystem* TempPrisonerManagerPointer = MyVRGameInstance->GetPrisonerManager();
+		UPrisonerManagerSubsystem* TempPrisonerManagerPtr = MyVRGameInstance->GetPrisonerManager();
 
-		if (ensure(TempPrisonerManagerPointer))
+		UMapObjManagerSubsystem* TempMapObjManangerPtr = MyVRGameInstance->GetMapObjManager();
+
+		if (ensure(TempPrisonerManagerPtr))
 		{
-			TempPrisonerManagerPointer->CreateAllPrisoner();
+			TempPrisonerManagerPtr->CreateAllPrisoner();
+		}
+
+		if (ensure(TempMapObjManangerPtr))
+		{
+			TempMapObjManangerPtr->CreateAllGratings();
 		}
 	}
+
+	/*GetWorld()->GetTimerManager().SetTimer(
+		Debug_Delay_Timer,
+		this,
+		&AVRGameMode::Debug_StartPlay_Delay_Func,
+		2.0f,
+		false
+	);*/
+}
+
+void AVRGameMode::Debug_StartPlay_Delay_Func()
+{
+
 }

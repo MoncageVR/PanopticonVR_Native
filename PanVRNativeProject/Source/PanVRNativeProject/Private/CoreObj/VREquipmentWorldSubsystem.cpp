@@ -10,9 +10,10 @@ void UVREquipmentWorldSubsystem::PostInitialize()
 
 void UVREquipmentWorldSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
+	//UE_LOG(LogTemp, Log, TEXT("VREquipmentWorldSubSystem OnWorldBeginPlay Call Success!"));
 }
 
-void UVREquipmentWorldSubsystem::AddEquipmentArrs(IIEquipmentInitInterface* InActor)
+void UVREquipmentWorldSubsystem::HandleAddEquipmentArrs(IIEquipmentInitInterface* InActor)
 {
 	EquipmentArrs.Add(InActor);
 }

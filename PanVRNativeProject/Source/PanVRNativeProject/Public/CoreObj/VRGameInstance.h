@@ -8,6 +8,8 @@
 
 class UVRGameInstanceSubsystem;
 class UPrisonerManagerSubsystem;
+class UMapObjManagerSubsystem;
+class UVREquipmentWorldSubsystem;
 
 /**
  * 
@@ -23,8 +25,12 @@ public:
 public:
 #pragma region Getter
 	FORCEINLINE UPrisonerManagerSubsystem* GetPrisonerManager() const { return P_PrisonerManager; }
+	FORCEINLINE UMapObjManagerSubsystem* GetMapObjManager() const { return P_MapObjManager; }
+	FORCEINLINE UVREquipmentWorldSubsystem* GetVREquipmentManager() const { return P_VREquipmentManager; }
 #pragma endregion
 
 private:
 	class UPrisonerManagerSubsystem* P_PrisonerManager;
+	class UMapObjManagerSubsystem* P_MapObjManager;
+	class UVREquipmentWorldSubsystem* P_VREquipmentManager;
 };

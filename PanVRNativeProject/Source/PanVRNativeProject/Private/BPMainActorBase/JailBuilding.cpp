@@ -174,12 +174,21 @@ AJailBuilding::AJailBuilding()
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_Glove(TEXT("/Game/VRContent/Blueprints/TimelineCurve/Glove_MoveCurve.Glove_MoveCurve"));
 	if (CurveFinder_Glove.Succeeded())
-	{
 		MoveTheWeaponDoorFloatCurve = CurveFinder_Glove.Object;
-	}
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_ExitDoor(TEXT("/Game/VRContent/Blueprints/TimelineCurve/ExitDoorSide_Curve.ExitDoorSide_Curve"));
+	if (CurveFinder_ExitDoor.Succeeded())
+		MoveTheExitDoorFloatCurve = CurveFinder_ExitDoor.Object;
 
 	UpwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("UpwardMoveTLComp");
 	DownwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("DownwardMoveTLComp");
+	SideWardsMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("SidewardMoveTLComp");
+	UpwardMoveTimelineComp->SetLooping(false);
+	DownwardMoveTimelineComp->SetLooping(false);
+	SideWardsMoveTimelineComp->SetLooping(false);
+	UpwardMoveTimelineComp->SetTimelineLength(1.01f);
+	DownwardMoveTimelineComp->SetTimelineLength(1.01f);
+	SideWardsMoveTimelineComp->SetTimelineLength(4.01f);
 
 	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_GloveNJail(TEXT("/Game/VRContent/Sound/Wavs/Glove/sfx_glove.sfx_glove"));
 	if (SoundFinder_GloveNJail.Succeeded())
@@ -223,12 +232,24 @@ void AJailBuilding::BeginPlay()
 		DownwardMoveTimelineComp->SetTimelineFinishedFunc(DownwardFinishedEvent);
 	}
 
+	if (MoveTheExitDoorFloatCurve)
+	{
+		FOnTimelineFloat SidewardProgressFunc;
+		FOnTimelineEvent SidewardFinishedEvent;
+
+		SidewardProgressFunc.BindUFunction(this, FName("SidewardMoveTheExitDoorPlayEvent"));
+		SidewardFinishedEvent.BindUFunction(this, FName("SidewardMoveTheExitDoorFinishedEvent"));
+
+		SideWardsMoveTimelineComp->AddInterpFloat(MoveTheExitDoorFloatCurve, SidewardProgressFunc);
+		SideWardsMoveTimelineComp->SetTimelineFinishedFunc(SidewardFinishedEvent);
+	}
+
 	// Debug
 	/*FTimerHandle TempTimer;
 	GetWorldTimerManager().SetTimer(
 		TempTimer,
 		this,
-		&AJailBuilding::MoveTheDoorUpward,
+		&AJailBuilding::HandleExitDoor,
 		2.0f,
 		false
 	);*/
@@ -244,6 +265,11 @@ void AJailBuilding::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AJailBuilding::HandleExitDoor()
+{
+	MoveTheExitDoorSideward();
 }
 
 void AJailBuilding::InitRefDoorNVector()
@@ -270,6 +296,11 @@ void AJailBuilding::MoveTheDoorUpward()
 void AJailBuilding::MoveTheDoorDownward()
 {
 	DownwardMoveTimelineComp->PlayFromStart();
+}
+
+void AJailBuilding::MoveTheExitDoorSideward()
+{
+	SideWardsMoveTimelineComp->PlayFromStart();
 }
 
 void AJailBuilding::HandleJailReceiveByEB(FName InTag, int32 InFloor)
@@ -312,7 +343,7 @@ void AJailBuilding::UpwardMoveTheDoorFinishedEvent()
 {
 	if (IsValid(EquipmentWorldSubSystem))
 	{
-		EquipmentWorldSubSystem->NotifyPunchStartBroadCast(); 
+		EquipmentWorldSubSystem->NotifyPunchStartBroadCast();
 		// Jail ¡æ Glove : BroadCast Function
 	}
 }
@@ -321,6 +352,22 @@ void AJailBuilding::DownwardMoveTheDoorFinishedEvent()
 {
 	//UE_LOG(LogTemp, Log, TEXT("Finish"));
 	EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(true);
+	return;
+}
+
+void AJailBuilding::SidewardMoveTheExitDoorPlayEvent(float Value)
+{
+	JailExitDoor->SetRelativeLocation(FVector(
+		0.0f,
+		Value * -100.0f,
+		0.0f
+	));
+}
+
+void AJailBuilding::SidewardMoveTheExitDoorFinishedEvent()
+{
+	// GameOver Logic(In GameMode?) Execute Parts!
+	UE_LOG(LogTemp, Log, TEXT("GameOver Logic Execute!"));
 	return;
 }
 

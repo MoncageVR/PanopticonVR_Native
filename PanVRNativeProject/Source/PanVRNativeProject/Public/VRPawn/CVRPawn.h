@@ -27,8 +27,6 @@ public:
 	UFUNCTION()
 	void HandleMovePlayerToFloor(FName InTag, int32 InTargetFloor);
 
-	void HandleDownMovePlayer(); // Call GameOver 
-
 protected:
 	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> ChairPlatform;
@@ -46,10 +44,7 @@ protected:
 	class UInputMappingContext* IMC_Hands;
 
 	UPROPERTY()
-	TObjectPtr<class UTimelineComponent> VRPawnUpMovementTimeline;
-
-	UPROPERTY()
-	TObjectPtr<class UTimelineComponent> VRPawnDownMovementTimeline;
+	TObjectPtr<class UTimelineComponent> VRPawnMovementTimeline;
 
 protected:
 	UFUNCTION()
@@ -57,12 +52,6 @@ protected:
 
 	UFUNCTION()
 	void VRPawnMoveUpTLEndFunc();
-
-	UFUNCTION()
-	void VRPawnMoveDownTLFunc(float Value);
-
-	UFUNCTION()
-	void VRPawnMoveDownTLEndFunc();
 
 private:
 	TSubclassOf<class AVRHand> LeftHandBPClass;

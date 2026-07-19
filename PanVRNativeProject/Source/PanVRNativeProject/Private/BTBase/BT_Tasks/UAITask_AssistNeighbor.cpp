@@ -1,8 +1,6 @@
 #include "BTBase/BT_Tasks/UAITask_AssistNeighbor.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "CoreObj/Manager/PrisonerManagerSubsystem.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
-#include "BPMainActorBase/AGrating.h"
 
 UUAITask_AssistNeighbor::UUAITask_AssistNeighbor()
 {
@@ -14,70 +12,37 @@ UUAITask_AssistNeighbor::UUAITask_AssistNeighbor()
 	{
 		NeighborDoorPickingMontage = AMFinder_NeighborDoorPicking.Object;
 	}
-
-	GrantedUpperStates.Add(2);
-	GrantedUpperStates.Add(4);
-
-	GrantedLowerStates.Add(5);
-	GrantedLowerStates.Add(13);
 }
 
 EBTNodeResult::Type UUAITask_AssistNeighbor::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed) return EBTNodeResult::Failed;
 
+	//UE_LOG(LogTemp, Log, TEXT("UAI_Task_AssistNeighbor Execute!!"));
+
 	if (HasReachedNeighborTargetVec(PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(),
 		PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("AssistNeighborMoveTargetVec"))))
 	{
-		// 0 = UpperState : Idle , 1 = LowerState : Default
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1); 
+		UE_LOG(LogTemp, Log, TEXT("Already Neighbor Position Reached"));
+		// Animation : 0 : Idle(UpperState)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0);
 		PrisonerCharacterObj->GetRootComponent()->SetWorldRotation(TargetStructureInfo.TargetRotation);
 
 		// Neighbor Door Picking Montage Play Logic Parts
-		if (!ensure(MyAnimInst)) return EBTNodeResult::Failed;
-		if (MyAnimInst)
-		{
-			MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_AssistNeighbor::OnAssistNeighborMontageEnded);
-			MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_AssistNeighbor::OnAssistNeighborMontageEnded);
 
-			if (!MyAnimInst->Montage_IsPlaying(NeighborDoorPickingMontage))
-				MyAnimInst->Montage_Play(NeighborDoorPickingMontage);
-		}
 	}
 	else
 	{
-		// 2 = UpperState : Move , 5 = LowerState : Run
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+		// Animation : 2 : Move(UpperState)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2);
 		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
 		AdjustTargetPrisonerUniqueNum(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));
 		PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("AssistNeighborMoveTargetVec"), TargetStructureInfo.TargetPosition);
 	}
 
+	/*UE_LOG(LogTemp, Log, TEXT("Location X:%f , Y:%f , Z:%f | %d | Rotation Roll:%f , Pitch:%f , Yaw:%f"), TargetStructureInfo.TargetPosition.X, TargetStructureInfo.TargetPosition.Y, TargetStructureInfo.TargetPosition.Z, TargetStructureInfo.TargetUniqueNum, TargetStructureInfo.TargetRotation.Roll, TargetStructureInfo.TargetRotation.Pitch, TargetStructureInfo.TargetRotation.Yaw);*/
+
 	return EBTNodeResult::Succeeded;
-}
-
-void UUAITask_AssistNeighbor::OnAssistNeighborMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	if (Montage == NeighborDoorPickingMontage)
-	{
-		if (!ensure(MapObjManagerSubSystemInst)) return;
-		AAGrating* TempGrating = MapObjManagerSubSystemInst->GetGratingsMap()[TargetStructureInfo.TargetUniqueNum];
-		TempGrating->GratingOpen();
-
-		APrisonerController* Temp = PrisonerManagerSubSystemInst->GetAllPrisonerControllerArr()[TargetStructureInfo.TargetUniqueNum];
-
-		Temp->State_based_ExecutionTasks_GiventoSomeone(GrantedUpperStates, GrantedLowerStates);
-
-		if (MyAnimInst)
-		{
-			MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_AssistNeighbor::OnAssistNeighborMontageEnded);
-			MyAnimInst->Montage_Pause(NeighborDoorPickingMontage);
-			MyAnimInst->Montage_Stop(0.25f, NeighborDoorPickingMontage);
-		}
-
-		if (PrisonerControllerObj)
-			PrisonerControllerObj->OnTaskFinished.Broadcast();
-	}
 }
 
 void UUAITask_AssistNeighbor::AdjustTargetPrisonerUniqueNum(int32 InMyUniqueNum)

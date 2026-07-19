@@ -19,12 +19,6 @@ class PANVRNATIVEPROJECT_API AAFuelRod : public AVRGrabActorBase , public IIGrab
 	
 public:
 	AAFuelRod();
-
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
-	void HandleGaugeOperation(bool bIsOperFlag);
-
 #pragma region IFunctions
 	// Actor On Grabbed
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
@@ -32,24 +26,28 @@ public:
 	virtual void DestroySelf() override;
 #pragma endregion
 
-#pragma region Getter
-	FORCEINLINE uint32 GetFRIsAttaching() const { return bIsAttaching; }
-	FORCEINLINE bool GetWasLowGaugeFlag() const { return bWasLowGauge; }
-#pragma endregion
+	virtual void Tick(float DeltaTime) override;
+
 #pragma region Setter
-	FORCEINLINE void SetFRIsAttaching(uint32 TempAttaching) { bIsAttaching = TempAttaching; }
+	void SetFRIsAttaching(uint32 TempAttaching);
+#pragma endregion
+
+#pragma region Getter
+	uint32 GetFRIsAttaching() const ;
 #pragma endregion
 
 #pragma region TimelineFunc
-	/*void GaugeOperationStart();
-	void GaugeOperationStop();*/
+	void GaugeOperationStart();
+	void GaugeOperationStop();
 
-protected:
 	UFUNCTION()
 	void GaugeOperatingTimeline(float Value);
+
 #pragma endregion
 
 protected:
+	virtual void BeginPlay() override;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> FRCLStick;
 
@@ -59,7 +57,4 @@ private:
 	UCurveFloat* GaugeMoveCurve;
 	USoundBase* SFXFuelRodLowGauge;
 	bool bWasLowGauge = false;
-
-private:
-
 };

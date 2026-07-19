@@ -20,8 +20,6 @@ void AVRGameMode::InitGameState()
 AVRGameMode::AVRGameMode()
 {
 	DefaultPawnClass = ACVRPawn::StaticClass();
-	bIsGameOverFlag = false;
-	MyVRPawn = nullptr;
 
 	//static ConstructorHelpers::FClassFinder<AActor> PanwFinder_Spectator(TEXT("/Game/VRSpectator/VRSpectator.VRSpectator_C"));
 	//if (PanwFinder_Spectator.Succeeded())
@@ -44,7 +42,6 @@ void AVRGameMode::StartPlay()
 		if (ensure(TempPrisonerManagerPtr))
 		{
 			TempPrisonerManagerPtr->CreateAllPrisoner();
-			TempPrisonerManagerPtr->Create_Paranormal_Phenomenon();
 		}
 
 		if (ensure(TempMapObjManangerPtr))
@@ -53,24 +50,16 @@ void AVRGameMode::StartPlay()
 		}
 	}
 
-	MyVRPawn = Cast<ACVRPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	/*GetWorld()->GetTimerManager().SetTimer(
+		Debug_Delay_Timer,
+		this,
+		&AVRGameMode::Debug_StartPlay_Delay_Func,
+		2.0f,
+		false
+	);*/
 }
 
-void AVRGameMode::GameOverCheckEvent()
+void AVRGameMode::Debug_StartPlay_Delay_Func()
 {
-	if (bIsGameOverFlag)
-	{
-		if (MyVRPawn)
-		{
-			MyVRPawn->HandleDownMovePlayer();
-		}
-		else
-		{
-			return;
-		}
-	}
-	else
-	{
-		return;
-	}
+
 }

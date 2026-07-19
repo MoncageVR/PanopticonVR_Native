@@ -15,7 +15,6 @@ class APrisonerCharacter;
 class UAnimInstance;
 class UMapObjManagerSubsystem;
 class UPrisonerManagerSubsystem;
-class AVRGameMode;
 
 UCLASS()
 class PANVRNATIVEPROJECT_API UUAITask_Base : public UBTTaskNode
@@ -45,7 +44,4 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<UAnimInstance> MyAnimInst;
-
-	UPROPERTY()
-	TObjectPtr<AVRGameMode> MyVRGameMode;
 };

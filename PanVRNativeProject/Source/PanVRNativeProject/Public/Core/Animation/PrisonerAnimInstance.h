@@ -19,9 +19,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
     TArray<bool> PrisonerUpperStateArrs;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "State")
-    TArray<bool> PrisonerLowerStateArrs;
-
     UFUNCTION(BlueprintImplementableEvent, Category = "State")
-    void SetPrisonerUpperStates(int32 InUpperStateIndex,int32 InLowerStateIndex);
+    void SetPrisonerUpperStates(int32 InIndex);
 };

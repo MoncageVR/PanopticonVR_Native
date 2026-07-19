@@ -5,7 +5,6 @@
 #include "CoreObj/VREquipmentWorldSubsystem.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
-#include "Components/SplineComponent.h"
 
 AJailBuilding::AJailBuilding()
 {
@@ -181,43 +180,20 @@ AJailBuilding::AJailBuilding()
 	if (CurveFinder_ExitDoor.Succeeded())
 		MoveTheExitDoorFloatCurve = CurveFinder_ExitDoor.Object;
 
-	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_Hatch(TEXT("/Game/VRContent/Blueprints/TimelineCurve/JailHatchSide_Curve.JailHatchSide_Curve"));
-	if (CurveFinder_Hatch.Succeeded())
-		MoveTheHatchFloatCurve = CurveFinder_Hatch.Object;
-
 	UpwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("UpwardMoveTLComp");
-	UpwardMoveTimelineComp->SetLooping(false);
-	UpwardMoveTimelineComp->SetTimelineLength(1.01f);
-
 	DownwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("DownwardMoveTLComp");
-	DownwardMoveTimelineComp->SetLooping(false);
-	DownwardMoveTimelineComp->SetTimelineLength(1.01f);
-
 	SideWardsMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("SidewardMoveTLComp");
+	UpwardMoveTimelineComp->SetLooping(false);
+	DownwardMoveTimelineComp->SetLooping(false);
 	SideWardsMoveTimelineComp->SetLooping(false);
+	UpwardMoveTimelineComp->SetTimelineLength(1.01f);
+	DownwardMoveTimelineComp->SetTimelineLength(1.01f);
 	SideWardsMoveTimelineComp->SetTimelineLength(4.01f);
-
-	HatchSideWardsMoveTLComp = CreateDefaultSubobject<UTimelineComponent>("HatchSidewardMoveTLComp");
-	HatchSideWardsMoveTLComp->SetLooping(false);
-	HatchSideWardsMoveTLComp->SetTimelineLength(4.01f);
 
 	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_GloveNJail(TEXT("/Game/VRContent/Sound/Wavs/Glove/sfx_glove.sfx_glove"));
 	if (SoundFinder_GloveNJail.Succeeded())
 	{
 		GloveNJailDoorOperationSFX = SoundFinder_GloveNJail.Object;
-	}
-
-	mSpiderManMoveRoute = CreateDefaultSubobject<USplineComponent>("JailSplineComp");
-	if (mSpiderManMoveRoute)
-	{
-		mSpiderManMoveRoute->SetupAttachment(JailMainRoot);
-		mSpiderManMoveRoute->SetRelativeLocation(FVector(0.0f, 0.0f, -134.2f));
-		mSpiderManMoveRoute->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-
-		for (int i = 0; i < 5; i++)
-		{
-			mSpiderManMoveRoute->AddSplineLocalPoint(FVector(0.0f, 0.0f, 0.0f));
-		}
 	}
 }
 
@@ -268,21 +244,6 @@ void AJailBuilding::BeginPlay()
 		SideWardsMoveTimelineComp->SetTimelineFinishedFunc(SidewardFinishedEvent);
 	}
 
-	if (MoveTheHatchFloatCurve)
-	{
-		FOnTimelineFloat HatchSidewardProgressFunc;
-		FOnTimelineEvent HatchSidewardFinishedEvent;
-
-		HatchSidewardProgressFunc.BindUFunction(this, FName("SidewardMoveTheHatchPlayEvent"));
-		HatchSidewardFinishedEvent.BindUFunction(this, FName("SidewardMoveTheHatchFinishedEvent"));
-
-		HatchSideWardsMoveTLComp->AddInterpFloat(MoveTheHatchFloatCurve, HatchSidewardProgressFunc);
-		HatchSideWardsMoveTLComp->SetTimelineFinishedFunc(HatchSidewardFinishedEvent);
-	}
-
-	this->Init_JailSplineAllPointValue();
-	HatchDefaultTransform = this->JailHatch->GetRelativeTransform();
-
 	// Debug
 	/*FTimerHandle TempTimer;
 	GetWorldTimerManager().SetTimer(
@@ -292,6 +253,7 @@ void AJailBuilding::BeginPlay()
 		2.0f,
 		false
 	);*/
+
 }
 
 void AJailBuilding::EquipmentRegistrable(AActor* InActor)
@@ -305,8 +267,10 @@ void AJailBuilding::Tick(float DeltaTime)
 
 }
 
-void AJailBuilding::HandleExitDoor() { MoveTheExitDoorSideward(); }
-void AJailBuilding::HandleHatchDoor() { MoveTheHatchSideward(); }
+void AJailBuilding::HandleExitDoor()
+{
+	MoveTheExitDoorSideward();
+}
 
 void AJailBuilding::InitRefDoorNVector()
 {
@@ -329,49 +293,14 @@ void AJailBuilding::MoveTheDoorUpward()
 	mSoundPlayer->PlaySoundEffect(this, GloveNJailDoorOperationSFX, Jail1FWeaponDoor->GetComponentLocation());
 }
 
-void AJailBuilding::MoveTheDoorDownward() { DownwardMoveTimelineComp->PlayFromStart(); }
-void AJailBuilding::MoveTheExitDoorSideward() { SideWardsMoveTimelineComp->PlayFromStart(); }
-void AJailBuilding::MoveTheHatchSideward() 
+void AJailBuilding::MoveTheDoorDownward()
 {
-	this->JailHatch->SetRelativeTransform(HatchDefaultTransform, false, nullptr, ETeleportType::TeleportPhysics);
-	HatchSideWardsMoveTLComp->PlayFromStart(); 
+	DownwardMoveTimelineComp->PlayFromStart();
 }
 
-// SpiderMan State To Follow Spline Component Point Value Init
-void AJailBuilding::Init_JailSplineAllPointValue()
+void AJailBuilding::MoveTheExitDoorSideward()
 {
-	// 0 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(0, FVector(2110.0f, 0.0f, 2400.0f), ESplineCoordinateSpace::Local, true);
-
-	// 1 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(1, FVector(2110.0f, 0.0f, 2650.0f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetRotationAtSplinePoint(1, FRotator(-90.0f, 0.0f, 180.0f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetTangentsAtSplinePoint(1, FVector(0.0f, 0.0f, 400.0f), FVector(0.0f, 0.0f, 800.0f), ESplineCoordinateSpace::Local, true);
-
-	// 2 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(2, FVector(1050.0f, 0.0f, 3050.0f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetRotationAtSplinePoint(2, FRotator(-90.0f, 0.0f, 180.0f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetTangentsAtSplinePoint(2, FVector(0.f, 0.f, 1600.0f), FVector(0.f, 0.f, 0.f), ESplineCoordinateSpace::Local, true);
-
-	// 3 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(3, FVector(1050.f, 0.f,3500.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetRotationAtSplinePoint(3, FRotator(0.f,-90.f,-90.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetTangentsAtSplinePoint(3, FVector(0.f,-3200.f,-80.f), FVector(0.f,-3200.f,-80.f), ESplineCoordinateSpace::Local, true);
-
-	// 4 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(4, FVector(1050.f,0.f,3850.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetRotationAtSplinePoint(4, FRotator(0.f,-90.f,-90.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetTangentsAtSplinePoint(4, FVector(0.f,0.f,0.f), FVector(0.f, 0.f, 0.f), ESplineCoordinateSpace::Local, true);
-
-	// 5 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(5, FVector(550.f,0.f, 3850.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetRotationAtSplinePoint(5, FRotator(0.f,-90.f,180.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetTangentsAtSplinePoint(5, FVector(0.f,-3200.f,0.f), FVector(0.f, -3200.f, 0.f), ESplineCoordinateSpace::Local, true);
-
-	// 6 Index Spline Point Setting
-	mSpiderManMoveRoute->SetLocationAtSplinePoint(6, FVector(0.f, 0.f, 3850.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetRotationAtSplinePoint(6, FRotator(0.f, -90.f, 180.f), ESplineCoordinateSpace::Local, true);
-	mSpiderManMoveRoute->SetTangentsAtSplinePoint(6, FVector(0.f, 0.f, 0.f), FVector(0.f, 0.f, 0.f), ESplineCoordinateSpace::Local, true);
+	SideWardsMoveTimelineComp->PlayFromStart();
 }
 
 void AJailBuilding::HandleJailReceiveByEB(FName InTag, int32 InFloor)
@@ -440,19 +369,6 @@ void AJailBuilding::SidewardMoveTheExitDoorFinishedEvent()
 	// GameOver Logic(In GameMode?) Execute Parts!
 	UE_LOG(LogTemp, Log, TEXT("GameOver Logic Execute!"));
 	return;
-}
-
-void AJailBuilding::SidewardMoveTheHatchPlayEvent(float Value)
-{
-	this->JailHatch->SetRelativeLocation(
-		FVector(JailHatch->GetRelativeLocation().X, (Value * -100.0f), JailHatch->GetRelativeLocation().Z)
-	);
-}
-
-void AJailBuilding::SidewardMoveTheHatchFinishedEvent()
-{
-	UE_LOG(LogTemp, Log, TEXT("Hatch Move Finished!"));
-	// Game Over Check Logic Execute Parts!
 }
 
 void AJailBuilding::HandleJailReceiveByGlove()

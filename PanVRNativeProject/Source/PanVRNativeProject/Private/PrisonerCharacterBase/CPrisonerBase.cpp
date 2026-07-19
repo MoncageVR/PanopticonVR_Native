@@ -26,9 +26,6 @@ ACPrisonerBase::ACPrisonerBase()
 		SMBeard->SetupAttachment(this->GetMesh(), TEXT("Beard_Socket"));
 		SMHair->SetupAttachment(this->GetMesh(), TEXT("Hair_Socket"));
 	}
-
-	this->GetCapsuleComponent()->ComponentTags.Add(TEXT("PrisonerCharacter"));
-	this->GetMesh()->ComponentTags.Add(TEXT("PrisonerCharacter"));
 }
 
 // Called when the game starts or when spawned

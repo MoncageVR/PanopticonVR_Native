@@ -4,7 +4,6 @@
 #include "Core/Character/PrisonerCharacter.h"
 #include "Core/Character/PrisonerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "PhysicalMaterials/PhysicalMaterial.h"
 
 APrisonerCharacter::APrisonerCharacter()
 {
@@ -27,10 +26,6 @@ APrisonerCharacter::APrisonerCharacter()
 		this->SMMoustache->SetStaticMesh(ModelingFinder_Moustache.Object);
 		this->SMBeard->SetStaticMesh(ModelingFinder_Beard.Object);
 		this->SMHair->SetStaticMesh(ModelingFinder_Hair.Object);
-
-		this->SMMoustache->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		this->SMBeard->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		this->SMHair->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_PrisonerHair(TEXT("/Game/VRContent/Material/SRS_STAGE_PrisonerHair.SRS_STAGE_PrisonerHair"));
@@ -60,17 +55,6 @@ APrisonerCharacter::APrisonerCharacter()
 	{
 		this->GetMesh()->SetAnimClass(ABPFinder_Prisoner.Class);
 	}
-
-	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> MatFinder_PrisonerPhysics(TEXT("/Game/VRContent/Prisoner/PrisonerModeling/TargetModeling/Materials/PrisonerPhysicsMaterial.PrisonerPhysicsMaterial"));
-	if (MatFinder_PrisonerPhysics.Succeeded())
-	{
-		this->GetMesh()->SetPhysMaterialOverride(MatFinder_PrisonerPhysics.Object);
-		this->GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
-		this->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	}
-
-	MeshDefaultRelativePos = this->GetMesh()->GetRelativeLocation();
-	MeshDefaultRelativeRot = this->GetMesh()->GetRelativeRotation();
 }
 
 void APrisonerCharacter::BeginPlay()
@@ -83,9 +67,8 @@ void APrisonerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void APrisonerCharacter::HandleSMHiddenActivation(bool bIsActivateFlag)
+// Debug
+void APrisonerCharacter::TestPrintLog()
 {
-	this->SMMoustache->SetHiddenInGame(bIsActivateFlag);
-	this->SMBeard->SetHiddenInGame(bIsActivateFlag);
-	this->SMHair->SetHiddenInGame(bIsActivateFlag);
+	UE_LOG(LogTemp, Log, TEXT("BT Task Test Node Start!!"));
 }

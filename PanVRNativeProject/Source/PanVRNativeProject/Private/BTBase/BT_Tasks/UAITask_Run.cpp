@@ -14,8 +14,8 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		return EBTNodeResult::Failed;
 	}
 
-	// 2 = UpperState : Move , 5 = LowerState : Run
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+	// Animation : 2 : Move(UpperState)
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2);
 
 	if (HasReachedTargetPos(
 		PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(),
@@ -27,8 +27,6 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	}
 	else
 	{
-		// 2 = UpperState : Move , 5 = LowerState : Run
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
 		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
 		return EBTNodeResult::Succeeded;
 	}
@@ -38,8 +36,7 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 
 const bool UUAITask_Run::HasReachedTargetPos(const FVector InChaVec, const FVector InTargetVec)
 {
-	bool XReturnValue = false;
-	bool YReturnValue = false;
+	bool XReturnValue, YReturnValue = false;
 	if (FMath::IsNearlyEqual(InChaVec.X, InTargetVec.X, 5.0f))
 		XReturnValue = true;
 

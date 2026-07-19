@@ -28,31 +28,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// IIEquipmentInitInterface In Natural Virtual Function Overriding
-	// For Use Delegate System 
+	// For Use Delegate Sysstem 
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
-	void HandleCollisionEnabled(uint8 bIsColActivated);
 #pragma endregion
-
-public:
-#pragma region Getter
-	int32 GetCurrFloorNum() const;
-	int32 GetPressedFloorNum() const;
-#pragma endregion
-
-#pragma region Setter
-	void SetCurrFloorNum(int32 InCurrFloor);
-	void SetPressedFloorNum(int32 InPressFloor);
-#pragma endregion
-
-	UFUNCTION(BlueprintCallable)
-	void Debug_TowerTo_1stFloor();
-
-	UFUNCTION(BlueprintCallable)
-	void Debug_TowerTo_2ndFloor();
-
-	UFUNCTION(BlueprintCallable)
-	void Debug_TowerTo_3rdFloor();
 
 protected:
 #pragma region Components
@@ -137,8 +116,6 @@ private:
 	USoundBase* PullSFX;
 	USoundBase* ButtonPressSFX;
 
-	class ATowerBuilding* TowerBuildingRef;
-
 private:
 	// After overlap End, to give a delay of 1 second.
 	// Using : OverlapDelayTimer
@@ -153,5 +130,20 @@ private:
 
 	// Jail ¡æ EB : Receive Function
 	void HandleEBReceiveByJail(uint8 InEBControlFlag);
+
+public:
+#pragma region Getter
+
+	int32 GetCurrFloorNum() const;
+	int32 GetPressedFloorNum() const;
+
+#pragma endregion
+
+#pragma region Setter
+
+	void SetCurrFloorNum(int32 InCurrFloor);
+	void SetPressedFloorNum(int32 InPressFloor);
+#pragma endregion
+
 
 };

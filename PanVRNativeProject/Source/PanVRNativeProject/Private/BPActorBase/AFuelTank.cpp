@@ -129,14 +129,6 @@ AAFuelTank::AAFuelTank()
 void AAFuelTank::BeginPlay()
 {
 	Super::BeginPlay();
-
-	this->EquipmentRegistrable(this);
-
-	// Debug
-	EquipFuelRod = GetWorld()->SpawnActor<AAFuelRod>(AAFuelRod::StaticClass(), this->GetRootComponent()->GetComponentTransform());
-	EquipFuelRod->SetFRIsAttaching(false);
-	EquipFuelRod->HandleGaugeOperation(true);
-	// Debug
 }
 
 void AAFuelTank::Tick(float DeltaTimes)
@@ -165,11 +157,6 @@ void AAFuelTank::OnDropped()
 	TempMCRef = nullptr;
 	GetWorldTimerManager().PauseTimer(FuelTankMoveTimer);
 	GetWorldTimerManager().ClearTimer(FuelTankMoveTimer);
-}
-
-void AAFuelTank::EquipmentRegistrable(AActor* InActor)
-{
-	Super::EquipmentRegistrable(InActor);
 }
 
 void AAFuelTank::GrabColOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -207,7 +194,7 @@ void AAFuelTank::FuelRodColOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 				EquipFuelRod->GetRootComponent()->SetRelativeLocation(FVector(0.f, 0.f, -11.75f));
 				bIsAttachObjExist = true;
 
-				EquipFuelRod->HandleGaugeOperation(true);
+				EquipFuelRod->GaugeOperationStart();
 			}
 			else
 			{
@@ -226,7 +213,7 @@ void AAFuelTank::FuelRodColOverlapEnd(UPrimitiveComponent* OverlappedComp, AActo
 		mSoundPlayer->PlaySoundEffect(this, SFXFuelRodOut, FTCLRod->GetComponentLocation());
 		bIsAttachObjExist = false;
 		EquipFuelRod->SetFRIsAttaching(0);
-		EquipFuelRod->HandleGaugeOperation(false);
+		EquipFuelRod->GaugeOperationStop();
 		EquipFuelRod = nullptr;
 	}
 }

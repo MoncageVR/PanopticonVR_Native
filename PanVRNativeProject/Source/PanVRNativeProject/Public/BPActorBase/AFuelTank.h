@@ -7,8 +7,6 @@
 #include "Core/Interface/IGrabInterface.h"
 #include "AFuelTank.generated.h"
 
-class AAFuelRod;
-
 /**
  * 
  */
@@ -26,14 +24,6 @@ public:
 	// Actor On Grabbed
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
 	virtual void OnDropped() override;
-
-	// IIEquipmentInitInterface In Natural Virtual Function Overriding
-	// For Use Delegate System 
-	virtual void EquipmentRegistrable(AActor* InActor) override;
-
-#pragma region Getter
-	FORCEINLINE AAFuelRod* GetCurrEquipFuelRod() const { return EquipFuelRod; }
-#pragma endregion
 
 #pragma region Components
 protected:

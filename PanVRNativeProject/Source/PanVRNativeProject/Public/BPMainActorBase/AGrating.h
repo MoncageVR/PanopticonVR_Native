@@ -70,6 +70,16 @@ protected:
 	UFUNCTION()
 	void GratingCloseFinishedEvent();
 
+	UFUNCTION()
+	void GratingColOverlapBegin(
+		class UPrimitiveComponent* OverlappedComp,
+		class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
 private:
 	int32 IndividualNum = 0;
 	FVector FlyDirection;

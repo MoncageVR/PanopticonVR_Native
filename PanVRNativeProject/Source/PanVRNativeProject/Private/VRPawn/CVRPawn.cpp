@@ -16,6 +16,7 @@
 #include "CoreObj/VRGameInstanceSubsystem.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "BPMainActorBase/TowerBuilding.h"
 
 
 ACVRPawn::ACVRPawn()
@@ -42,11 +43,18 @@ ACVRPawn::ACVRPawn()
 		ChairTowerHead->SetRelativeRotation(FRotator(0.f, 180.0f, 0.f));
 	}
 
-	VRPawnMovementTimeline = CreateDefaultSubobject<UTimelineComponent>("VRPawn_TimelineComp");
-	if (VRPawnMovementTimeline)
+	VRPawnUpMovementTimeline = CreateDefaultSubobject<UTimelineComponent>("VRPawn_UpTLComp");
+	if (VRPawnUpMovementTimeline)
 	{
-		VRPawnMovementTimeline->SetLooping(false);
-		VRPawnMovementTimeline->SetTimelineLength(2.01f);
+		VRPawnUpMovementTimeline->SetLooping(false);
+		VRPawnUpMovementTimeline->SetTimelineLength(2.01f);
+	}
+
+	VRPawnDownMovementTimeline = CreateDefaultSubobject<UTimelineComponent>("VRPawn_DownTLComp");
+	if (VRPawnDownMovementTimeline)
+	{
+		VRPawnDownMovementTimeline->SetLooping(false);
+		VRPawnDownMovementTimeline->SetTimelineLength(2.01f);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_MoveUp(TEXT("/Game/VRContent/Blueprints/TimelineCurve/PlayerUpDown_Move_Curve.PlayerUpDown_Move_Curve"));
@@ -151,13 +159,20 @@ void ACVRPawn::BeginPlay()
 	FOnTimelineEvent FinishedEvent;
 	FinishedEvent.BindUFunction(this, FName("VRPawnMoveUpTLEndFunc"));
 
-	VRPawnMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, ChangeValue);
-	VRPawnMovementTimeline->SetTimelineFinishedFunc(FinishedEvent);
+	VRPawnUpMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, ChangeValue);
+	VRPawnUpMovementTimeline->SetTimelineFinishedFunc(FinishedEvent);
 
-	if (VRPawnMovementTimeline)
+	if (VRPawnUpMovementTimeline)
 	{
-		VRPawnMovementTimeline->PlayFromStart();
+		VRPawnUpMovementTimeline->PlayFromStart();
 	}
+
+	FOnTimelineFloat DownMoveChangeValue;
+	FOnTimelineEvent DownMoveFinishedEvent;
+	DownMoveChangeValue.BindUFunction(this, FName("VRPawnMoveDownTLFunc"));
+	DownMoveFinishedEvent.BindUFunction(this, FName("VRPawnMoveDownTLEndFunc"));
+	VRPawnDownMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, DownMoveChangeValue);
+	VRPawnDownMovementTimeline->SetTimelineFinishedFunc(DownMoveFinishedEvent);
 
 	UVREquipmentWorldSubsystem* TempEquipmentWorldSubSytem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	if (TempEquipmentWorldSubSytem)
@@ -181,8 +196,8 @@ void ACVRPawn::Tick(float DeltaTimes)
 {
 	Super::Tick(DeltaTimes);
 
-	if (VRPawnMovementTimeline)
-		VRPawnMovementTimeline->TickComponent(DeltaTimes, ELevelTick::LEVELTICK_TimeOnly, nullptr);
+	if (VRPawnUpMovementTimeline)
+		VRPawnUpMovementTimeline->TickComponent(DeltaTimes, ELevelTick::LEVELTICK_TimeOnly, nullptr);
 
 	ChairBody->SetRelativeRotation(
 		FRotator(
@@ -234,6 +249,19 @@ void ACVRPawn::VRPawnMoveUpTLEndFunc()
 	return;
 }
 
+void ACVRPawn::VRPawnMoveDownTLFunc(float Value)
+{
+	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
+	//UE_LOG(LogTemp, Log, TEXT("%f"), Value);
+}
+
+void ACVRPawn::VRPawnMoveDownTLEndFunc()
+{
+	UE_LOG(LogTemp, Log, TEXT("LobbyMap Open!"));
+	return;
+	//UE_LOG(LogTemp, Log, TEXT("DownMove End"));
+}
+
 void ACVRPawn::PlayerMovingUpAndDownInStage(uint8 InDir)
 {
 	// True : Up 
@@ -272,4 +300,25 @@ void ACVRPawn::HandleMovePlayerToFloor(FName InTag, int32 InTargetFloor)
 			);
 		}
 	}
+}
+
+void ACVRPawn::HandleDownMovePlayer()
+{
+	UVREquipmentWorldSubsystem* TempVREquipmentWorldSubSystemRef = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
+	ATowerBuilding* TempTowerObj = nullptr;
+
+	if (!ensure(TempVREquipmentWorldSubSystemRef)) return;
+	for (IIEquipmentInitInterface* Var : TempVREquipmentWorldSubSystemRef->GetEquipmentArr())
+	{
+		TempTowerObj = Cast<ATowerBuilding>(Var);
+		if (TempTowerObj)
+			break;
+		else
+			continue;
+	}
+
+	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, 2080.0f), false, nullptr, ETeleportType::TeleportPhysics);
+	TempTowerObj->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, 790.f), false, nullptr, ETeleportType::TeleportPhysics);
+
+	VRPawnDownMovementTimeline->ReverseFromEnd();
 }

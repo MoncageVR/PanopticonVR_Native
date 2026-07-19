@@ -1,0 +1,11 @@
+RowName,ActionUpperState,ActionLowerState
+1_Prisoner,"(Interact,Move,Dangerous)","(Doorpicking,Run,Escape)"
+2_Prisoner,"(Confusion,Interact,Interact,Move,Dangerous)","(Roar,Anger,AssistNeighbor,Run,Escape)"
+3_Prisoner,"(Confusion,Confusion,Confusion,Confusion)","(Dance,Roar,Dance,Roar)"
+4_Prisoner,(Confusion),(Hello)
+5_Prisoner,"(Interact,Move,Dangerous)","(Doorpicking,Randommove,TowerRaid)"
+6_Prisoner,"(Confusion,Confusion,Interact,Confusion)","(Streching,Streching,Teleport,Streching)"
+7_Prisoner,"(Dangerous,Interact,Move,Dangerous)","(Radioactivity,Teleport,Floating,Topescape)"
+8_Prisoner,"(Interact,Move,Confusion,Move,Dangerous)","(Doorpicking,Randommove,Roar,Run,Escape)"
+9_Prisoner,(Confusion),(Streching)
+10_Prisoner,"(Interact,Move,Dangerous)","(Doorpicking,Spiderman,Topescape)"

@@ -2,6 +2,9 @@
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
 #include "CoreObj/Manager/MapObjManagerSubsystem.h"
+#include "Core/Character/PrisonerCharacter.h"
+#include "Core/Character/PrisonerController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 AAGrating::AAGrating()
 {
@@ -38,6 +41,7 @@ AAGrating::AAGrating()
 	{
 		ActorBaseMesh->SetupAttachment(StaticMeshSceneRoot);
 		ActorBaseMesh->SetCollisionProfileName(FName("BlockAllDynamic"));
+		ActorBaseMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Hatch(TEXT("/Game/VRContent/Material/SRS_STAGE_hatch.SRS_STAGE_hatch"));
@@ -101,6 +105,8 @@ void AAGrating::BeginPlay()
 		mDownTimelineComp->AddInterpFloat(DownTheGratingFloatCurve, GratingCloseProgressFunc);
 		mDownTimelineComp->SetTimelineFinishedFunc(GratingCloseFinishedEvent);
 	}
+
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AAGrating::GratingColOverlapBegin);
 }
 
 void AAGrating::GratingOpen()
@@ -159,6 +165,34 @@ void AAGrating::GratingCloseFinishedEvent()
 	CollisionComp->SetCollisionProfileName(FName("OverlapAll"));
 	ActorBaseMesh->SetCollisionProfileName(FName("BlockAllDynamic"));
 	bIsGratingOpen = 0;
+}
+
+void AAGrating::GratingColOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->ComponentHasTag(TEXT("PrisonerCharacter")))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Prisoner Overlap Begin"));
+
+		APrisonerCharacter* TempCha = Cast<APrisonerCharacter>(OtherActor);
+		if (!ensure(TempCha)) return;
+		AAIController* TempAIController = Cast<AAIController>(TempCha->GetController());
+		if (!ensure(TempAIController)) return;
+		APrisonerController* TempFinalChaController = Cast<APrisonerController>(TempAIController);
+		if (!ensure(TempFinalChaController)) return;
+
+		if (this->IndividualNum == TempFinalChaController->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")))// &&TempFinalChaController->GetCurrLowerState() == 3)
+		{
+			this->GratingOpen();
+		}
+
+		/*UE_LOG(LogTemp, Log, TEXT("Prisoner Lower State : %d"), TempFinalChaController->GetCurrLowerState());
+			UE_LOG(LogTemp, Log, TEXT("Grating Num : %d"), this->IndividualNum);
+			UE_LOG(LogTemp, Log, TEXT("Prisoner Num : %d"), TempFinalChaController->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));*/
+	}
+	else
+	{
+		return;
+	}
 }
 
 void AAGrating::GratingFly(int32 InIndex)

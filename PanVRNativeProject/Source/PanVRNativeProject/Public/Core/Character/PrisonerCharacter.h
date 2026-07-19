@@ -13,20 +13,26 @@ UCLASS()
 class PANVRNATIVEPROJECT_API APrisonerCharacter : public ACPrisonerBase
 {
 	GENERATED_BODY()
-	
 
 public:
 	APrisonerCharacter();
 
 	virtual void BeginPlay() override;
-
 	virtual void Tick(float DeltaTime) override;
 
-	void TestPrintLog();
+	void HandleSMHiddenActivation(bool bIsActivateFlag);
 
-private:
+#pragma region Getter
+	FORCEINLINE FVector GetMeshDefaultPos() const { return MeshDefaultRelativePos; }
+	FORCEINLINE FRotator GetMeshDefaultRot() const { return MeshDefaultRelativeRot; }
+#pragma endregion
+
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class APrisonerController* PrisonerControllerComp;
+
+private:
+	FVector MeshDefaultRelativePos;
+	FRotator MeshDefaultRelativeRot;
 };

@@ -6,4 +6,5 @@
 UPrisonerAnimInstance::UPrisonerAnimInstance()
 {
 	PrisonerUpperStateArrs.Init(false, 6);
+	PrisonerLowerStateArrs.Init(false, 25);
 }

@@ -22,6 +22,14 @@ public:
 	// Call The MoveTheExitDoorSideward Handle Function, 
 	void HandleExitDoor();
 
+	// Call The MoveTheHatchSideward Handle Function, 
+	void HandleHatchDoor();
+
+#pragma region Getter
+	TObjectPtr<class USplineComponent> GetSpiderManMoveRouteComp() const { return mSpiderManMoveRoute; }
+	TObjectPtr<class UStaticMeshComponent> GetHatchSMComp() const { return JailHatch; }
+#pragma endregion
+
 protected:
 	// Scene Component Variables
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
@@ -65,6 +73,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
 	TObjectPtr<class UBoxComponent> CLSubdueHatch;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USplineComponent> mSpiderManMoveRoute;
+
 #pragma region TimelineComp
 protected:
 	UPROPERTY()
@@ -77,10 +88,16 @@ protected:
 	TObjectPtr<class UTimelineComponent> SideWardsMoveTimelineComp;
 
 	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> HatchSideWardsMoveTLComp;
+
+	UPROPERTY()
 	TObjectPtr<UCurveFloat> MoveTheWeaponDoorFloatCurve;
 
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> MoveTheExitDoorFloatCurve;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> MoveTheHatchFloatCurve;
 
 	UFUNCTION()
 	void UpwardMoveTheDoorPlayEvent(float Value);
@@ -100,6 +117,12 @@ protected:
 	UFUNCTION()
 	void SidewardMoveTheExitDoorFinishedEvent();
 
+	UFUNCTION()
+	void SidewardMoveTheHatchPlayEvent(float Value);
+
+	UFUNCTION()
+	void SidewardMoveTheHatchFinishedEvent();
+
 #pragma endregion
 
 	// Glove ¡æ Jail : Receive Function
@@ -113,24 +136,24 @@ protected:
 	UFUNCTION()
 	void HandleJailReceiveByEB(FName InTag, int32 InFloor);
 
-
-
 private:
 	TArray<TObjectPtr<UStaticMeshComponent>> SMWeaponDoorArrs;
 	TArray<FVector> TargetDownVecArrs;
 	TArray<FVector> TargetUpVecArrs;
-
 	int32 CurrFloorNum = 3;
-
 	USoundBase* GloveNJailDoorOperationSFX;
+	FTransform HatchDefaultTransform;
 
 private:
 	void InitRefDoorNVector();
-
 	// Upward Move Call Function In Use Timeline PlayFromStart
 	void MoveTheDoorUpward();
 	// Downward Move Call Function In Use Timeline PlayFromStart
 	void MoveTheDoorDownward();
 	// Sideward Move Call Function In Use Timeline PlayFromStart
 	void MoveTheExitDoorSideward();
+
+	void MoveTheHatchSideward();
+
+	void Init_JailSplineAllPointValue();
 };

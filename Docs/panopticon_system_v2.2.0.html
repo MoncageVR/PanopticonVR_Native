@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>판옵티콘 VR — 연출·저장 시스템 기획서</title>
+<style>
+  :root {
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3350;
+    --accent:#e8a838; --accent2:#5b8dee; --accent3:#4caf7d;
+    --text:#e4e6f0; --text-muted:#7a7f9a;
+    --tbd:#e85c5c; --wip:#e8a838; --ok:#4caf7d;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Pretendard','Noto Sans KR',sans-serif;font-size:14px;line-height:1.7}
+  .layout{display:flex;min-height:100vh}
+  .sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+  .main{flex:1;padding:40px 48px;max-width:980px}
+  .sidebar-title{padding:0 20px 16px;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--accent);text-transform:uppercase;border-bottom:1px solid var(--border);margin-bottom:12px}
+  .toc-list{list-style:none}
+  .toc-list a{display:block;padding:5px 20px;color:var(--text-muted);text-decoration:none;font-size:13px;transition:all .15s}
+  .toc-list a:hover{color:var(--text);background:var(--surface2)}
+  .toc-list a.h3{padding-left:34px;font-size:12px}
+  .toc-list a.active{color:var(--accent);border-left:2px solid var(--accent)}
+  .doc-header{margin-bottom:40px;padding-bottom:24px;border-bottom:2px solid var(--border)}
+  .doc-header h1{font-size:26px;font-weight:800;color:var(--accent);margin-bottom:8px}
+  .doc-header .subtitle{color:var(--text-muted);font-size:13px;margin-bottom:16px}
+  .doc-meta{display:flex;gap:12px;flex-wrap:wrap}
+  .doc-meta span{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 10px;font-size:12px;color:var(--text-muted)}
+  .doc-meta .version{color:var(--accent);border-color:var(--accent)}
+  .warning-banner{background:rgba(232,88,88,.08);border:1px solid rgba(232,88,88,.3);border-radius:6px;padding:12px 16px;margin-bottom:32px;font-size:13px;color:#e88888}
+  .restrict-banner{background:rgba(232,88,88,.12);border:2px solid rgba(232,88,88,.5);border-radius:6px;padding:14px 18px;margin:16px 0 20px;font-size:13px;color:#ff9090}
+  .restrict-banner strong{display:block;font-size:14px;margin-bottom:4px;color:#ff6b6b}
+  .section{margin-bottom:56px}
+  h2{font-size:20px;font-weight:700;color:var(--accent);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid var(--border);scroll-margin-top:24px}
+  h3{font-size:15px;font-weight:700;color:var(--accent2);margin:28px 0 12px;scroll-margin-top:24px}
+  h4{font-size:13px;font-weight:700;color:var(--text);margin:16px 0 8px}
+  p{margin-bottom:10px}
+  .status-tbd{background:rgba(232,88,88,.15);color:var(--tbd);border-radius:3px;padding:1px 6px;font-size:11px;font-weight:700}
+  .status-wip{background:rgba(232,168,56,.15);color:var(--wip);border-radius:3px;padding:1px 6px;font-size:11px;font-weight:700}
+  .status-ok{background:rgba(76,175,125,.15);color:var(--ok);border-radius:3px;padding:1px 6px;font-size:11px;font-weight:700}
+  .status-done{background:rgba(91,141,238,.15);color:var(--accent2);border-radius:3px;padding:1px 6px;font-size:11px;font-weight:700}
+  .status-none{background:rgba(122,127,154,.15);color:var(--text-muted);border-radius:3px;padding:1px 6px;font-size:11px;font-weight:700}
+  table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:13px}
+  th{background:var(--surface2);color:var(--accent);font-weight:700;padding:9px 12px;text-align:left;border:1px solid var(--border)}
+  td{padding:8px 12px;border:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+  .impl-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px}
+  .impl-block .ib-header{background:var(--surface2);padding:10px 16px;font-size:13px;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+  .impl-block .ib-body{padding:16px}
+  .step-list{list-style:none;counter-reset:step}
+  .step-list li{counter-increment:step;padding:8px 0 8px 36px;position:relative;border-bottom:1px solid var(--border);font-size:13px}
+  .step-list li:last-child{border-bottom:none}
+  .step-list li::before{content:counter(step);position:absolute;left:0;top:10px;width:22px;height:22px;background:var(--accent2);color:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+  code{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:'JetBrains Mono','Consolas',monospace;font-size:12px;color:var(--accent2)}
+  .info-box{background:rgba(91,141,238,.08);border:1px solid rgba(91,141,238,.25);border-radius:6px;padding:12px 16px;margin:12px 0;font-size:13px}
+  .warn-box{background:rgba(232,168,56,.08);border:1px solid rgba(232,168,56,.25);border-radius:6px;padding:12px 16px;margin:12px 0;font-size:13px}
+  .ok-box{background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.25);border-radius:6px;padding:12px 16px;margin:12px 0;font-size:13px}
+  .var-table td:first-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent3)}
+  .var-table td:nth-child(2){color:var(--accent2);font-size:12px}
+  .figma-embed-wrap { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin:16px 0; }
+  .figma-embed-wrap iframe { display:block; width:100%; height:480px; border:none; }
+  .figma-embed-label { padding:8px 14px; font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:.06em; background:var(--surface2); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:6px; }
+  .figma-embed-label::before { content:""; display:inline-block; width:10px; height:10px; background:#5b8dee; border-radius:50%; }
+  .mock-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin:16px 0;overflow-x:auto}
+  .mock-title{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:12px;letter-spacing:.05em}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="sidebar">
+  <div class="sidebar-title">판옵티콘 VR · 시스템</div>
+  <ul class="toc-list" id="toc"></ul>
+</nav>
+<main class="main">
+
+<!-- ───── HEADER ───── -->
+<div class="doc-header">
+  <h1>판옵티콘 VR — 연출·저장 시스템 기획서</h1>
+  <div class="subtitle">MONCAGE · Direction System &amp; Save System</div>
+  <div class="doc-meta">
+    <span class="version">v2.2.0</span>
+    <span>2026-04-29</span>
+    <span>김재현</span>
+    <span>연출 16종 · 저장 시스템 완료</span>
+  </div>
+</div>
+
+<div class="warning-banner">
+  ⚠️ 미완성 항목 5건 (TBD 3, WIP 2) — 게임오버 대사 WAV 미제작, 테이프 사출 세부 TBD, TUTO 4 연출 TBD, 모니터 UI 배치 WIP, EndReason 코드 WIP
+</div>
+
+<!-- ═══════════════════════════════════
+     1. 연출 시스템 개요
+═══════════════════════════════════ -->
+<div class="section" id="dir-overview">
+  <h2>1. 연출 시스템 개요</h2>
+  <p>스토리·튜토리얼 진행에 필요한 연출 기능 모음. 각 기능을 독립 컴포넌트로 구현하고, 시나리오 기획서의 <code>행동</code> 컬럼 값으로 호출한다.</p>
+
+  <div class="restrict-banner">
+    <strong>🚫 연출 구현 제한 — 포스트 프로세싱 기반 구현 전면 금지</strong>
+    Meta Quest VR 하드웨어의 GPU 한계로 인해 모든 연출에서 포스트 프로세싱(Post Processing) 기반 구현을 사용해서는 안 된다. 이는 심각한 성능 저하 및 멀미를 유발한다. 잠망경 마스킹, 화면 글리치 등 시각 효과 전부에 해당하며, 반드시 대체 구현 방식을 사용한다.
+  </div>
+
+  <h3 id="dir-list">연출 기능 목록</h3>
+  <table>
+    <thead><tr><th>#</th><th>기능명</th><th>분류</th><th>상태</th><th>주요 사용처</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>죄수 글리치</td><td>이펙트</td><td><span class="status-ok">기획완료</span></td><td>챕터 1, 챕터 3</td></tr>
+      <tr><td>2</td><td>화면 글리치</td><td>이펙트</td><td><span class="status-ok">기획완료</span></td><td>챕터 2, 챕터 3</td></tr>
+      <tr><td>3</td><td>테이프 사출</td><td>인터랙션</td><td><span class="status-ok">기획완료</span></td><td>챕터 1 이후 매 클리어</td></tr>
+      <tr><td>4</td><td>대사 시스템 (글자)</td><td>UI</td><td><span class="status-ok">기획완료</span></td><td>전 챕터·튜토리얼</td></tr>
+      <tr><td>5</td><td>대사 시스템 (사운드)</td><td>오디오</td><td><span class="status-ok">기획완료</span></td><td>전 챕터·튜토리얼</td></tr>
+      <tr><td>6</td><td>모니터 스프라이트 표시</td><td>UI</td><td><span class="status-ok">기획완료</span></td><td>로비·스테이지 전반</td></tr>
+      <tr><td>7</td><td>씬 이동</td><td>시스템</td><td><span class="status-ok">기획완료</span></td><td>전 챕터</td></tr>
+      <tr><td>8</td><td>페이드 인-아웃</td><td>연출</td><td><span class="status-ok">기획완료</span></td><td>챕터 1·2·3 엔딩</td></tr>
+      <tr><td>9</td><td>멈춤 (시간정지)</td><td>시스템</td><td><span class="status-ok">기획완료</span></td><td>챕터 2</td></tr>
+      <tr><td>10</td><td>화살표 표시</td><td>UI</td><td><span class="status-ok">기획완료</span></td><td>TUTO 1·2·3</td></tr>
+      <tr><td>11</td><td>빔프 스크린</td><td>인터랙션</td><td><span class="status-ok">기획완료</span></td><td>TUTO 1</td></tr>
+      <tr><td>12</td><td>시스템 안내말</td><td>UI</td><td><span class="status-ok">기획완료</span></td><td>TUTO 0~4</td></tr>
+      <tr><td>13</td><td>제압장비 정지</td><td>시스템</td><td><span class="status-ok">기획완료</span></td><td>챕터 2 레버 비활성화</td></tr>
+      <tr><td>14</td><td>죄수 다른 텍스처</td><td>렌더링</td><td><span class="status-ok">기획완료</span></td><td>챕터 3 글리치 죄수</td></tr>
+      <tr><td>15</td><td>죄수 특정 행동 반복</td><td>AI</td><td><span class="status-ok">기획완료</span></td><td>TUTO 2 문따기 루프</td></tr>
+      <tr><td>16</td><td>시설 전체 흔들림</td><td>이펙트</td><td><span class="status-ok">기획완료</span></td><td>챕터 3 팩스 공격</td></tr>
+      <tr><td>17</td><td>게임오버 연출 (시간 딜레이션)</td><td>시스템</td><td><span class="status-ok">기획완료</span></td><td>스테이지 전체 - 죄수 탈출 시 (→ 1-1 참조)</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 1-1 게임오버 연출 -->
+  <h3 id="dir-gameover">1-1. 게임오버 연출</h3>
+  <div class="impl-block">
+    <div class="ib-header">💀 게임오버 연출 — 오버워치 매치종료 모티브</div>
+    <div class="ib-body">
+      <h4>개요</h4>
+      <p>오버워치의 매치 종료 연출을 모티브로 한다. 월드 틱 타임(World Tick Time)을 낮춰 시간이 느려지는 듯한 슬로모션 연출 이후 게임을 종료한다. 포스트 프로세싱 없이 UE 월드 타임 딜레이션으로만 구현한다.</p>
+      <h4>진행 순서</h4>
+      <ol class="step-list">
+        <li>탈출 감지 → 게임오버 조건 충족</li>
+        <li><strong>4초간 월드 틱 타임을 기존의 0.1 수준으로 낮춤</strong> (슬로모션 효과)</li>
+        <li>게임오버 모델링 표시 (평상시 Hidden 상태로 씬에 배치, 이 시점에 Visible로 전환)</li>
+        <li>잭 대사 WAV 1회 재생: <em>"오 이런 정말 실망스럽군요.. 정말로"</em></li>
+        <li>슬로모션 종료 → 로비 이동</li>
+      </ol>
+      <h4>구현 방식 비고</h4>
+      <div class="info-box">
+        게임오버 모델링은 씬에 평상시 숨겨두고(SetActorHiddenInGame = true) 게임오버 시 표시하는 방식을 권장. 동적 스폰보다 기기 부하가 적다.<br><br>
+        <strong>게임오버 모델링 정체:</strong> 표시되는 오브젝트의 구체적 형태 (잭 얼굴 대형 화면 연출, 전광판 텍스트, 별도 3D 오브젝트 등) 미정 <span class="status-tbd">TBD</span><br><br>
+        <strong>참고:</strong> UE5 Global Time Dilation — <a href="https://dev.epicgames.com/documentation/ko-kr/unreal-engine/time-dilation-in-unreal-engine" target="_blank">dev.epicgames.com/…/time-dilation</a>
+      </div>
+      <h4>미결 사항</h4>
+      <div class="warn-box">게임오버 대사 WAV 파일 미제작 <span class="status-tbd">TBD</span></div>
+    </div>
+  </div>
+
+  <!-- 1-2 모니터 배치 목차 -->
+  <h3 id="dir-monitor-list">1-2. 모니터 배치 목차</h3>
+  <table>
+    <thead><tr><th>구역</th><th>모니터 ID</th><th>표시 정보</th><th>무한모드 전용</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="7"><strong>로비</strong></td><td>L-01</td><td>판옵티콘 로고</td><td>—</td></tr>
+      <tr><td>L-02</td><td>설정</td><td>—</td></tr>
+      <tr><td>L-03</td><td>잭 얼굴 (평소 OFF)</td><td>—</td></tr>
+      <tr><td>L-04</td><td>현재 입력 테이프 정보</td><td>—</td></tr>
+      <tr><td>L-05</td><td>이전 스테이지 성공/실패 여부 · 게임오버 이유</td><td>—</td></tr>
+      <tr><td>L-06</td><td>이전 무한모드 점수</td><td>✅</td></tr>
+      <tr><td>L-07</td><td>무한모드 기록 (최고점·최장시간 등)</td><td>✅</td></tr>
+      <tr><td rowspan="4"><strong>인게임<br>(근무중)</strong></td><td>I-01</td><td>잭 얼굴 (스토리 대사 시 표시)</td><td>—</td></tr>
+      <tr><td>I-02</td><td>타이머</td><td>—</td></tr>
+      <tr><td>I-03</td><td>발생한 탈옥 종류</td><td>—</td></tr>
+      <tr><td>I-04</td><td>발생한 탈옥 층</td><td>—</td></tr>
+    </tbody>
+  </table>
+  <div class="warn-box">모니터별 물리 위치(좌표) 및 크기는 레벨 배치 단계에서 확정 필요 <span class="status-wip">WIP</span></div>
+
+  <!-- 로비 SVG 목업 -->
+  <h3 id="dir-lobby-mock">1-3. 로비 모니터 배치 목업</h3>
+  <div class="mock-wrap">
+    <div class="mock-title">LOBBY CONTROL PANEL — 정면 와이어프레임</div>
+    <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block">
+      <defs>
+        <style>
+          .mock-bg{fill:#12151f}
+          .panel{fill:#1a1d27;stroke:#2e3350;stroke-width:1.5}
+          .mon{fill:#0f1117;stroke:#2e3350;stroke-width:1.5;rx:4}
+          .mon-on{fill:#0f1117;stroke:#5b8dee;stroke-width:1.5}
+          .mon-off{fill:#0f1117;stroke:#2e3350;stroke-width:1;opacity:.6}
+          .mon-inf{fill:#0f1117;stroke:#e8a838;stroke-width:1.5;stroke-dasharray:4 2}
+          .mon-label{fill:#7a7f9a;font-family:monospace;font-size:9px}
+          .mon-id{fill:#5b8dee;font-family:monospace;font-size:9px;font-weight:bold}
+          .mon-inf-label{fill:#e8a838;font-family:monospace;font-size:9px;font-weight:bold}
+          .desk{fill:#22263a;stroke:#2e3350;stroke-width:1.5}
+          .tape-slot{fill:#0a0c14;stroke:#5b8dee;stroke-width:1.5;rx:3}
+          .anno{fill:#4caf7d;font-family:sans-serif;font-size:10px}
+          .wall-label{fill:#3a3e55;font-family:sans-serif;font-size:10px;font-style:italic}
+          .divider{stroke:#2e3350;stroke-width:1;stroke-dasharray:3 3}
+        </style>
+      </defs>
+      <!-- background -->
+      <rect width="760" height="360" class="mock-bg" rx="8"/>
+      <!-- floor label -->
+      <text x="20" y="24" class="wall-label">[ 로비 컨트롤 패널 정면 ]</text>
+      <text x="20" y="38" class="wall-label">3F 조종석</text>
+
+      <!-- ── 벽면 상단 모니터 3개 ── -->
+      <!-- L-01 로고 -->
+      <rect x="60" y="50" width="160" height="100" class="mon-on" rx="4"/>
+      <text x="140" y="95" text-anchor="middle" class="mon-id">L-01</text>
+      <text x="140" y="111" text-anchor="middle" class="mon-label">판옵티콘 로고</text>
+      <!-- logo decoration -->
+      <polygon points="140,68 155,88 125,88" fill="none" stroke="#5b8dee" stroke-width="1.5"/>
+      <circle cx="140" cy="80" r="4" fill="#5b8dee" opacity=".5"/>
+
+      <!-- L-02 설정 -->
+      <rect x="300" y="50" width="160" height="100" class="mon-on" rx="4"/>
+      <text x="380" y="95" text-anchor="middle" class="mon-id">L-02</text>
+      <text x="380" y="111" text-anchor="middle" class="mon-label">설정 / SETTINGS</text>
+      <text x="340" y="75" class="mon-label">⚙ 볼륨</text>
+      <text x="340" y="87" class="mon-label">⚙ 컨트롤러 진동</text>
+      <text x="340" y="99" class="mon-label">⚙ 기타</text>
+
+      <!-- L-03 잭 얼굴 (평소 OFF) -->
+      <rect x="540" y="50" width="160" height="100" class="mon-off" rx="4"/>
+      <text x="620" y="88" text-anchor="middle" class="mon-label" opacity=".5">L-03</text>
+      <text x="620" y="102" text-anchor="middle" class="mon-label" opacity=".5">잭 얼굴 (평소 OFF)</text>
+      <text x="620" y="120" text-anchor="middle" style="fill:#2e3350;font-size:20px">■</text>
+
+      <!-- ── 중단 모니터 ── -->
+      <!-- L-04 테이프 정보 -->
+      <rect x="60" y="175" width="200" height="100" class="mon-on" rx="4"/>
+      <text x="160" y="200" text-anchor="middle" class="mon-id">L-04</text>
+      <text x="160" y="214" text-anchor="middle" class="mon-label">현재 입력 테이프 정보</text>
+      <!-- tape slot indicator -->
+      <rect x="80" y="222" width="160" height="36" class="tape-slot"/>
+      <text x="160" y="234" text-anchor="middle" style="fill:#5b8dee;font-size:9px;font-family:monospace">▶ T_STG_01</text>
+      <text x="160" y="247" text-anchor="middle" style="fill:#7a7f9a;font-size:8px;font-family:monospace">Sleeping Beast</text>
+
+      <!-- L-05 이전 결과 -->
+      <rect x="290" y="175" width="180" height="100" class="mon-on" rx="4"/>
+      <text x="380" y="200" text-anchor="middle" class="mon-id">L-05</text>
+      <text x="380" y="213" text-anchor="middle" class="mon-label">이전 스테이지 결과</text>
+      <text x="310" y="230" class="mon-label">결과: ✗ 실패</text>
+      <text x="310" y="243" class="mon-label">이유: 죄수 탈출</text>
+      <text x="310" y="256" class="mon-label">3층 — 문따기</text>
+      <text x="310" y="269" class="mon-label" style="fill:#e85c5c">GAME OVER</text>
+
+      <!-- L-06 무한모드 점수 (전용) -->
+      <rect x="500" y="175" width="130" height="46" class="mon-inf" rx="4"/>
+      <text x="565" y="193" text-anchor="middle" class="mon-inf-label">L-06 · INF</text>
+      <text x="565" y="208" text-anchor="middle" class="mon-label">이전 무한모드 점수</text>
+      <text x="565" y="220" text-anchor="middle" style="fill:#e8a838;font-size:10px;font-family:monospace">12,450 PT</text>
+
+      <!-- L-07 무한모드 기록 (전용) -->
+      <rect x="500" y="229" width="130" height="46" class="mon-inf" rx="4"/>
+      <text x="565" y="247" text-anchor="middle" class="mon-inf-label">L-07 · INF</text>
+      <text x="565" y="260" text-anchor="middle" class="mon-label">무한모드 최고기록</text>
+      <text x="565" y="274" text-anchor="middle" style="fill:#e8a838;font-size:9px;font-family:monospace">BEST 15,200 · 8m 42s</text>
+
+      <!-- ── 데스크 ── -->
+      <rect x="40" y="296" width="680" height="44" class="desk" rx="4"/>
+      <text x="380" y="322" text-anchor="middle" style="fill:#3a3e55;font-size:10px;font-family:sans-serif">CONTROL DESK</text>
+
+      <!-- 테이프 투입구 -->
+      <rect x="320" y="302" width="120" height="30" class="tape-slot"/>
+      <text x="380" y="316" text-anchor="middle" style="fill:#5b8dee;font-size:9px;font-family:monospace">TAPE SLOT</text>
+      <text x="380" y="328" text-anchor="middle" style="fill:#7a7f9a;font-size:8px;font-family:monospace">← 테이프 투입구 →</text>
+
+      <!-- 레버 -->
+      <rect x="680" y="302" width="30" height="30" style="fill:#22263a;stroke:#4caf7d;stroke-width:1.5" rx="4"/>
+      <text x="695" y="314" text-anchor="middle" style="fill:#4caf7d;font-size:8px;font-family:monospace">LVR</text>
+      <text x="695" y="326" text-anchor="middle" style="fill:#4caf7d;font-size:7px;font-family:monospace">출근</text>
+
+      <!-- 범례 -->
+      <rect x="40" y="348" width="10" height="6" style="fill:#0f1117;stroke:#5b8dee;stroke-width:1.5" rx="1"/>
+      <text x="56" y="356" class="mono-label" style="fill:#7a7f9a;font-size:9px">활성 모니터</text>
+      <rect x="130" y="348" width="10" height="6" style="fill:#0f1117;stroke:#2e3350;stroke-width:1;opacity:.6" rx="1"/>
+      <text x="146" y="356" style="fill:#7a7f9a;font-size:9px">비활성 (평소 꺼짐)</text>
+      <rect x="250" y="348" width="10" height="6" style="fill:#0f1117;stroke:#e8a838;stroke-width:1.5;stroke-dasharray:3 2" rx="1"/>
+      <text x="266" y="356" style="fill:#e8a838;font-size:9px">무한모드 전용</text>
+    </svg>
+  </div>
+
+  <!-- 인게임 SVG 목업 -->
+  <h3 id="dir-ingame-mock">1-4. 인게임 스테이지 모니터 배치 목업</h3>
+  <div class="mock-wrap">
+    <div class="mock-title">IN-GAME STAGE MONITOR — 근무 중 정면 와이어프레임</div>
+    <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block">
+      <defs>
+        <style>
+          .ig-bg{fill:#12151f}
+          .ig-mon{fill:#0f1117;stroke:#5b8dee;stroke-width:1.5}
+          .ig-mon-warn{fill:#0f1117;stroke:#e8a838;stroke-width:1.5}
+          .ig-label{fill:#7a7f9a;font-family:monospace;font-size:9px}
+          .ig-id{fill:#5b8dee;font-family:monospace;font-size:10px;font-weight:bold}
+          .ig-desk{fill:#22263a;stroke:#2e3350;stroke-width:1.5}
+        </style>
+      </defs>
+      <rect width="760" height="280" class="ig-bg" rx="8"/>
+      <text x="20" y="24" style="fill:#3a3e55;font-size:10px;font-family:sans-serif;font-style:italic">[ 인게임 스테이지 — 근무 중 컨트롤 패널 ]</text>
+
+      <!-- I-01 잭 얼굴 -->
+      <rect x="60" y="45" width="180" height="140" class="ig-mon" rx="4"/>
+      <text x="150" y="70" text-anchor="middle" class="ig-id">I-01</text>
+      <text x="150" y="84" text-anchor="middle" class="ig-label">잭 얼굴 모니터</text>
+      <text x="150" y="99" text-anchor="middle" class="ig-label">(스토리 대사 시 표시)</text>
+      <!-- 잭 얼굴 placeholder -->
+      <rect x="95" y="108" width="110" height="60" style="fill:#22263a;stroke:#2e3350;stroke-width:1" rx="4"/>
+      <text x="150" y="133" text-anchor="middle" style="fill:#7a7f9a;font-size:22px">👾</text>
+      <text x="150" y="163" text-anchor="middle" style="fill:#3a3e55;font-size:9px;font-family:monospace">JACK.AI v2.7</text>
+
+      <!-- I-02 타이머 -->
+      <rect x="280" y="45" width="200" height="60" class="ig-mon" rx="4"/>
+      <text x="380" y="67" text-anchor="middle" class="ig-id">I-02</text>
+      <text x="380" y="80" text-anchor="middle" class="ig-label">타이머</text>
+      <text x="380" y="100" text-anchor="middle" style="fill:#e4e6f0;font-size:22px;font-family:monospace;font-weight:bold">08:42</text>
+
+      <!-- I-03 탈옥 종류 -->
+      <rect x="280" y="125" width="200" height="60" class="ig-mon-warn" rx="4"/>
+      <text x="380" y="147" text-anchor="middle" style="fill:#e8a838;font-family:monospace;font-size:10px;font-weight:bold">I-03</text>
+      <text x="380" y="160" text-anchor="middle" class="ig-label">발생 탈옥 종류</text>
+      <text x="300" y="178" class="ig-label" style="fill:#e85c5c">▶ 문따기</text>
+      <text x="360" y="178" class="ig-label" style="fill:#e85c5c">▶ 달리기</text>
+
+      <!-- I-04 탈옥 층 -->
+      <rect x="520" y="45" width="200" height="140" class="ig-mon-warn" rx="4"/>
+      <text x="620" y="68" text-anchor="middle" style="fill:#e8a838;font-family:monospace;font-size:10px;font-weight:bold">I-04</text>
+      <text x="620" y="82" text-anchor="middle" class="ig-label">발생 탈옥 층</text>
+      <!-- floor grid 3x8 mini -->
+      <g transform="translate(545,92)">
+        <text x="65" y="10" text-anchor="middle" style="fill:#5b8dee;font-size:8px;font-family:monospace">3F</text>
+        <rect x="0" y="14" width="130" height="24" style="fill:#22263a;stroke:#2e3350;stroke-width:.8" rx="2"/>
+        <text x="65" y="30" text-anchor="middle" style="fill:#7a7f9a;font-size:8px;font-family:monospace">안전</text>
+        <text x="65" y="42" text-anchor="middle" style="fill:#5b8dee;font-size:8px;font-family:monospace">2F</text>
+        <rect x="0" y="46" width="130" height="24" style="fill:#3a1e1e;stroke:#e85c5c;stroke-width:1" rx="2"/>
+        <text x="65" y="62" text-anchor="middle" style="fill:#e85c5c;font-size:8px;font-family:monospace;font-weight:bold">⚠ 탈옥 감지</text>
+        <text x="65" y="78" text-anchor="middle" style="fill:#5b8dee;font-size:8px;font-family:monospace">1F</text>
+        <rect x="0" y="82" width="130" height="24" style="fill:#22263a;stroke:#2e3350;stroke-width:.8" rx="2"/>
+        <text x="65" y="98" text-anchor="middle" style="fill:#7a7f9a;font-size:8px;font-family:monospace">안전</text>
+      </g>
+
+      <!-- 데스크 -->
+      <rect x="40" y="210" width="680" height="40" class="ig-desk" rx="4"/>
+      <text x="380" y="234" text-anchor="middle" style="fill:#3a3e55;font-size:10px;font-family:sans-serif">IN-GAME CONTROL DESK</text>
+      <!-- 레버 -->
+      <rect x="680" y="216" width="28" height="28" style="fill:#22263a;stroke:#4caf7d;stroke-width:1.5" rx="4"/>
+      <text x="694" y="227" text-anchor="middle" style="fill:#4caf7d;font-size:7px;font-family:monospace">LVR</text>
+      <text x="694" y="239" text-anchor="middle" style="fill:#4caf7d;font-size:7px;font-family:monospace">시작</text>
+
+      <!-- 범례 -->
+      <rect x="40" y="262" width="8" height="6" style="fill:#0f1117;stroke:#5b8dee;stroke-width:1.5" rx="1"/>
+      <text x="52" y="270" style="fill:#7a7f9a;font-size:9px">일반</text>
+      <rect x="90" y="262" width="8" height="6" style="fill:#0f1117;stroke:#e8a838;stroke-width:1.5" rx="1"/>
+      <text x="102" y="270" style="fill:#e8a838;font-size:9px">경고 (이벤트 발생 시)</text>
+    </svg>
+  </div>
+
+  <!-- 1-5 UI 전반 -->
+  <h3 id="dir-ui">1-5. UI 전반</h3>
+  <p>VR 특성상 World Space UI 또는 Widget Component 기반 구현을 원칙으로 한다. Screen Space UI는 VR에서 멀미를 유발할 수 있어 사용하지 않는다.</p>
+  <table>
+    <thead><tr><th>UI 항목</th><th>표시 여부</th><th>위치/방식</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>대사 텍스트</td><td><span class="status-ok">표시</span></td><td>모니터 스프라이트 위</td><td>화자별 색상 구분</td></tr>
+      <tr><td>시스템 안내말</td><td><span class="status-ok">표시</span></td><td>World Space 공중 텍스트</td><td>튜토리얼용</td></tr>
+      <tr><td>화살표 표시</td><td><span class="status-ok">표시</span></td><td>오브젝트 위 World Space</td><td>튜토리얼용</td></tr>
+      <tr><td>타이머</td><td><span class="status-ok">표시</span></td><td>I-02 모니터</td><td>인게임 전용</td></tr>
+      <tr><td>탈옥 알림</td><td><span class="status-ok">표시</span></td><td>I-03·I-04 모니터</td><td>이벤트 발생 시</td></tr>
+      <tr><td>잭 얼굴</td><td><span class="status-ok">표시</span></td><td>L-03 (로비) / I-01 (인게임)</td><td>대사 시 자동 활성</td></tr>
+      <tr><td>HUD (체력·스태미나 등)</td><td><span class="status-none">표시 안 함</span></td><td>—</td><td>플레이어 스탯 없음</td></tr>
+      <tr><td>미니맵</td><td><span class="status-none">표시 안 함</span></td><td>—</td><td>육안 감시가 핵심 메커닉</td></tr>
+      <tr><td>크로스헤어</td><td><span class="status-none">표시 안 함</span></td><td>—</td><td>VR 컨트롤러 레이캐스트로 대체</td></tr>
+      <tr><td>VR 컨트롤러 레이캐스트</td><td><span class="status-ok">표시</span></td><td>컨트롤러 끝</td><td>상호작용 가능 오브젝트 근접 시 강조</td></tr>
+      <tr><td>오브젝트 하이라이트</td><td><span class="status-wip">검토 필요</span></td><td>오브젝트 아웃라인</td><td>포스트프로세싱 금지로 대체 방식 필요</td></tr>
+      <tr><td>스테이지 클리어 화면</td><td><span class="status-wip">검토 필요</span></td><td>모니터 or World Space</td><td>연출 방식 미정</td></tr>
+      <tr><td>로딩 화면</td><td><span class="status-ok">표시</span></td><td>페이드 인-아웃으로 대체</td><td>별도 로딩 UI 없음</td></tr>
+      <tr><td>크레딧 화면</td><td><span class="status-tbd">TBD</span></td><td>미정</td><td>스테이지 4 클리어 후</td></tr>
+    </tbody>
+  </table>
+  <div class="warn-box">오브젝트 하이라이트는 포스트프로세싱 금지 정책으로 인해 커스텀 아웃라인 메쉬(Overlay Mesh) 방식 또는 색상 변경 방식으로 대체 검토 필요.</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     2. 연출 기능 상세
+═══════════════════════════════════ -->
+<div class="section" id="dir-detail">
+  <h2>2. 연출 기능 상세</h2>
+
+  <div class="info-box">
+    <strong>연출 기능 작성 기준</strong><br>
+    각 기능은 ① 개요 ② 사용 상황 예시 ③ 진행 순서(선택) ④ 구체적 연출 설명 ⑤ 언리얼 공식문서 링크 ⑥ 참고 영상·레퍼런스 ⑦ 미결 사항 순으로 기술한다. 모든 구현은 <strong>포스트 프로세싱 금지</strong> 원칙을 준수한다.
+  </div>
+
+  <h3 id="dir-fade">페이드 인-아웃</h3>
+  <div class="impl-block">
+    <div class="ib-header">🎬 페이드 인-아웃 — Fade In/Out</div>
+    <div class="ib-body">
+      <h4>개요</h4>
+      <p>화면이 점차 어두워지거나(Fade Out), 반대로 밝아지는(Fade In) 전환 연출. 씬 이동 앞뒤로 항상 짝으로 사용한다.</p>
+      <h4>사용 상황 예시</h4>
+      <p>스토리 챕터 1·2·3 엔딩 후 로비 복귀 / 로비에서 스테이지 진입 시 / 스테이지 클리어·게임오버 후 로비 이동 시.</p>
+      <h4>진행 순서</h4>
+      <ol class="step-list">
+        <li>마지막 대사 재생 완료</li>
+        <li>Fade Out — 화면 점차 어두워짐 (0.5~1초)</li>
+        <li>씬 이동 (로비 ↔ 스테이지)</li>
+        <li>Fade In — 화면 점차 밝아짐 (0.5~1초)</li>
+      </ol>
+      <h4>구체적 연출 설명</h4>
+      <p>UE5 Camera Fade(Sequencer의 Fade Track 또는 PlayerCameraManager의 StartCameraFade 함수)를 사용한다. 포스트 프로세싱 없이 Camera Component에서 직접 처리한다.</p>
+      <h4>공식문서</h4>
+      <div class="info-box"><a href="https://dev.epicgames.com/documentation/ko-kr/unreal-engine/fade-track">UE5 공식문서 — Fade Track (Sequencer)</a></div>
+      <h4>미결 사항</h4>
+      <p>없음.</p>
+    </div>
+  </div>
+
+  <h3 id="dir-periscope">잠망경 (Periscope)</h3>
+  <div class="impl-block">
+    <div class="ib-header">🔭 잠망경 — 신규 제압장비 (TUTO 3 최초 등장)</div>
+    <div class="ib-body">
+      <h4>개요</h4>
+      <p>천장 구역을 감시할 수 있는 유일한 장비. 스파이더맨·플로팅 등 천장 관련 죄수 상태에 대응하기 위한 필수 장비.</p>
+      <h4>사용 상황 예시</h4>
+      <p>TUTO 3에서 첫 교육. 이후 스테이지에서 천장 이탈 죄수 감지 시 플레이어가 자발적으로 사용.</p>
+      <h4>기술적 제약</h4>
+      <div class="warn-box">
+        <strong>VR FOV 수정 불가:</strong> SDK 정책 위반 가능성.<br>
+        <strong>포스트프로세싱 마스킹 불가:</strong> GPU 부하 과다. (연출 금지 정책 해당)
+      </div>
+      <h4>확정 구현 방식 — UI 마스킹 + 카메라 전환</h4>
+      <ol class="step-list">
+        <li>플레이어 카메라가 잠망경 콜리전 박스와 오버랩 → 마스크 UI(검은 원) 생성, opacity 0 시작</li>
+        <li>잠망경-카메라 거리 가까워질수록 opacity 상승 (점점 어두워짐)</li>
+        <li>opacity 최대치 도달 시 전환 사운드 1초 재생</li>
+        <li>사운드 종료 후 천장 고정 카메라로 전환, 마스크 UI 비활성화</li>
+      </ol>
+      <h4>구체적 연출 설명</h4>
+      <p>마스크 UI는 UMG Widget Component(World Space)로 배치하여 포스트프로세싱 없이 화면을 덮는다. 천장 카메라는 씬에 미리 배치된 고정 카메라(Camera Actor)로 전환(SetViewTargetWithBlend)한다.</p>
+      <h4>구성 요소 상태</h4>
+      <table>
+        <thead><tr><th>요소</th><th>역할</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>잠망경 메쉬</td><td>VR 조작 오브젝트</td><td><span class="status-ok">제작완료</span></td></tr>
+          <tr><td>잠망경 콜리전 박스</td><td>근접 감지 트리거</td><td><span class="status-ok">설계완료</span></td></tr>
+          <tr><td>마스크 UI (검은 원 Widget)</td><td>World Space opacity 기반 마스킹</td><td><span class="status-ok">설계완료</span></td></tr>
+          <tr><td>천장 카메라</td><td>전환 목적 고정 카메라</td><td><span class="status-ok">배치완료</span></td></tr>
+          <tr><td>전환 사운드</td><td>카메라 전환 직전 1초 효과음</td><td><span class="status-wip">제작 중</span></td></tr>
+        </tbody>
+      </table>
+      <h4>플레이어 경험 목표</h4>
+      <div class="ok-box">"잠망경에 머리를 가져다 대면 화면이 점점 어두워지고, 완전히 어두워지면 찰칵 소리와 함께 천장 시점으로 전환된다."</div>
+      <h4>참고 영상</h4>
+      <div class="info-box">
+        <a href="https://youtube.com/shorts/Lt8IqpowmZw">youtube.com/shorts/Lt8IqpowmZw</a><br>
+        <a href="https://youtube.com/shorts/0yb8MIqdMis">youtube.com/shorts/0yb8MIqdMis</a>
+      </div>
+      <h4>미결 사항</h4>
+      <div class="warn-box">
+        잠망경에서 빠져나오는 방법(재전환 트리거) 미정 <span class="status-tbd">TBD</span><br>
+        VR 조작 방식 미정 (컨트롤러 레이캐스트로 버튼 입력인지, 물리적으로 잡는 방식인지) — 프로그래머 협의 필요 <span class="status-wip">WIP</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="dir-glitch">글리치 연출</h3>
+  <div class="impl-block">
+    <div class="ib-header">⚡ 글리치 — 죄수 글리치 / 화면 글리치 / 디스토션 보이스</div>
+    <div class="ib-body">
+      <h4>개요</h4>
+      <p>오류 상태 죄수에 적용하는 텍스처 교체, 잭 모니터 화면 흔들림, 아브리엘 보이스 디스토션의 세 가지로 구성된다. 모두 포스트프로세싱 없이 구현한다.</p>
+      <h4>사용 상황 예시</h4>
+      <table>
+        <thead><tr><th>챕터</th><th>트리거</th><th>유형</th><th>구현 방식</th></tr></thead>
+        <tbody>
+          <tr><td>챕터 1</td><td>한 사이클 클리어 직후</td><td>죄수 글리치 + 에녹 디스토션(강)</td><td>죄수 텍스처 교체 + 카메라 색조 Material 이상 효과 + 오디오 피치 변조</td></tr>
+          <tr><td>챕터 2 — 3분</td><td>게임시작레버 작동 후</td><td>보이스 디스토션 (중간)</td><td>오디오 피치·리버브 변조</td></tr>
+          <tr><td>챕터 2 — 5분</td><td>게임시작레버 작동 후</td><td>보이스 디스토션 (낮음)</td><td>오디오 피치 변조 약하게</td></tr>
+          <tr><td>챕터 2 — 로비</td><td>아브리엘 첫 접촉</td><td>화면 글리치 <span class="status-ok" style="font-size:10px">UV Offset 대체</span></td><td>모니터 스프라이트 UV Offset 애니메이션 (포스트프로세싱 금지로 대체)</td></tr>
+          <tr><td>챕터 3</td><td>글리치 죄수 탈출 → 잭 오류 감지</td><td>잭 화면 흔들림 + 글리치 사운드</td><td>모니터 Widget 위치 흔들림 + WAV</td></tr>
+          <tr><td>챕터 3</td><td>팩스 공격 성공</td><td>시설 전체 흔들림 + 전기 이펙트</td><td>Camera Shake + Niagara 파티클</td></tr>
+        </tbody>
+      </table>
+      <h4>구체적 연출 설명</h4>
+      <p>화면 글리치는 포스트프로세싱 금지로 인해 <strong>모니터 스프라이트의 Material UV Offset 애니메이션</strong>으로 대체한다. 모니터 텍스처 자체가 일그러지는 효과를 Material 파라미터 타임라인으로 구현한다.</p>
+      <h4>공식문서</h4>
+      <div class="info-box">
+        <a href="https://dev.epicgames.com/documentation/ko-kr/unreal-engine/camera-shakes-in-unreal-engine">UE5 — Camera Shakes</a><br>
+        <a href="https://dev.epicgames.com/documentation/ko-kr/unreal-engine/overview-of-niagara-effects-for-unreal-engine">UE5 — Niagara 파티클</a>
+      </div>
+      <h4>미결 사항</h4>
+      <p>없음.</p>
+    </div>
+  </div>
+
+  <h3 id="dir-tape-eject">테이프 사출</h3>
+  <div class="impl-block">
+    <div class="ib-header">📼 테이프 사출 — 챕터 클리어 보상 연출</div>
+    <div class="ib-body">
+      <h4>개요</h4>
+      <p>챕터 클리어 시 새 테이프가 로비 테이프 슬롯에서 물리 사출되는 연출. 저장 시스템과 직결된다.</p>
+      <h4>사용 상황 예시</h4>
+      <p>스토리 챕터 1 클리어 → T_STG_02 + 쪽지 사출. 이후 각 챕터 클리어마다 다음 테이프 사출.</p>
+      <h4>구체적 연출 설명</h4>
+      <p>테이프 오브젝트(Static Mesh)에 PhysicsSimulate를 일시 활성화하여 슬롯에서 튀어나오는 연출. 세부 사출 방향·속도·회전은 별도 설계 필요.</p>
+      <h4>미결 사항</h4>
+      <div class="warn-box">
+        테이프 오브젝트에 저장되는 정보 구조 미정 <span class="status-tbd">TBD</span><br>
+        물리 사출 세부 파라미터 미정 <span class="status-tbd">TBD</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     3. 저장 시스템 개요
+═══════════════════════════════════ -->
+<div class="section" id="save-overview">
+  <h2>3. 저장 시스템 개요</h2>
+  <p>핵심 설계 원칙: <strong>"지금 끄면 어떻게 되나? 다시 켜졌을 때 불쾌한가?"</strong></p>
+
+  <h3 id="save-structure">3-1. 시스템 구조</h3>
+  <p>저장 시스템은 <strong>SaveSubsystem</strong> 하나가 Cloud / Local 두 개의 SaveData 객체를 관리하는 구조다. 게임 내 어디서든 SaveSubsystem을 통해 접근하며, 직접 SaveData에 접근하지 않는다.</p>
+
+  <div class="figma-embed-wrap">
+    <div class="figma-embed-label">FigJam · SaveSubsystem 구조도</div>
+    <iframe src="https://embed.figma.com/board/OkcpZE9VUhNjRNubHzjNkM/SaveSubsystem-%EA%B5%AC%EC%A1%B0%EB%8F%84?embed-host=share" allowfullscreen></iframe>
+  </div>
+
+  <h3 id="save-cloud">3-2. 클라우드·로컬 구분</h3>
+  <table>
+    <thead><tr><th>구분</th><th>데이터 목록</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>클라우드 백업</strong><br>(Meta Cloud)</td>
+        <td>튜토리얼 클리어 여부 4개<br>스테이지 클리어 여부 4개<br>보유 테이프 ID 목록<br>무한모드 해금 여부<br>무한모드 최고점수<br>무한모드 최장 생존시간</td>
+        <td>다른 기기에서도 진행 상황 동기화 필요. Meta Quest 계정 기반으로 자동 복구.</td>
+      </tr>
+      <tr>
+        <td><strong>로컬 저장</strong><br>(디스크)</td>
+        <td>게임 설정 (볼륨·진동 등)<br>무한모드 플레이 이력 전체<br>총 플레이 횟수</td>
+        <td>기기 종속 데이터. 이력은 용량이 크므로 클라우드 제외.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4>Meta Cloud Backup API 연동</h4>
+  <p>Meta Platform SDK의 Cloud Storage(KeyValue 저장소) 또는 Cloud Backup 기능을 통해 클라우드 데이터를 동기화한다.</p>
+  <div class="info-box">
+    <strong>공식문서 참고</strong><br>
+    <a href="https://developers.meta.com/horizon/documentation/unreal/ps-cloud-backup/">Meta Cloud Backup — Unreal Engine</a><br>
+    <br>
+    <strong>주요 흐름:</strong><br>
+    1. 게임 시작 시 <code>UPlatformCloudStorage::LoadData()</code> 호출 → 클라우드 최신 데이터 로드<br>
+    2. 클리어 이벤트 발생 시 <code>SaveNow()</code> → <code>UPlatformCloudStorage::SaveData()</code> 호출<br>
+    3. 충돌 시(로컬 vs 클라우드) 더 높은 클리어 수 기준으로 병합 처리<br>
+    4. 오프라인 상태에서는 로컬 저장 후 온라인 복귀 시 자동 동기화
+  </div>
+  <div class="warn-box">Meta Cloud Storage는 Quest 디바이스 기준으로 계정당 용량 제한이 있다. 무한모드 이력 전체를 클라우드에 저장할 경우 초과 가능성이 있어 로컬 전용으로 분리함.</div>
+
+  <h3 id="save-timing">3-3. 저장 시점 판단 기준</h3>
+  <table>
+    <thead><tr><th>상황</th><th>저장 여부</th><th>판단 근거</th></tr></thead>
+    <tbody>
+      <tr><td>게임 최초 시작</td><td>해당 없음</td><td>저장 데이터 없음</td></tr>
+      <tr><td>튜토리얼 진행 중 종료</td><td>저장 안 함</td><td>튜토리얼은 선택 사항 → 재시작해도 불쾌하지 않음</td></tr>
+      <tr><td>튜토리얼 클리어</td><td>즉시 저장</td><td>TutorialClearedFlags 업데이트 + 테이프 사출</td></tr>
+      <tr><td>스테이지 클리어</td><td>즉시 저장</td><td>StageClearedFlags 업데이트 + 테이프 사출</td></tr>
+      <tr><td>스테이지 진행(연출) 중 종료</td><td>재시도 시 연출 재재생</td><td>자의·비자의 종료 모두 동일하게 처리</td></tr>
+      <tr><td>무한모드 종료</td><td>즉시 저장</td><td>점수·이력·최고기록 갱신</td></tr>
+      <tr><td>설정 변경</td><td>즉시 저장</td><td>로컬 GameSettings 업데이트</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="save-examples">3-4. 모드별 종료 시 저장 작동 예시</h3>
+
+  <h4>① 튜토리얼 중간 종료</h4>
+  <div class="ok-box">
+    TUTO 2 진행 중 헤드셋 벗음 → 앱 종료<br>
+    → 저장 없음. 다음 실행 시 로비에서 T_TUT_02 테이프 재선택 후 처음부터 재시작.
+  </div>
+
+  <h4>② 튜토리얼 클리어</h4>
+  <div class="ok-box">
+    TUTO 2 클리어 → TutorialClearedFlags[2] = true → OwnedTapeIDs에 T_TUT_03 추가<br>
+    → SaveNow() (클라우드) → T_TUT_03 테이프 사출 연출.
+  </div>
+
+  <h4>③ 스테이지 연출 중 종료</h4>
+  <div class="ok-box">
+    챕터 2 클리어 후 아브리엘 첫 접촉 대사 재생 중 종료<br>
+    → StageClearedFlags[2]는 이미 저장됨. 다음 실행 시 로비에서 T_STG_03 보유 상태.<br>
+    → 아브리엘 대사는 다시 보지 않아도 됨 (이미 클리어된 테이프로 재생 시 재시청 가능).
+  </div>
+
+  <h4>④ 무한모드 종료 (도중 종료)</h4>
+  <div class="ok-box">
+    무한모드 10분 진행 중 죄수 탈출 → 게임오버 → 로비 이동<br>
+    → RunHistory에 기록 추가 (Score, SurvivalSeconds, EndReason)<br>
+    → BestScore·BestSurvivalSeconds 갱신 여부 확인<br>
+    → SaveNow() (클라우드 + 로컬).
+  </div>
+
+  <h4>⑤ 무한모드 도중 강제 종료</h4>
+  <div class="warn-box">
+    무한모드 진행 중 갑자기 앱 종료 (배터리 방전 등)<br>
+    → RunHistory 기록 없음. 해당 플레이 기록 유실.<br>
+    → 다음 실행 시 이전 저장 상태 그대로 복원.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     4. 변수 정의
+═══════════════════════════════════ -->
+<div class="section" id="save-variables">
+  <h2>4. 변수 정의</h2>
+
+  <h3 id="var-list">주요 변수 목록</h3>
+  <table class="var-table">
+    <thead><tr><th>변수명</th><th>타입</th><th>저장</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td>TutorialClearedFlags[i]</td><td>Bool</td><td>클라우드</td><td>튜토리얼 i번 클리어 여부 (i=1~4)</td></tr>
+      <tr><td>StageClearedFlags[i]</td><td>Bool</td><td>클라우드</td><td>스테이지 i번 클리어 여부 (i=1~4)</td></tr>
+      <tr><td>OwnedTapeIDs</td><td>String[]</td><td>클라우드</td><td>보유 테이프 ID 배열</td></tr>
+      <tr><td>PlayingTapeID</td><td>String</td><td>로컬(임시)</td><td>현재 진행 중 테이프 ID. 게임 시작 시 초기화</td></tr>
+      <tr><td>bInfiniteUnlocked</td><td>Bool</td><td>클라우드</td><td>무한모드 해금 여부</td></tr>
+      <tr><td>BestScore</td><td>Int</td><td>클라우드</td><td>무한모드 최고 점수</td></tr>
+      <tr><td>BestSurvivalSeconds</td><td>Int</td><td>클라우드</td><td>무한모드 최장 생존 시간(초)</td></tr>
+      <tr><td>RunHistory</td><td>InfiniteRunRecord[]</td><td>로컬</td><td>무한모드 플레이 이력 배열</td></tr>
+      <tr><td>TotalRuns</td><td>Int</td><td>로컬</td><td>무한모드 총 플레이 횟수</td></tr>
+      <tr><td>GameSettings</td><td>Struct</td><td>로컬</td><td>볼륨·진동·기타 설정</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="var-run">InfiniteRunRecord 구조</h3>
+  <table class="var-table">
+    <thead><tr><th>필드명</th><th>타입</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td>EndedAt</td><td>Int (Unix Timestamp)</td><td>종료 시각</td></tr>
+      <tr><td>SurvivalSeconds</td><td>Int</td><td>플레이 타임(초)</td></tr>
+      <tr><td>Score</td><td>Int</td><td>획득 점수</td></tr>
+      <tr><td>EndReason</td><td>Int (Enum ID)</td><td>게임오버 이유 코드 <span class="status-wip">WIP</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════
+     5. 테이프 시스템
+═══════════════════════════════════ -->
+<div class="section" id="tape-system">
+  <h2>5. 테이프 시스템</h2>
+  <p>테이프는 스테이지 선택 오브젝트이자 저장 상태 표현 수단이다. 새 테이프 수령 = 다음 챕터 해금.</p>
+
+  <h3 id="tape-list">테이프 전체 목록</h3>
+  <table>
+    <thead><tr><th>테이프 ID</th><th>그룹</th><th>측면</th><th>옆면 (부제)</th><th>모델링</th></tr></thead>
+    <tbody>
+      <tr><td><code>T_TUT_01</code></td><td>Tutorial</td><td>Tutorial SR-00</td><td>The Firstday * ^ ^ *</td><td><span class="status-tbd">신규 제작 필요</span></td></tr>
+      <tr><td><code>T_TUT_02</code></td><td>Tutorial</td><td>Tutorial SR-01</td><td>Nobody's Perfect</td><td><span class="status-wip">수정 제작 필요</span></td></tr>
+      <tr><td><code>T_TUT_03</code></td><td>Tutorial</td><td>Tutorial SR-02</td><td>3rd Level Ai</td><td><span class="status-wip">수정 제작 필요</span></td></tr>
+      <tr><td><code>T_TUT_04</code></td><td>Tutorial</td><td>Tutorial SR-03</td><td>Chaos &amp; Punishment</td><td><span class="status-wip">수정 제작 필요</span></td></tr>
+      <tr><td><code>T_STG_01</code></td><td>Stage</td><td>Story SR-01</td><td>Sleeping Beast</td><td><span class="status-done">업로드 완료</span></td></tr>
+      <tr><td><code>T_STG_02</code></td><td>Stage</td><td>Story SR-02</td><td>Heavy is the crown</td><td><span class="status-done">업로드 완료</span></td></tr>
+      <tr><td><code>T_STG_03</code></td><td>Stage</td><td>Story SR-03</td><td>The Wonderful Devil of OZ</td><td><span class="status-done">업로드 완료</span></td></tr>
+      <tr><td><code>T_STG_04</code></td><td>Stage</td><td>Story SR-04</td><td>Jack and the Picklestalk</td><td><span class="status-done">업로드 완료</span></td></tr>
+      <tr><td><code>T_INF_01</code></td><td>Infinite</td><td>Story SR-INF</td><td>Enoc in Neverland</td><td><span class="status-done">업로드 완료</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="tape-unlock">테이프 사출 순서표</h3>
+  <table>
+    <thead><tr><th>클리어 이벤트</th><th>Flag 업데이트</th><th>사출 테이프</th></tr></thead>
+    <tbody>
+      <tr><td>Tutorial i 완료 (i=1~3)</td><td>TutorialClearedFlags[i] = true</td><td>T_TUT_(i+1)</td></tr>
+      <tr><td>Tutorial 4 완료</td><td>TutorialClearedFlags[4] = true</td><td>T_STG_01</td></tr>
+      <tr><td>Stage i 완료 (i=1~3)</td><td>StageClearedFlags[i] = true</td><td>T_STG_(i+1)</td></tr>
+      <tr><td>Stage 4 완료</td><td>StageClearedFlags[4] = true</td><td>T_INF_01 + bInfiniteUnlocked = true</td></tr>
+    </tbody>
+  </table>
+  <div class="info-box"><strong>중복 사출 방지:</strong> PlayingTapeID가 이미 OwnedTapeIDs에 존재하면 클리어 이벤트 미발동.</div>
+  <div class="info-box"><strong>T_TUT_01 초기 제공:</strong> 게임 최초 시작 시 OwnedTapeIDs에 T_TUT_01이 기본값으로 포함된 상태로 초기화된다. 별도 사출 연출 없이 처음부터 로비 테이프 슬롯에 배치되어 있는 것으로 처리한다.</div>
+
+  <h3 id="tape-flow">테이프 사출 코드 플로우</h3>
+  <div class="figma-embed-wrap">
+    <div class="figma-embed-label">FigJam · 테이프 사출 코드 플로우</div>
+    <iframe src="https://embed.figma.com/board/sjDvPh2XCZzC2rJLAp0STD?embed-host=share" allowfullscreen></iframe>
+  </div>
+
+  <h3 id="tape-eject-detail">테이프 사출 세부 <span class="status-tbd">TBD</span></h3>
+  <div class="warn-box">테이프 오브젝트에 저장되는 정보 구조 및 물리 사출 파라미터 미작성. 별도 설계 필요.</div>
+</div>
+
+<!-- ═══════════════════════════════════
+     6. 무한모드 저장 플로우
+═══════════════════════════════════ -->
+<div class="section" id="save-flows">
+  <h2>6. 저장 플로우</h2>
+
+  <h3 id="infinite-flow">무한모드 종료 시 저장 플로우</h3>
+  <div class="figma-embed-wrap">
+    <div class="figma-embed-label">FigJam · 무한모드 종료 시 저장 플로우</div>
+    <iframe src="https://embed.figma.com/board/MciZdZ2mx0aPMWnato1qRx?embed-host=share" allowfullscreen></iframe>
+  </div>
+
+  <h3 id="game-flow">전체 게임 진행 플로우</h3>
+  <div class="figma-embed-wrap">
+    <div class="figma-embed-label">FigJam · 전체 게임 진행 플로우</div>
+    <iframe src="https://embed.figma.com/board/nrzEtzQGB8oTg0PzQPAYpD?embed-host=share" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     변경 이력
+═══════════════════════════════════ -->
+<div class="section" id="changelog">
+  <h2>변경 이력</h2>
+  <table>
+    <thead><tr><th>버전</th><th>구분</th><th>항목</th><th>기존</th><th>변경</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>v2.2.0</td><td>수정</td><td>연출 기능 목록</td><td>16종</td><td>게임오버 연출(#17) 누락 항목 추가</td><td>오류 수정</td></tr>
+      <tr><td>v2.2.0</td><td>수정</td><td>페이드 인-아웃 공식문서</td><td>UE 4.27 링크</td><td>UE5 버전 링크로 교체</td><td>오류 수정</td></tr>
+      <tr><td>v2.2.0</td><td>수정</td><td>변경 이력 순서</td><td>v1.1.1이 v2.0.0보다 앞</td><td>v2.x → v1.x 역순으로 정렬 수정</td><td>오류 수정</td></tr>
+      <tr><td>v2.2.0</td><td>수정</td><td>에녹 디스토션 구현 방식</td><td>텍스처 교체(1인칭 VR 불가)</td><td>카메라 색조 Material 이상 효과 + 오디오 변조로 수정</td><td>상충 해소</td></tr>
+      <tr><td>v2.2.0</td><td>수정</td><td>화면 글리치 목록 표기</td><td>구현 방식 변경 미반영</td><td>UV Offset 대체 명시 추가</td><td>상충 해소</td></tr>
+      <tr><td>v2.2.0</td><td>삭제</td><td>CSS 잔류 코드</td><td>.mermaid, .spec-label 클래스 / style 태그 2개</td><td>불필요 코드 삭제 및 style 태그 통합</td><td>코드 정리</td></tr>
+      <tr><td>v2.2.0</td><td>수정</td><td>잠망경 미결사항</td><td>"재료 전달 방식" 설명 없음</td><td>VR 조작 방식(레이캐스트/물리) 미정으로 구체화</td><td>설명 보완</td></tr>
+      <tr><td>v2.2.0</td><td>추가</td><td>게임오버 모델링 설명</td><td>정체 미설명</td><td>표시 오브젝트 형태 TBD 명시</td><td>설명 보완</td></tr>
+      <tr><td>v2.2.0</td><td>추가</td><td>T_TUT_01 초기 제공 방식</td><td>미설명</td><td>게임 최초 시작 시 기본값으로 포함됨 명시</td><td>설명 보완</td></tr>
+      <tr><td>v2.1.0</td><td>개선</td><td>다이어그램 4종</td><td>Mermaid HTML 렌더링</td><td>FigJam iframe 임베드로 전환</td><td>시각 품질 향상</td></tr>
+      <tr><td>v2.0.2</td><td>패치</td><td>Mermaid 4종 시각화</td><td>곡선 이음선 / 자기루프 / TD 트리구조</td><td>curve:linear 전역 적용 / SaveSubsystem LR 방향 변경 / 무한모드 자기루프 종착점으로 교체</td><td>시각 품질 개선</td></tr>
+      <tr><td>v2.0.1</td><td>패치</td><td>Mermaid 4종</td><td>노드 내부 br 태그로 파싱 오류</td><td>br 태그 전부 제거, 단문으로 정리</td><td>렌더링 버그 수정</td></tr>
+      <tr><td>v2.0.0</td><td>개편</td><td>문서 전체 구조</td><td>7개 섹션 (최적화 포함)</td><td>6개 섹션으로 재편 (최적화 삭제)</td><td>대규모 개편</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>연출 제한 배너</td><td>없음</td><td>포스트프로세싱 금지 규칙 명시</td><td>VR 구현 기준</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>게임오버 연출</td><td>WIP 항목만 존재</td><td>상세 기획 (슬로모션·모델링·잭 대사) 추가</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>모니터 배치 목차</td><td>없음</td><td>L-01~07 / I-01~04 항목표 추가</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>SVG 모니터 목업</td><td>없음</td><td>로비 / 인게임 와이어프레임 SVG 추가</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>UI 전반 표</td><td>없음</td><td>표시/비표시 항목 전체 정리 (크로스헤어 등 명시)</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>연출 기능 작성 기준</td><td>없음</td><td>7-항목 기술 기준 명시</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>개편</td><td>글리치 연출 섹션</td><td>표만 존재</td><td>구현 방식 (UV Offset 대체) 포함 재작성</td><td>포스트프로세싱 대체</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>저장 시스템 구조도</td><td>없음</td><td>SaveSubsystem 계층 구조 다이어그램 추가 (v2.1.0에서 FigJam으로 전환)</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>클라우드 연동 설명</td><td>링크 1줄</td><td>Meta API 연동 흐름 및 오프라인 처리 추가</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>추가</td><td>모드별 저장 예시</td><td>없음</td><td>5가지 시나리오 예시 추가</td><td>—</td></tr>
+      <tr><td>v2.0.0</td><td>삭제</td><td>7. VR 그래픽 최적화</td><td>섹션 존재</td><td>삭제</td><td>별도 문서로 분리 예정</td></tr>
+      <tr><td>v1.1.1</td><td>패치</td><td>Mermaid 전체</td><td>\n, 특수문자 오류</td><td>HTML 호환 문법으로 수정</td><td>렌더링 버그 수정</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</main>
+</div>
+
+<script>
+
+const toc = document.getElementById('toc');
+document.querySelectorAll('h2, h3').forEach(h => {
+  if (!h.id) return;
+  const li = document.createElement('li');
+  const a = document.createElement('a');
+  a.href = '#' + h.id;
+  a.textContent = h.textContent.replace(/\s*(WIP|TBD|검토필요)/g, '').trim();
+  if (h.tagName === 'H3') a.classList.add('h3');
+  li.appendChild(a); toc.appendChild(li);
+});
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.toc-list a').forEach(a => a.classList.remove('active'));
+      const a = document.querySelector(`.toc-list a[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.2 });
+document.querySelectorAll('h2[id], h3[id]').forEach(h => observer.observe(h));
+</script>
+
+<!-- tags: 연출, 저장시스템, VR -->
+</body>
+</html>

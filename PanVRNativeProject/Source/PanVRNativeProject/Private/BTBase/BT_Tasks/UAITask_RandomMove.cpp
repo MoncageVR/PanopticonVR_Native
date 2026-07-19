@@ -14,10 +14,10 @@ EBTNodeResult::Type UUAITask_RandomMove::ExecuteTask(UBehaviorTreeComponent& Own
 {
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed) return EBTNodeResult::Failed;
 
-	UE_LOG(LogTemp, Log, TEXT("UAI_Task_RandomMove Success Execute!!"));
+	//UE_LOG(LogTemp, Log, TEXT("UAI_Task_RandomMove Success Execute!!"));
 
-	// Animation : 2 : Move(UpperState)
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2);
+	// 2 = UpperState : Move , 5 = LowerState : Run
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
 
 	PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
 	PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("RandomMoveTargetVec"), MakeRandomVec());

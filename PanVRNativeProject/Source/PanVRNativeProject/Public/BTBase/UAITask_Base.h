@@ -9,6 +9,14 @@
 /**
  * 
  */
+
+class APrisonerController;
+class APrisonerCharacter;
+class UAnimInstance;
+class UMapObjManagerSubsystem;
+class UPrisonerManagerSubsystem;
+class AVRGameMode;
+
 UCLASS()
 class PANVRNATIVEPROJECT_API UUAITask_Base : public UBTTaskNode
 {
@@ -23,6 +31,21 @@ protected:
 	//virtual void FinishLatentTask(UBehaviorTreeComponent& OwnerComp, EBTNodeResult::Type TaskResult) override;
 
 public:
-	class APrisonerController* PrisonerControllerObj;
-	class APrisonerCharacter* PrisonerCharacterObj;
+	UPROPERTY()
+	TObjectPtr<APrisonerController> PrisonerControllerObj;
+
+	UPROPERTY()
+	TObjectPtr<APrisonerCharacter> PrisonerCharacterObj;
+
+	UPROPERTY()
+	TObjectPtr<UMapObjManagerSubsystem> MapObjManagerSubSystemInst;
+
+	UPROPERTY()
+	TObjectPtr<UPrisonerManagerSubsystem> PrisonerManagerSubSystemInst;
+
+	UPROPERTY()
+	TObjectPtr<UAnimInstance> MyAnimInst;
+
+	UPROPERTY()
+	TObjectPtr<AVRGameMode> MyVRGameMode;
 };

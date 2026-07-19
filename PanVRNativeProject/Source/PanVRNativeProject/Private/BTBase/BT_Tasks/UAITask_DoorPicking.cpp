@@ -26,18 +26,15 @@ EBTNodeResult::Type UUAITask_DoorPicking::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Failed;
 	}
 
-	UPrisonerManagerSubsystem* TempPrisonerMananger = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
-	if (TempPrisonerMananger)
+	if (PrisonerManagerSubSystemInst)
 	{
 		int32 TempUniqueNum = AdjustPrisonerUniqueNum(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));
-		CalMontagePlayTransform(TempPrisonerMananger->GetBaseSpawnRotations()[TempUniqueNum].Yaw);
-		MontagePlayRot = TempPrisonerMananger->GetFinalAllSpawnRoations()[TempUniqueNum];
+		CalMontagePlayTransform(PrisonerManagerSubSystemInst->GetBaseSpawnRotations()[TempUniqueNum].Yaw);
+		MontagePlayRot = PrisonerManagerSubSystemInst->GetFinalAllSpawnRoations()[TempUniqueNum];
 	}
 
-	mMapObjManangerSubsystemPtr = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
-	if (!ensure(mMapObjManangerSubsystemPtr)) return EBTNodeResult::Failed;
+	if (!ensure(MapObjManagerSubSystemInst)) return EBTNodeResult::Failed;
 
-	MyAnimInst = PrisonerCharacterObj->GetMesh()->GetAnimInstance();
 	if (!MyAnimInst || !DoorPickingMontage)
 		return EBTNodeResult::Failed;
 
@@ -45,10 +42,8 @@ EBTNodeResult::Type UUAITask_DoorPicking::ExecuteTask(UBehaviorTreeComponent& Ow
 	{
 		CachedOwnerComp = &OwnerComp;
 		PrisonerCharacterObj->GetRootComponent()->SetWorldLocationAndRotation(MontagePlayVec, MontagePlayRot);
-
 		MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_DoorPicking::OnDoorPickingMontageEnded);
 		MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_DoorPicking::OnDoorPickingMontageEnded);
-
 		MyAnimInst->Montage_Play(DoorPickingMontage);
 	}
 
@@ -59,11 +54,11 @@ void UUAITask_DoorPicking::OnDoorPickingMontageEnded(UAnimMontage* Montage, bool
 {
 	if (Montage == DoorPickingMontage)
 	{
-		if (mMapObjManangerSubsystemPtr)
+		if (MapObjManagerSubSystemInst)
 		{
 			int TempIndex = PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum"));
 
-			AAGrating* TempGrating = mMapObjManangerSubsystemPtr->GetGratingsMap()[TempIndex];
+			AAGrating* TempGrating = MapObjManagerSubSystemInst->GetGratingsMap()[TempIndex];
 			TempGrating->GratingOpen();
 		}
 

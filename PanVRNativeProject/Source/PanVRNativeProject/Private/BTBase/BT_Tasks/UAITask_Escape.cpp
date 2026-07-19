@@ -11,14 +11,10 @@ UUAITask_Escape::UUAITask_Escape()
 EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed)
-	{
 		return EBTNodeResult::Failed;
-	}
 
-	//UE_LOG(LogTemp, Log, TEXT("UAI_Task_Escape Execute!!"));
-
-	// Animation : 4 : Dangerous(UpperState)
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4);
+	// 4 = UpperState : Dangerous , 13 = LowerState : Escape
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4,13);
 
 	FTimerHandle TempTimer;
 	GetWorld()->GetTimerManager().SetTimer(
@@ -34,8 +30,5 @@ EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 
 void UUAITask_Escape::CallControlExitDoorFunction()
 {
-	UMapObjManagerSubsystem* TempMapObjManangerInst =
-		GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
-	if (!ensure(TempMapObjManangerInst)) return;
-	TempMapObjManangerInst->ControlExitDoorFunction();
+	MapObjManagerSubSystemInst->ControlExitDoorFunction();
 }

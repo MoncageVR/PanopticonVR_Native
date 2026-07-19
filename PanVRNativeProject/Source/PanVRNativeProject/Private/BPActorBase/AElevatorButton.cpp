@@ -10,6 +10,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
 #include "Core/Debug/FDebugLib.h"
+#include "BPMainActorBase/TowerBuilding.h"
 
 AAElevatorButton::AAElevatorButton()
 {
@@ -166,6 +167,84 @@ void AAElevatorButton::EquipmentRegistrable(AActor* InActor)
 	Super::EquipmentRegistrable(InActor);
 }
 
+void AAElevatorButton::HandleCollisionEnabled(uint8 bIsColActivated)
+{
+	//TArray<UBoxComponent*> AllColComps;
+	//GetComponents<UBoxComponent>(AllColComps);
+
+	TArray<UPrimitiveComponent*> AllColComps;
+	GetComponents<UPrimitiveComponent>(AllColComps);
+
+	if (bIsColActivated) // bIsColActivated => true
+	{
+		for (UPrimitiveComponent* BoxCompVar : AllColComps)
+			BoxCompVar->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else // bIsColActivated => false
+	{
+		for (UPrimitiveComponent* BoxCompVar : AllColComps)
+			BoxCompVar->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void AAElevatorButton::Debug_TowerTo_1stFloor()
+{
+	for (IIEquipmentInitInterface* Var : EquipmentWorldSubSystem->GetEquipmentArr())
+	{
+		TowerBuildingRef = Cast<ATowerBuilding>(Var);
+		if (TowerBuildingRef)
+			break;
+		else
+			continue;
+	}
+	// --
+	this->SetPressedFloorNum(1);
+	EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
+	this->SetCurrFloorNum(PressedFloorNum);
+	// -- 
+
+	TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
+}
+
+void AAElevatorButton::Debug_TowerTo_2ndFloor()
+{
+	for (IIEquipmentInitInterface* Var : EquipmentWorldSubSystem->GetEquipmentArr())
+	{
+		TowerBuildingRef = Cast<ATowerBuilding>(Var);
+		if (TowerBuildingRef)
+			break;
+		else
+			continue;
+	}
+
+	// --
+	this->SetPressedFloorNum(2);
+	EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
+	this->SetCurrFloorNum(PressedFloorNum);
+	// --
+
+	TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
+}
+
+void AAElevatorButton::Debug_TowerTo_3rdFloor()
+{
+	for (IIEquipmentInitInterface* Var : EquipmentWorldSubSystem->GetEquipmentArr())
+	{
+		TowerBuildingRef = Cast<ATowerBuilding>(Var);
+		if (TowerBuildingRef)
+			break;
+		else
+			continue;
+	}
+	// --
+	this->SetPressedFloorNum(3);
+	EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
+	this->SetCurrFloorNum(PressedFloorNum);
+	// --
+
+	TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
+}
+
 void AAElevatorButton::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -181,17 +260,26 @@ void AAElevatorButton::EBBOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 
 			mSoundPlayer->PlaySoundEffect(this, ButtonPressSFX, ActorBaseMesh->GetComponentLocation());
 
+			for (IIEquipmentInitInterface* Var : EquipmentWorldSubSystem->GetEquipmentArr())
+			{
+				TowerBuildingRef = Cast<ATowerBuilding>(Var);
+				if (TowerBuildingRef)
+					break;
+				else
+					continue;
+			}
+
 			if (OverlappedComp == CLB1F) // 1st Button Overlap Begin!
 			{
-				SetPressedFloorNum(1);
+				this->SetPressedFloorNum(1);
 			}
 			else if (OverlappedComp == CLB2F) // 2nd Button Overlap Begin!
 			{
-				SetPressedFloorNum(2);
+				this->SetPressedFloorNum(2);
 			}
 			else if (OverlappedComp == CLB3F) // 3rd Button Overlap Begin!
 			{
-				SetPressedFloorNum(3);
+				this->SetPressedFloorNum(3);
 			}
 
 			if (GetCurrFloorNum() != GetPressedFloorNum())
@@ -199,7 +287,8 @@ void AAElevatorButton::EBBOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 				if (IsValid(EquipmentWorldSubSystem))
 				{
 					EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
-					SetCurrFloorNum(PressedFloorNum);
+					this->SetCurrFloorNum(PressedFloorNum);
+					TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
 				}
 				else
 				{
@@ -366,8 +455,6 @@ void AAElevatorButton::HandleEBReceiveByJail(uint8 InEBControlFlag)
 {
 	SetEBColEnabled(InEBControlFlag);
 }
-
-
 
 void AAElevatorButton::UpdatePullingBackMoveCompleted()
 {

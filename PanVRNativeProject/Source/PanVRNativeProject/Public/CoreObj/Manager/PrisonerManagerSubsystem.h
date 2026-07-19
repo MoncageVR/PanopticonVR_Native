@@ -18,20 +18,36 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void CreateAllPrisoner(); // Spawns all prisoners and initializes their Blackboard data.
+	void Create_Paranormal_Phenomenon();
 
 public:
 #pragma region Getter
 	FORCEINLINE TArray<FRotator> GetFinalAllSpawnRoations() const { return FinalAllSpawnRotations; }
 	FORCEINLINE TArray<FVector> GetFinalAllSpawnPositions() const { return FinalAllSpawnPositions; }
+	FORCEINLINE TArray<FVector> GetFinalAllReSpawnPositions() const { return FinalAllReSpawnPositions; }
 	FORCEINLINE int32 GetPrisonerTotalNum() const { return InGamePrisonerTotalNum; }
 	FORCEINLINE float GetPrisonerSpeed() const { return PrisonerRunSpeed; }
 	FORCEINLINE TMap<uint8, uint8> GetOppositeUniqueNumMaps() const { return OppositeUniqueNumMaps; }
 	FORCEINLINE TArray<FRotator> GetBaseSpawnRotations() const { return BaseSpawnRotations; }
 	FORCEINLINE TArray<FVector> GetBaseSpawnPositions() const { return BaseSpawnPositions; }
+	FORCEINLINE TArray<class APrisonerController*> GetAllPrisonerControllerArr() const { return AllPrisonerControllerArrs; }
 #pragma endregion
 #pragma region Setter
 
 #pragma endregion
+
+protected:
+	UPROPERTY()
+	TObjectPtr<class UDataTable> DTGroupA;
+
+	UPROPERTY()
+	TObjectPtr<class UDataTable> DTGroupB;
+
+	UPROPERTY()
+	TObjectPtr<class UDataTable> DTGroupC;
+
+	UPROPERTY()
+	TArray<TObjectPtr<class UDataTable>> DTGroupArrs;
 
 protected:
 	void InitAllValues();
@@ -55,10 +71,15 @@ private:
 
 	TArray<FRotator> FinalAllSpawnRotations;
 	TArray<FVector> FinalAllSpawnPositions;
-
 	TArray<FVector> FinalAllReSpawnPositions;
-
 	TMap<uint8, uint8> OppositeUniqueNumMaps;
+
+	TArray<class APrisonerController*> AllPrisonerControllerArrs;
+
+	float PhenomenonOccurProbability = 0.0f;
+	int32 RandomChoice;
+
+	TArray<int32> PrisonerPossibleNumbers;
 
 	//TMap<uint8, uint8> Debug_State_;
 };

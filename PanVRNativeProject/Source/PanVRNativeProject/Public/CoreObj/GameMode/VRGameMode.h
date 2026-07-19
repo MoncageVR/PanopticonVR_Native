@@ -20,14 +20,31 @@ public:
 	virtual void StartPlay() override;
 	virtual void InitGameState() override;
 
+	void GameOverCheckEvent();
+
+#pragma region Setter
+	FORCEINLINE void SetIsGameOverFlag(bool bInFlag) { bIsGameOverFlag = bInFlag; }
+#pragma endregion
+
+#pragma region Getter
+	FORCEINLINE bool GetIsGameOverFlag() const { return bIsGameOverFlag; }
+#pragma endregion
+
+
 protected:
 	//void InitPrisonerBBVariables(class APrisonerController* InTempContorller, int32 InIndex);
+
+	UPROPERTY()
+	TObjectPtr<class ACVRPawn> MyVRPawn;
 
 private:
 	class UVRGameInstance* MyVRGameInstance;
 
 	FTimerHandle Debug_Delay_Timer;
 
+	bool bIsGameOverFlag;
+
+
+
 private:
-	void Debug_StartPlay_Delay_Func(); // Debug
 };

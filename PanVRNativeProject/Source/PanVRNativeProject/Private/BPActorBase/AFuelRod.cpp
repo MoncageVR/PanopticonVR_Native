@@ -89,18 +89,26 @@ void AAFuelRod::Tick(float DeltaTime)
 
 }
 
-void AAFuelRod::SetFRIsAttaching(uint32 TempAttaching) { bIsAttaching = TempAttaching; }
-uint32 AAFuelRod::GetFRIsAttaching() const { return bIsAttaching; }
-
-void AAFuelRod::GaugeOperationStart()
+void AAFuelRod::HandleGaugeOperation(bool bIsOperFlag)
 {
-	GaugeTimelineComp->Play();
+	if(bIsOperFlag)
+		GaugeTimelineComp->Play();
+	else
+		GaugeTimelineComp->Stop();
 }
 
-void AAFuelRod::GaugeOperationStop()
-{
-	GaugeTimelineComp->Stop();
-}
+//void AAFuelRod::SetFRIsAttaching(uint32 TempAttaching) { bIsAttaching = TempAttaching; }
+//uint32 AAFuelRod::GetFRIsAttaching() const { return bIsAttaching; }
+
+//void AAFuelRod::GaugeOperationStart()
+//{
+//	GaugeTimelineComp->Play();
+//}
+//
+//void AAFuelRod::GaugeOperationStop()
+//{
+//	GaugeTimelineComp->Stop();
+//}
 
 void AAFuelRod::GaugeOperatingTimeline(float Value)
 {
@@ -108,6 +116,11 @@ void AAFuelRod::GaugeOperatingTimeline(float Value)
 	ActorBaseMesh->SetScalarParameterValueOnMaterials(FName("Gauge"), TempGauge);
 	
 	bool bIsLowGauge = (Value < 25.f);
+
+	if (bIsLowGauge)
+	{
+		UE_LOG(LogTemp, Log, TEXT("FuelRod is LowGauge!"));
+	}
 
 	if (bIsLowGauge)
 	{

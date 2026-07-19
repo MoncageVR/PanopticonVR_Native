@@ -7,6 +7,7 @@
 #include "CoreObj/Manager/MapObjManagerSubsystem.h"
 #include "CoreObj/Manager/PrisonerManagerSubsystem.h"
 #include "Animation/AnimInstance.h"
+#include "CoreObj/GameMode/VRGameMode.h"
 
 UUAITask_Base::UUAITask_Base()
 {
@@ -26,6 +27,8 @@ EBTNodeResult::Type UUAITask_Base::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     if(!ensure(MapObjManagerSubSystemInst)) return EBTNodeResult::Failed;
     PrisonerManagerSubSystemInst = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
     if (!ensure(PrisonerManagerSubSystemInst)) return EBTNodeResult::Failed;
+    MyVRGameMode = Cast<AVRGameMode>(GetWorld()->GetAuthGameMode());
+    if(!ensure(MyVRGameMode)) return EBTNodeResult::Failed;
 
     if (PrisonerControllerObj && PrisonerCharacterObj && MyAnimInst && MapObjManagerSubSystemInst && PrisonerManagerSubSystemInst)
     {

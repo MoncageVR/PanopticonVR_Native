@@ -4,6 +4,7 @@
 #include "BPMainActorBase/TowerBuilding.h"
 #include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
+#include "Components/SplineComponent.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
 
 ATowerBuilding::ATowerBuilding()
@@ -111,7 +112,19 @@ ATowerBuilding::ATowerBuilding()
 		TBAudioPlayer->bAllowSpatialization = false;
 	}
 
-	TArray<UPrimitiveComponent*> AllComps;
+	mTowerRaidMoveRoute = CreateDefaultSubobject<USplineComponent>("mSplineComp");
+	if (mTowerRaidMoveRoute)
+	{
+		mTowerRaidMoveRoute->SetupAttachment(MainRoot);
+		mTowerRaidMoveRoute->SetRelativeLocation(FVector(0.0f, 0.0f, -1900.0f));
+		mTowerRaidMoveRoute->AddSplineLocalPoint(FVector(0.0f, 0.0f, 0.0f));
+		mTowerRaidMoveRoute->AddSplineLocalPoint(FVector(0.0f, 0.0f, 0.0f));
+
+		Init_TowerSplinePointValue();
+		Init_TowerSplineDefaultPointValue();
+	}
+
+	/*TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
 	{
@@ -121,6 +134,70 @@ ATowerBuilding::ATowerBuilding()
 			AllComp->SetCanEverAffectNavigation(false);
 		else
 			continue;
+	}*/
+}
+
+void ATowerBuilding::Init_TowerSplinePointValue()
+{
+	FVector TempLastPointValue = FVector(350.0f, 0.0f, 3450.0f);
+
+	First_SplinePointValueArrs.Add(FVector(325.f, 0.0f, 3060.0f));
+	First_SplinePointValueArrs.Add(FVector(325.f, 0.0f, 3200.0f));
+	First_SplinePointValueArrs.Add(FVector(325.f, 0.0f, 3300.0f));
+	First_SplinePointValueArrs.Add(FVector(TempLastPointValue));
+
+	Second_SplinePointValueArrs.Add(FVector(400.0f, 0.0f, 2200.0f));
+	Second_SplinePointValueArrs.Add(FVector(400.0f, 0.0f, 2800.0f));
+	Second_SplinePointValueArrs.Add(FVector(450.0f, 0.0f, 3025.0f));
+	Second_SplinePointValueArrs.Add(FVector(TempLastPointValue));
+
+	Third_SplinePointValueArrs.Add(FVector(350.0f, 0.0f, 1350.0f));
+	Third_SplinePointValueArrs.Add(FVector(350.0f, 0.0f, 2800.0f));
+	Third_SplinePointValueArrs.Add(FVector(450.0f, 0.0f, 3025.0f));
+	Third_SplinePointValueArrs.Add(FVector(TempLastPointValue));
+}
+
+void ATowerBuilding::Init_TowerSplineDefaultPointValue()
+{
+	for (int32 i = 0; i < 4; i++)
+	{
+		mTowerRaidMoveRoute->SetLocationAtSplinePoint(i, Third_SplinePointValueArrs[i], ESplineCoordinateSpace::Local, true);
+		mTowerRaidMoveRoute->SetRotationAtSplinePoint(i, FRotator(0.0f, 0.0f, 0.0f), ESplineCoordinateSpace::Local, true);
+		mTowerRaidMoveRoute->SetTangentsAtSplinePoint(i, FVector(0.0f, 0.f, 0.f), FVector(0.f, 0.f, 0.f), ESplineCoordinateSpace::Local, true);
+	}
+}
+
+void ATowerBuilding::HandleSplinePointValue(int32 InFloorNum)
+{
+	this->SetSplinePointValueByCurrFloorNum(InFloorNum);
+}
+
+void ATowerBuilding::SetSplinePointValueByCurrFloorNum(int32 InTempFloorNum)
+{
+	if (InTempFloorNum == 1)
+	{
+		for (int32 i = 0; i < 4; i++)
+		{
+			mTowerRaidMoveRoute->SetLocationAtSplinePoint(i, First_SplinePointValueArrs[i], ESplineCoordinateSpace::Local, true);
+		}
+	}
+	else if (InTempFloorNum == 2)
+	{
+		for (int32 i = 0; i < 4; i++)
+		{
+			mTowerRaidMoveRoute->SetLocationAtSplinePoint(i, Second_SplinePointValueArrs[i], ESplineCoordinateSpace::Local, true);
+		}
+	}
+	else if (InTempFloorNum == 3)
+	{
+		for (int32 i = 0; i < 4; i++)
+		{
+			mTowerRaidMoveRoute->SetLocationAtSplinePoint(i, Third_SplinePointValueArrs[i], ESplineCoordinateSpace::Local, true);
+		}
+	}
+	else
+	{
+		return;
 	}
 }
 

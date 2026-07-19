@@ -41,13 +41,17 @@ protected:
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+	UFUNCTION()
+	void OnAssistNeighborMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
 	UAnimMontage* NeighborDoorPickingMontage;
+	TArray<uint8> GrantedUpperStates;
+	TArray<uint8> GrantedLowerStates;
 
 private:
 	void AdjustTargetPrisonerUniqueNum(int32 InMyUniqueNum);
 	FNeighborInfo AdjustTargetMovePos(int32 InTargetPrisonerNum);
-
 	const bool HasReachedNeighborTargetVec(const FVector InChaVec, const FVector InTargetVec);
+
 };

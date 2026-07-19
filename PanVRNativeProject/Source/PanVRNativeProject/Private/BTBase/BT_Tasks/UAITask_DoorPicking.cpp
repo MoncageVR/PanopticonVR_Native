@@ -26,7 +26,6 @@ EBTNodeResult::Type UUAITask_DoorPicking::ExecuteTask(UBehaviorTreeComponent& Ow
 		return EBTNodeResult::Failed;
 	}
 
-	//UPrisonerManagerSubsystem* TempPrisonerMananger = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
 	if (PrisonerManagerSubSystemInst)
 	{
 		int32 TempUniqueNum = AdjustPrisonerUniqueNum(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));

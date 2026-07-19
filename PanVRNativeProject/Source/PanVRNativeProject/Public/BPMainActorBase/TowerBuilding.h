@@ -18,10 +18,13 @@ public:
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 	virtual void Tick(float DeltaTime) override;
 
+	void HandleSplinePointValue(int32 InFloorNum);
+
 public:
 #pragma region Getter
 
 	int32 GetTowerCurrFloorNum() const;
+	TObjectPtr<class USplineComponent> GetTowerRaidMoveRouteComp() const { return mTowerRaidMoveRoute; }
 
 #pragma endregion
 
@@ -56,11 +59,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UAudioComponent> TBAudioPlayer;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USplineComponent> mTowerRaidMoveRoute;
+
 protected:
 	UFUNCTION()
 	void HandleTowerReceiveByEB(FName InTag, int32 InFloor);
-
-	
 
 	UFUNCTION()
 	void ActuallyTowerMoveCompleted();
@@ -72,7 +76,14 @@ private:
 
 	USoundBase* TowerMoveSFXCue;
 
+	TArray<FVector> First_SplinePointValueArrs;
+	TArray<FVector> Second_SplinePointValueArrs;
+	TArray<FVector> Third_SplinePointValueArrs;
+
 private:
 	void ActuallyMoveTower(float TargetTowerHeight);
+	void Init_TowerSplinePointValue();
+	void Init_TowerSplineDefaultPointValue();
 
+	void SetSplinePointValueByCurrFloorNum(int32 InTempFloorNum);
 };

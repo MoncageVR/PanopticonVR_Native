@@ -12,6 +12,7 @@ DECLARE_DELEGATE_OneParam(FOnGameStartDelegateVar, bool);
 DECLARE_DELEGATE(FOnPunchStartDelegateVar);
 DECLARE_DELEGATE(FOnCloseDoorDelegateVar);
 DECLARE_DELEGATE(FOnGloveOperateDelegateVar);
+DECLARE_DELEGATE(FOnLobbyGameStartDelegateVar);
 
 DECLARE_DELEGATE_OneParam(FOnEBOperationControlDelegateVar, uint8);
 
@@ -30,6 +31,7 @@ public:
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	void HandleAddEquipmentArrs(IIEquipmentInitInterface* InActor);
 
+	//void ClearEquipmentArrs();
 
 public:
 #pragma region Getter
@@ -47,6 +49,7 @@ public:
 	FOnPunchStartDelegateVar FPunchStartSignature;
 	FOnCloseDoorDelegateVar FCloseDoorSignature;
 	FOnGloveOperateDelegateVar FGloveOperationSignature;
+	FOnLobbyGameStartDelegateVar FLobbyGameStartSignature;
 #pragma endregion
 
 #pragma region DELEGATE One Param Variables
@@ -65,6 +68,7 @@ public:
 	void NotifyPunchStartBroadCast();
 	void NotifyCloseDoorBroadCast();
 	void NotifyGloveOperateBroadCast();
+	void NotifyGameStartInLobbyBroadCast();
 #pragma endregion
 
 #pragma region DELEGATEFUNC One Param
@@ -77,5 +81,6 @@ public:
 #pragma endregion
 
 private:
+	UPROPERTY()
 	TArray<IIEquipmentInitInterface*> EquipmentArrs;
 };

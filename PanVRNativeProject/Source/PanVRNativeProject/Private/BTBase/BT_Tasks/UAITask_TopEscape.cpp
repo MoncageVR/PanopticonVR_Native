@@ -44,8 +44,8 @@ EBTNodeResult::Type UUAITask_TopEscape::ExecuteTask(UBehaviorTreeComponent& Owne
 			ETeleportType::TeleportPhysics
 		);
 
-		// 4 = UpperState : Dangerous , 12 = LowerState : TopEscape
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 12);
+		// UpperState : Dangerous(4) | LowerState : TopEscape(11)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 11);
 
 		bIsRotatePossibleFlag = true;
 

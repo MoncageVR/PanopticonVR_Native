@@ -14,8 +14,30 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		return EBTNodeResult::Failed;
 	}
 
-	// 2 = UpperState : Move , 5 = LowerState : Run
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+	if (NavSys)
+	{
+		FVector PawnLoc = PrisonerCharacterObj->GetActorLocation();
+		FVector EscapeVec = PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("EscapeTargetVec"));
+
+		FNavLocation SelfProj, TargetProj;
+		bool bSelf = NavSys->ProjectPointToNavigation(PawnLoc, SelfProj, FVector(100.f, 100.f, 300.f));
+		bool bTarget = NavSys->ProjectPointToNavigation(EscapeVec, TargetProj, FVector(100.f, 100.f, 300.f));
+
+		UE_LOG(LogTemp, Warning, TEXT("[RUN] SelfProj=%d  In=%s  Out=%s"),
+			(int32)bSelf, *PawnLoc.ToString(), *SelfProj.Location.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("[RUN] TargetProj=%d  In=%s  Out=%s  dZ=%.1f  dXY=%.1f"),
+			(int32)bTarget, *EscapeVec.ToString(), *TargetProj.Location.ToString(),
+			EscapeVec.Z - TargetProj.Location.Z,
+			FVector::Dist2D(EscapeVec, TargetProj.Location));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[RUN] NavSys is NULL!"));
+	}
+
+	// UpperState : Move(2) | LowerState : Run(4)
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 
 	if (HasReachedTargetPos(
 		PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(),
@@ -27,8 +49,8 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	}
 	else
 	{
-		// 2 = UpperState : Move , 5 = LowerState : Run
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+		// UpperState : Move(2) | LowerState : Run(4)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
 		return EBTNodeResult::Succeeded;
 	}

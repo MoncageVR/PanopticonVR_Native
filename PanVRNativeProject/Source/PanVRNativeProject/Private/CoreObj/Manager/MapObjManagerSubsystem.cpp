@@ -12,6 +12,10 @@ void UMapObjManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 	InitGratingBaseSpawnValue();
 	InitGratingSpawnTransform();
+
+	PrisonerManagerSubSystemRef = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
+	check(PrisonerManagerSubSystemRef);
+
 }
 
 void UMapObjManagerSubsystem::InitGratingBaseSpawnValue()
@@ -76,7 +80,7 @@ void UMapObjManagerSubsystem::CreateAllGratings()
 {
 	AAGrating* TempGrating = nullptr;
 
-	for (int32 i = 0; i < 23; i++)
+	for (int32 i = 0; i < PrisonerManagerSubSystemRef->GetPrisonerTotalNum(); i++)
 	{
 		TempGrating = GetWorld()->SpawnActor<AAGrating>(AAGrating::StaticClass(), this->FinalAllGratingSpawnPositions[i], this->FinalAllGratingSpawnRotations[i]);
 		TempGrating->SetIndividualNum(i);

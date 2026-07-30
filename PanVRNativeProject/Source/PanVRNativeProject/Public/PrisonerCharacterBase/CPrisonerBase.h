@@ -18,13 +18,13 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SMMoustache;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SMBeard;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SMHair;
 
 };

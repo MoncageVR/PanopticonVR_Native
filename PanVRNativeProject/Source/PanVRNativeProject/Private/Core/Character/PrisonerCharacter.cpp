@@ -19,6 +19,12 @@ APrisonerCharacter::APrisonerCharacter()
 		this->GetMesh()->SetCanEverAffectNavigation(false);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_PrisonerSkin2(TEXT("/Game/VRContent/Material/SRS_STAGE_PrisonerSkin_2.SRS_STAGE_PrisonerSkin_2"));
+	if (MatFinder_PrisonerSkin2.Succeeded())
+	{
+		SecondTypePrisonerMat = MatFinder_PrisonerSkin2.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Moustache(TEXT("/Game/VRContent/Prisoner/PrisonerModeling/TargetModeling/Meshes/SM_Moustache.SM_Moustache"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Beard(TEXT("/Game/VRContent/Prisoner/PrisonerModeling/TargetModeling/Meshes/SM_Beard.SM_Beard"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Hair(TEXT("/Game/VRContent/Prisoner/PrisonerModeling/TargetModeling/Meshes/SM_Hair.SM_Hair"));
@@ -64,7 +70,8 @@ APrisonerCharacter::APrisonerCharacter()
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> MatFinder_PrisonerPhysics(TEXT("/Game/VRContent/Prisoner/PrisonerModeling/TargetModeling/Materials/PrisonerPhysicsMaterial.PrisonerPhysicsMaterial"));
 	if (MatFinder_PrisonerPhysics.Succeeded())
 	{
-		this->GetMesh()->SetPhysMaterialOverride(MatFinder_PrisonerPhysics.Object);
+		PrisonerPhysMat = MatFinder_PrisonerPhysics.Object;
+		//this->GetMesh()->SetPhysMaterialOverride(MatFinder_PrisonerPhysics.Object);
 		this->GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
 		this->GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
@@ -76,6 +83,7 @@ APrisonerCharacter::APrisonerCharacter()
 void APrisonerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	this->GetMesh()->SetPhysMaterialOverride(PrisonerPhysMat);
 }
 
 void APrisonerCharacter::Tick(float DeltaTime)
@@ -88,4 +96,16 @@ void APrisonerCharacter::HandleSMHiddenActivation(bool bIsActivateFlag)
 	this->SMMoustache->SetHiddenInGame(bIsActivateFlag);
 	this->SMBeard->SetHiddenInGame(bIsActivateFlag);
 	this->SMHair->SetHiddenInGame(bIsActivateFlag);
+}
+
+void APrisonerCharacter::SetPrisonerAppearanceByDT(bool bIsHairVisible, bool bIsBeardVisible, bool bIsMoustacheVisible)
+{
+	this->SMMoustache->SetVisibility(bIsMoustacheVisible);
+	this->SMBeard->SetVisibility(bIsBeardVisible);
+	this->SMHair->SetVisibility(bIsHairVisible);
+}
+
+void APrisonerCharacter::HandleSetPrisonerNewSkin()
+{
+	this->GetMesh()->SetMaterial(0, SecondTypePrisonerMat);
 }

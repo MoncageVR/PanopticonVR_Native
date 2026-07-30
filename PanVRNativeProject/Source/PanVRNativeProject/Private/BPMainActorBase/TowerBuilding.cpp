@@ -68,6 +68,10 @@ ATowerBuilding::ATowerBuilding()
 		}
 		Barricade->SetHiddenInGame(true);
 		Barricade->SetVisibility(false);
+		//Barricade->SetHiddenInGame(false); // Debug
+		//Barricade->SetVisibility(true); // Debug
+		Barricade->ComponentTags.Add(TEXT("GolfBallBlock"));
+		Barricade->SetCollisionProfileName(TEXT("OverlapAll"));
 	}
 
 	CLSubdueForToilet = CreateDefaultSubobject<UBoxComponent>("CL_SubdueTowerRaid");

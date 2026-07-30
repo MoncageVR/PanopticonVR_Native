@@ -38,6 +38,7 @@ protected:
 	TObjectPtr<class ACVRPawn> MyVRPawn;
 
 private:
+	UPROPERTY()
 	class UVRGameInstance* MyVRGameInstance;
 
 	FTimerHandle Debug_Delay_Timer;

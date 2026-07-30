@@ -5,54 +5,43 @@
 #include "CoreMinimal.h"
 #include "EPrisonerStates.generated.h"
 
-
 UENUM(BlueprintType)
-enum class EPrisonerUpperState : uint8
+enum class EPrisonerUpperStateType : uint8
 {
-	IDLE = 0 UMETA(DisplayName = "Idle"),
-	STOP = 1 UMETA(DisplayName = "Stop"),
-	MOVE = 2 UMETA(DisplayName = "Move"),
-	INTERACT = 3 UMETA(DisplayName = "Interact"),
-	DANGEROUS = 4 UMETA(DisplayName = "Dangerous"),
-	CONFUSION = 5 UMETA(DisplayName = "Confusion")
+	Idle = 0 UMETA(DisplayName = "IDLE"),
+	Stop = 1 UMETA(DisplayName = "STOP"),
+	Move = 2 UMETA(DisplayName = "MOVE"),
+	Interact = 3 UMETA(DisplayName = "INTERACT"),
+	Dangerous = 4 UMETA(DisplayName = "DANGEROUS"),
+	Confusion = 5 UMETA(DisplayName = "CONFUSION")
 };
 
-
 UENUM(BlueprintType)
-enum class EPrisonerLowerState : uint8
+enum class EPrisonerLowerStateType : uint8
 {
-	DEFAULT = 0 UMETA(DisplayName = "Default"),
-	SUBDUE = 1 UMETA(DisplayName = "Subdue"),
-	GOHOME = 2 UMETA(DisplayName = "GoHome"),
-	RANDOMMOVE = 3 UMETA(DisplayName = "RandomMove"),
-	RUN = 4 UMETA(DisplayName = "Run"),
-	FLOATING = 5 UMETA(DisplayName = "Floating"),
-	SPIDERMAN = 6 UMETA(DisplayName = "SpiderMan"),
-	DOORPICKING = 7 UMETA(DisplayName = "DoorPicking"),
-	ANGER = 8 UMETA(DisplayName = "Anger"),
-	ASSISTNEIGHBOR = 9 UMETA(DisplayName = "AssistNeighbor"),
-	TELEPORT = 10 UMETA(DisplayName = "Teleport"),
-	TOPESCAPE = 11 UMETA(DisplayName = "TopEscape"),
-	ESCAPE = 12 UMETA(DisplayName = "Escape"),
-	TOWERRAID = 13 UMETA(DisplayName = "TowerRaid"),
-	RADIOACTIVITY = 14 UMETA(DisplayName = "Radioactivity"),
-	FLAME = 15 UMETA(DisplayName = "Flame"),
-	DANCE = 16 UMETA(DisplayName = "Dance"),
-	HELLO = 17 UMETA(DisplayName = "Hello"),
-	SLEEP = 18 UMETA(DisplayName = "Sleep"),
-	STRECHING = 19 UMETA(DisplayName = "Streching"),
-	POINTING = 20 UMETA(DisplayName = "Pointing"),
-	ROAR = 21 UMETA(DisplayName = "Roar"),
-	EXPLOSION = 22 UMETA(DisplayName = "Explosion"),
-	GOLF = 23 UMETA(DisplayName = "Golf")
+	Default = 0 UMETA(DisplayName = "DEFAULT"),
+	Subdue = 1 UMETA(DisplayName = "SUBDUE"),
+	GoHome = 2 UMETA(DisplayName = "GOHOME"),
+	RandomMove = 3 UMETA(DisplayName = "RANDOMMOVE"),
+	Run = 4 UMETA(DisplayName = "RUN"),
+	Floating = 5 UMETA(DisplayName = "FLOATING"),
+	SpiderMan = 6 UMETA(DisplayName = "SPIDERMAN"),
+	DoorPicking = 7 UMETA(DisplayName = "DOORPICKING"),
+	Anger = 8 UMETA(DisplayName = "ANGER"),
+	AssistNeighbor = 9 UMETA(DisplayName = "ASSISTNEIGHBOR"),
+	Teleport = 10 UMETA(DisplayName = "TELEPORT"),
+	TopEscape = 11 UMETA(DisplayName = "TOPESCAPE"),
+	Escape = 12 UMETA(DisplayName = "ESCAPE"),
+	TowerRaid = 13 UMETA(DisplayName = "TOWERRAID"),
+	Radioactivity = 14 UMETA(DisplayName = "RADIOACTIVITY"),
+	Flame = 15 UMETA(DisplayName = "FLAME"),
+	Distract = 16 UMETA(DisplayName = "DISTRACT"),
+	Roar = 17 UMETA(DisplayName = "ROAR"),
+	Golf = 18 UMETA(DisplayName = "GOLF")
 };
 
-/**
- * 
- */
-//class PANVRNATIVEPROJECT_API EPrisonerStates
-//{
-//public:
-//	EPrisonerStates();
-//	~EPrisonerStates();
-//};
+/*DANCE = 16 UMETA(DisplayName = "Dance"),
+HELLO = 17 UMETA(DisplayName = "Hello"),
+SLEEP = 18 UMETA(DisplayName = "Sleep"),
+STRECHING = 19 UMETA(DisplayName = "Streching"),
+POINTING = 20 UMETA(DisplayName = "Pointing"),*/

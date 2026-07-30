@@ -25,9 +25,8 @@ EBTNodeResult::Type UUAITask_SpiderMan::ExecuteTask(UBehaviorTreeComponent& Owne
 	if (HasReachedCeilingEscapeTargetVec(PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(),
 		PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("CeilingEscapeTargetVec"))))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("SpiderMan State Is Run Target Vec Arrived"));
-		// 4 = UpperState : Dangerous , 14 = LowerState : TowerRaid
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 14);
+		// UpperState : Dangerous(4) | LowerState : TowerRaid(13)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 13);
 		PrisonerCharacterObj->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 		bIsCanMoveAlongSpline = 1;
 
@@ -35,8 +34,8 @@ EBTNodeResult::Type UUAITask_SpiderMan::ExecuteTask(UBehaviorTreeComponent& Owne
 	}
 	else
 	{
-		// 2 = UpperState : Move , 5 = LowerState : Run
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+		// UpperState : Move(2) | LowerState : Run(4)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
 
 		UVREquipmentWorldSubsystem* TempVREquipmentSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();

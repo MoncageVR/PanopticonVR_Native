@@ -36,13 +36,13 @@ public:
 
 public:
 #pragma region Getter
-	int32 GetCurrFloorNum() const;
-	int32 GetPressedFloorNum() const;
+	FORCEINLINE int32 GetCurrFloorNum() const { return CurrFloor; }
+	FORCEINLINE int32 GetPressedFloorNum() const { return PressedFloorNum; }
 #pragma endregion
 
 #pragma region Setter
-	void SetCurrFloorNum(int32 InCurrFloor);
-	void SetPressedFloorNum(int32 InPressFloor);
+	FORCEINLINE void SetCurrFloorNum(int32 InCurrFloor) { CurrFloor = InCurrFloor; }
+	FORCEINLINE void SetPressedFloorNum(int32 InPressFloor) { PressedFloorNum = InPressFloor; }
 #pragma endregion
 
 	UFUNCTION(BlueprintCallable)

@@ -12,9 +12,12 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Core/UMG/VRPawnHUD.h"
 #include "CoreObj/VRGameInstance.h"
 #include "CoreObj/VRGameInstanceSubsystem.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
+#include "CoreObj/GameMode/VRGameMode.h"
+#include "CoreObj/GameMode/VRLobbyGameMode.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "BPMainActorBase/TowerBuilding.h"
 
@@ -62,6 +65,34 @@ ACVRPawn::ACVRPawn()
 	{
 		VRPawnMoveUpCurve = CurveFinder_MoveUp.Object;
 	}
+
+	// Lobby Map In Setting Up&Down Move Timeline And CurveFloat Asset
+	TL_VRPawnDownMoveInLobby = CreateDefaultSubobject<UTimelineComponent>("VRPawn_Down_MoveTLComp_InLobby");
+	if (TL_VRPawnDownMoveInLobby)
+	{
+		TL_VRPawnDownMoveInLobby->SetLooping(false);
+		TL_VRPawnDownMoveInLobby->SetTimelineLength(5.01f);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_LobbyDownMove(TEXT("/Game/VRContent/Blueprints/TimelineCurve/Lobby_PlayerDown_Move_Curve.Lobby_PlayerDown_Move_Curve"));
+	if (CurveFinder_LobbyDownMove.Succeeded())
+	{
+		VRPawnLobbyDownMoveCurve = CurveFinder_LobbyDownMove.Object;
+	}
+
+	TL_VRPawnUpMoveInLobby = CreateDefaultSubobject<UTimelineComponent>("VRPawn_Up_MoveTLComp_InLobby");
+	if (TL_VRPawnUpMoveInLobby)
+	{
+		TL_VRPawnUpMoveInLobby->SetLooping(false);
+		TL_VRPawnUpMoveInLobby->SetTimelineLength(5.01f);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_LobbyUpMove(TEXT("/Game/VRContent/Blueprints/TimelineCurve/Lobby_PlayerUp_Move_Curve.Lobby_PlayerUp_Move_Curve"));
+	if (CurveFinder_LobbyUpMove.Succeeded())
+	{
+		VRPawnLobbyUpMoveCurve = CurveFinder_LobbyUpMove.Object;
+	}
+	// ---
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_ChairPlatform(TEXT("/Game/VRContent/Modeling/Stool(Chair)/ChairFlatform.ChairFlatform"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Lobby(TEXT("/Game/VRContent/Material/SRS_LOBBY.SRS_LOBBY"));
@@ -117,6 +148,12 @@ ACVRPawn::ACVRPawn()
 		IMC_Hands = ContextFinder_Hands.Object;
 	}
 
+	static ConstructorHelpers::FClassFinder<UVRPawnHUD> HUDFinder_VRPawnHUD(TEXT("/Game/VRContent/Blueprints/UserWidget/BPVRPawnHUD.BPVRPawnHUD_C"));
+	if (HUDFinder_VRPawnHUD.Succeeded())
+	{
+		VRPawnHUDWidgetClass = HUDFinder_VRPawnHUD.Class;
+	}
+
 	this->GetCharacterMovement()->GravityScale = 0.0f;
 	this->SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -128,7 +165,6 @@ void ACVRPawn::BeginPlay()
 	Super::BeginPlay();
 
 	this->SpawnHands();
-
 	if (GEngine && GEngine->XRSystem.IsValid())
 	{
 		IHeadMountedDisplay* HMDDevice = GEngine->XRSystem->GetHMDDevice();
@@ -154,30 +190,75 @@ void ACVRPawn::BeginPlay()
 		}
 	}
 
-	FOnTimelineFloat ChangeValue;
-	ChangeValue.BindUFunction(this, FName("VRPawnMoveUpTLFunc"));
-	FOnTimelineEvent FinishedEvent;
-	FinishedEvent.BindUFunction(this, FName("VRPawnMoveUpTLEndFunc"));
-
-	VRPawnUpMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, ChangeValue);
-	VRPawnUpMovementTimeline->SetTimelineFinishedFunc(FinishedEvent);
-
-	if (VRPawnUpMovementTimeline)
-	{
-		VRPawnUpMovementTimeline->PlayFromStart();
-	}
-
-	FOnTimelineFloat DownMoveChangeValue;
-	FOnTimelineEvent DownMoveFinishedEvent;
-	DownMoveChangeValue.BindUFunction(this, FName("VRPawnMoveDownTLFunc"));
-	DownMoveFinishedEvent.BindUFunction(this, FName("VRPawnMoveDownTLEndFunc"));
-	VRPawnDownMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, DownMoveChangeValue);
-	VRPawnDownMovementTimeline->SetTimelineFinishedFunc(DownMoveFinishedEvent);
-
 	UVREquipmentWorldSubsystem* TempEquipmentWorldSubSytem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
+	check(TempEquipmentWorldSubSytem);
 	if (TempEquipmentWorldSubSytem)
 	{
 		TempEquipmentWorldSubSytem->FEBMoveOrderSignature.AddDynamic(this, &ACVRPawn::HandleMovePlayerToFloor);
+		TempEquipmentWorldSubSytem->FLobbyGameStartSignature.BindUObject(this, &ACVRPawn::GameStartInLobbyEvent);
+	}
+
+	if (VRPawnHUDWidgetClass)
+	{
+		APlayerController* mPC = Cast<APlayerController>(GetController());
+		HUDWidgetInstance = CreateWidget<UVRPawnHUD>(mPC, VRPawnHUDWidgetClass);
+		if (HUDWidgetInstance)
+		{
+			HUDWidgetInstance->AddToViewport();
+		}
+	}
+
+	AGameModeBase* CurrGM = UGameplayStatics::GetGameMode(GetWorld());
+	check(CurrGM);
+
+	if (Cast<AVRLobbyGameMode>(CurrGM))
+	{
+		
+		mVRLobbyGMRef = Cast<AVRLobbyGameMode>(CurrGM);
+		check(mVRLobbyGMRef);
+
+		UE_LOG(LogTemp, Log, TEXT("Current GameMode : VRLobbyGameMode!"));
+
+		FOnTimelineFloat LobbyDownMoveChangeValue;
+		FOnTimelineEvent LobbyDownMoveFinishedEvent;
+		LobbyDownMoveChangeValue.BindUFunction(this, FName("VRPawnDownMoveInLobbyTLFunc"));
+		LobbyDownMoveFinishedEvent.BindUFunction(this, FName("VRPawnDownMoveInLobbyTLEndFunc"));
+		TL_VRPawnDownMoveInLobby->AddInterpFloat(VRPawnLobbyDownMoveCurve, LobbyDownMoveChangeValue);
+		TL_VRPawnDownMoveInLobby->SetTimelineFinishedFunc(LobbyDownMoveFinishedEvent);
+
+		FOnTimelineFloat LobbyUpMoveChangeValue;
+		FOnTimelineEvent LobbyUpMoveFinishedEvent;
+		LobbyUpMoveChangeValue.BindUFunction(this, FName("VRPawnUpMoveInLobbyTLFunc"));
+		LobbyUpMoveFinishedEvent.BindUFunction(this, FName("VRPawnUpMoveInLobbyTLEndFunc"));
+		TL_VRPawnUpMoveInLobby->AddInterpFloat(VRPawnLobbyUpMoveCurve, LobbyUpMoveChangeValue);
+		TL_VRPawnUpMoveInLobby->SetTimelineFinishedFunc(LobbyUpMoveFinishedEvent);
+
+		TL_VRPawnDownMoveInLobby->PlayFromStart();
+		HideTowerHeadMesh(true);
+	}
+	else if (Cast<AVRGameMode>(CurrGM))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Current GameMode : VRGameMode!"));
+
+		FOnTimelineFloat UpMoveChangeValue;
+		FOnTimelineEvent UpMoveFinishedEvent;
+		UpMoveChangeValue.BindUFunction(this, FName("VRPawnMoveUpTLFunc"));
+		UpMoveFinishedEvent.BindUFunction(this, FName("VRPawnMoveUpTLEndFunc"));
+		VRPawnUpMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, UpMoveChangeValue);
+		VRPawnUpMovementTimeline->SetTimelineFinishedFunc(UpMoveFinishedEvent);
+
+		FOnTimelineFloat DownMoveChangeValue;
+		FOnTimelineEvent DownMoveFinishedEvent;
+		DownMoveChangeValue.BindUFunction(this, FName("VRPawnMoveDownTLFunc"));
+		DownMoveFinishedEvent.BindUFunction(this, FName("VRPawnMoveDownTLEndFunc"));
+		VRPawnDownMovementTimeline->AddInterpFloat(VRPawnMoveUpCurve, DownMoveChangeValue);
+		VRPawnDownMovementTimeline->SetTimelineFinishedFunc(DownMoveFinishedEvent);
+
+		if (VRPawnUpMovementTimeline)
+		{
+			VRPawnUpMovementTimeline->PlayFromStart();
+			HideTowerHeadMesh(false);
+		}
 	}
 }
 
@@ -190,6 +271,17 @@ void ACVRPawn::InitFloorData()
 	TargetPlayerHeights.Add(194.0f);
 	TargetPlayerHeights.Add(1104.0f);
 	TargetPlayerHeights.Add(2084.0f);
+}
+
+void ACVRPawn::HideTowerHeadMesh(bool bIsHideFlag)
+{
+	ChairTowerHead->SetHiddenInGame(bIsHideFlag);
+}
+
+void ACVRPawn::GameStartInLobbyEvent()
+{
+	UE_LOG(LogTemp, Warning, TEXT("In Lobby Game Start Logic Call Part!"));
+	TL_VRPawnUpMoveInLobby->PlayFromStart();
 }
 
 void ACVRPawn::Tick(float DeltaTimes)
@@ -260,6 +352,31 @@ void ACVRPawn::VRPawnMoveDownTLEndFunc()
 	UE_LOG(LogTemp, Log, TEXT("LobbyMap Open!"));
 	return;
 	//UE_LOG(LogTemp, Log, TEXT("DownMove End"));
+}
+
+void ACVRPawn::VRPawnDownMoveInLobbyTLFunc(float Value)
+{
+	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
+}
+
+void ACVRPawn::VRPawnDownMoveInLobbyTLEndFunc()
+{
+	UE_LOG(LogTemp, Log, TEXT("LobbyMap Arrived!"));
+
+	mVRLobbyGMRef->CheckGameResult();
+}
+
+void ACVRPawn::VRPawnUpMoveInLobbyTLFunc(float Value)
+{
+	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
+}
+
+void ACVRPawn::VRPawnUpMoveInLobbyTLEndFunc()
+{
+	UE_LOG(LogTemp, Log, TEXT("MainMap Open!"));
+	
+
+	mVRLobbyGMRef->HandleOpenMainMap();
 }
 
 void ACVRPawn::PlayerMovingUpAndDownInStage(uint8 InDir)

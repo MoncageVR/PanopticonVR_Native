@@ -17,9 +17,9 @@ struct FPrisonerInfoRow : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TEnumAsByte<EPrisonerUpperState>> ActionUpperState;
+	TArray<TEnumAsByte<EPrisonerUpperStateType>> ActionUpperState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<TEnumAsByte<EPrisonerLowerState>> ActionLowerState;
+	TArray<TEnumAsByte<EPrisonerLowerStateType>> ActionLowerState;
 
 };

@@ -84,11 +84,15 @@ private:
 	int32 IndividualNum = 0;
 	FVector FlyDirection;
 
-	UCurveFloat* UpTheGratingFloatCurve;
-	UCurveFloat* DownTheGratingFloatCurve;
-
 	uint8 bIsGratingOpen;
 	uint8 bIsGratingNotInPlace;
+	uint8 bIsAlreadyFlying;
+
+	UPROPERTY()
+	UCurveFloat* UpTheGratingFloatCurve;
+
+	UPROPERTY()
+	UCurveFloat* DownTheGratingFloatCurve;
 
 private:
 	void GratingOpenStart(); // Grating Up Call Function In Use Timeline PlayFromStart

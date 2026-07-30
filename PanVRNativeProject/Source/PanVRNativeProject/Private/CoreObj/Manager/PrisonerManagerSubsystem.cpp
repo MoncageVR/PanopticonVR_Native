@@ -7,6 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/DataTable.h"
 #include "Core/Enum/EPrisonerStates.h"
+#include "Core/Struct/FPrisonerInfoRow.h"
 
 void UPrisonerManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -22,7 +23,7 @@ void UPrisonerManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UPrisonerManagerSubsystem::InitAllValues()
 {
 	InGamePrisonerTotalNum = 24;
-	PrisonerRunSpeed = 189.0f; // Debug Value : 500.0f , Default Value = 189.0f;
+	PrisonerRunSpeed = 500.0f; // Debug Value : 500.0f , Default Value = 189.0f;
 	Radius = 2000.0f;
 	ZPos = 321.0f;
 	HeightBetweenFloor = 950.0f;
@@ -33,9 +34,9 @@ void UPrisonerManagerSubsystem::InitAllValues()
 	PrisonerPossibleNumbers.Empty();
 	PrisonerPossibleNumbers.Reserve(InGamePrisonerTotalNum);
 
-	DTGroupA = LoadObject<UDataTable>(nullptr, TEXT("/Game/VRContent/Prisoner/LogicSheet/BaseSheets/PanOpticon_Prisoner_Logic1_GroupA.PanOpticon_Prisoner_Logic1_GroupA"));
-	DTGroupB = LoadObject<UDataTable>(nullptr, TEXT("/Game/VRContent/Prisoner/LogicSheet/BaseSheets/PanOpticon_Prisoner_Logic1_GroupB.PanOpticon_Prisoner_Logic1_GroupB"));
-	DTGroupC = LoadObject<UDataTable>(nullptr, TEXT("/Game/VRContent/Prisoner/LogicSheet/BaseSheets/PanOpticon_Prisoner_Logic1_GroupC.PanOpticon_Prisoner_Logic1_GroupC"));
+	DTGroupA = LoadObject<UDataTable>(nullptr, TEXT("/Game/VRContent/Prisoner/LogicSheet/PanOpticon_Prisoner_A_Logic1_Group.PanOpticon_Prisoner_A_Logic1_Group"));
+	DTGroupB = LoadObject<UDataTable>(nullptr, TEXT("/Game/VRContent/Prisoner/LogicSheet/PanOpticon_Prisoner_B_Logic1_Group.PanOpticon_Prisoner_B_Logic1_Group"));
+	DTGroupC = LoadObject<UDataTable>(nullptr, TEXT("/Game/VRContent/Prisoner/LogicSheet/PanOpticon_Prisoner_C_Logic1_Group.PanOpticon_Prisoner_C_Logic1_Group"));
 }
 
 void UPrisonerManagerSubsystem::InitPrisonerBaseSpawnValue()
@@ -139,6 +140,23 @@ void UPrisonerManagerSubsystem::InitOppositePrisonerNumber()
 	}
 }
 
+void UPrisonerManagerSubsystem::ClassifyUniqueNumByRotOfEachZone(int32 InIndex, float InYaw)
+{
+	if ((FMath::IsNearlyEqual(InYaw, 144.0f, 2.0f)) || (FMath::IsNearlyEqual(InYaw, -144.0f, 10.0f)))
+	{
+		AlphaZonePrisonerUniqueNumArrs.Add(InIndex);
+	}
+	else if ((FMath::IsNearlyEqual(InYaw, -108.0f, 2.0f)) || (FMath::IsNearlyEqual(InYaw, -72.0f, 2.0f)) || (FMath::IsNearlyEqual(InYaw, -36.0f, 2.0f)))
+	{
+		BetaZonePrisonerUniqueNumArrs.Add(InIndex);
+	}
+	else if ((FMath::IsNearlyEqual(InYaw, 108.0f, 2.0f)) || (FMath::IsNearlyEqual(InYaw, 72.0f, 2.0f)) || (FMath::IsNearlyEqual(InYaw, 36.0f, 2.0f)))
+	{
+		GammaZonePrisonerUniqueNumArrs.Add(InIndex);
+	}
+	return;
+}
+
 void UPrisonerManagerSubsystem::CreateAllPrisoner()
 {
 	APrisonerCharacter* TempPrisonerCha = nullptr;
@@ -176,37 +194,48 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		TempPrisonerCon->GetBBComp()->SetValueAsVector(TEXT("TopEscapeTargetVec"), FVector(0.f, 0.f, 3700.f));
 		TempPrisonerCon->SetMyLogicDT(DTGroupArrs[i]);
 
-		// Debug!
-		if (i == 0)
+		this->ClassifyUniqueNumByRotOfEachZone(i, TempPrisonerCha->GetActorRotation().Yaw);
+
+		if (TempPrisonerCon->GetMyLogicDT() == DTGroupA)
 		{
-			// Interact(3) - DoorPicking(8)
-			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 4);
-			TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 14);
+			TempPrisonerCha->SetPrisonerAppearanceByDT(true, true, false);
+		}
+		else if (TempPrisonerCon->GetMyLogicDT() == DTGroupB)
+		{
+			TempPrisonerCha->SetPrisonerAppearanceByDT(false, false, true);
+		}
+		else if (TempPrisonerCon->GetMyLogicDT() == DTGroupC)
+		{
+			TempPrisonerCha->SetPrisonerAppearanceByDT(false, false, false);
+			TempPrisonerCha->HandleSetPrisonerNewSkin();
+		}
+
+		// Debug!
+		if (i == 16)
+		{
+			TempPrisonerCon->SetMyLogicDT(DTGroupA);
+
+			TempPrisonerCon->InitializeStatesFromLogicDT();
+
+			//// Interact(3) - DoorPicking(8)
+			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 4);
+			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 14);
 
 			uint8 TempBPUpperValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState"));
-			EPrisonerUpperState TempCPPUpperValue = EPrisonerUpperState::DANGEROUS;
+			EPrisonerUpperStateType TempCPPUpperValue = EPrisonerUpperStateType::Dangerous;
 
 			uint8 TempBPLowerValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState"));
-			EPrisonerLowerState TempCPPLowerValue = EPrisonerLowerState::RADIOACTIVITY;
+			EPrisonerLowerStateType TempCPPLowerValue = EPrisonerLowerStateType::Radioactivity;
 
-			if (TempBPUpperValue == static_cast<uint8>(TempCPPUpperValue))
+			/*if (TempBPUpperValue == static_cast<uint8>(TempCPPUpperValue))
 			{
 				UE_LOG(LogTemp, Log, TEXT("%d Prisoner Upper State Enum Match!"),i);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Log, TEXT("%d Prisoner Upper State Enum NOT Match!"),i);
 			}
 
 			if (TempBPLowerValue == static_cast<uint8>(TempCPPLowerValue))
 			{
 				UE_LOG(LogTemp, Log, TEXT("%d Prisoner Lower State Enum Match!"), i);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Log, TEXT("%d Prisoner Lower State Enum NOT Match!"), i);
-			}
-
+			}*/
 
 			// Move(2) - Run(5)
 			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 2);
@@ -217,28 +246,36 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 13);
 		}
 	}
+
+	AlphaZonePrisonerUniqueNumArrs.Sort();
+	BetaZonePrisonerUniqueNumArrs.Sort();
+	GammaZonePrisonerUniqueNumArrs.Sort();
 }
 
 void UPrisonerManagerSubsystem::Create_Paranormal_Phenomenon()
 {
+	UE_LOG(LogTemp, Log, TEXT("10 Seconds Passing, Paranormal Phenomenon"));
+
 	float TempWeight = (float)(PhenomenonOccurProbability * InGamePrisonerTotalNum);
 	bool bIsPhenomenonResult = true; //bool bIsPhenomenonResult = FMath::FRand() < TempWeight;
 
 	if (bIsPhenomenonResult)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Phenonmenon Occur"));
-
 		// Random Number Create And Choice
 		RandomChoice = FMath::RandRange(0, InGamePrisonerTotalNum - 1);
 
-		//UE_LOG(LogTemp, Log, TEXT("Random Choice : %d"), RandomChoice);
+		UE_LOG(LogTemp, Log, TEXT("Random Choice : %d"), RandomChoice);
 
-		if (PrisonerPossibleNumbers[RandomChoice] != -1)
-		{
-			PrisonerPossibleNumbers[RandomChoice] = -1;
-			//UE_LOG(LogTemp, Log, TEXT("Prisoner Logic Play Part!"));
-			AllPrisonerControllerArrs[RandomChoice]->HandlePrisonerLogic(RandomChoice);
-		}
+		// Debug 0 Number Prisoner Fixed Call
+		//AllPrisonerControllerArrs[0]->HandlePlayPrisonerLogic(0);
+		AllPrisonerControllerArrs[16]->HandlePlayPrisonerLogic(16);
+
+		//if (PrisonerPossibleNumbers[RandomChoice] != -1)
+		//{
+		//	PrisonerPossibleNumbers[RandomChoice] = -1;
+		//	//UE_LOG(LogTemp, Log, TEXT("Prisoner Logic Play Part!"));
+		//	AllPrisonerControllerArrs[RandomChoice]->HandlePlayPrisonerLogic(RandomChoice);
+		//}
 	}
 	else
 	{

@@ -9,3 +9,4 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "CoreObj/GameMode/VRGameMode.h"
+#include "NavigationSystem.h"

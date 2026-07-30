@@ -24,6 +24,8 @@ public:
 
 	// Call The MoveTheHatchSideward Handle Function, 
 	void HandleHatchDoor();
+	// Finds the prisoner in the TopEscape state at the Hatch and transitions them into the Subdue state.
+	void HandleSubduetoTopEscapePrisonerAtHatch();
 
 #pragma region Getter
 	TObjectPtr<class USplineComponent> GetSpiderManMoveRouteComp() const { return mSpiderManMoveRoute; }

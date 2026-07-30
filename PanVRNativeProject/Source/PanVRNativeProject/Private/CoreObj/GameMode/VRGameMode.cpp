@@ -5,12 +5,13 @@
 #include "CoreObj/VRGameInstance.h"
 #include "CoreObj/Manager/PrisonerManagerSubsystem.h"
 #include "CoreObj/Manager/MapObjManagerSubsystem.h"
+#include "CoreObj/VREquipmentWorldSubsystem.h"
 #include "Core/Character/PrisonerCharacter.h"
 #include "Core/Character/PrisonerController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "VRPawn/VRCharacterBase.h"
-#include "Kismet/GameplayStatics.h"
 #include "VRPawn/CVRPawn.h"
+#include "Kismet/GameplayStatics.h"
 
 void AVRGameMode::InitGameState()
 {
@@ -33,6 +34,10 @@ AVRGameMode::AVRGameMode()
 void AVRGameMode::StartPlay()
 {
 	Super::StartPlay();
+
+	/*UVREquipmentWorldSubsystem* TempVREquipmentWorldSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
+	check(TempVREquipmentWorldSubSystem);*/
+	//TempVREquipmentWorldSubSystem->ClearEquipmentArrs();
 
 	MyVRGameInstance = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
 	if (MyVRGameInstance)

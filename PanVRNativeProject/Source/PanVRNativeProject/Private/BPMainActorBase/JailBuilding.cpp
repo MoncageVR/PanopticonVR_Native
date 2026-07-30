@@ -282,16 +282,6 @@ void AJailBuilding::BeginPlay()
 
 	this->Init_JailSplineAllPointValue();
 	HatchDefaultTransform = this->JailHatch->GetRelativeTransform();
-
-	// Debug
-	/*FTimerHandle TempTimer;
-	GetWorldTimerManager().SetTimer(
-		TempTimer,
-		this,
-		&AJailBuilding::HandleExitDoor,
-		2.0f,
-		false
-	);*/
 }
 
 void AJailBuilding::EquipmentRegistrable(AActor* InActor)
@@ -307,6 +297,12 @@ void AJailBuilding::Tick(float DeltaTime)
 
 void AJailBuilding::HandleExitDoor() { MoveTheExitDoorSideward(); }
 void AJailBuilding::HandleHatchDoor() { MoveTheHatchSideward(); }
+
+void AJailBuilding::HandleSubduetoTopEscapePrisonerAtHatch()
+{
+	UE_LOG(LogTemp, Log , TEXT("TopEscape State Prisoner "))
+	CLSubdueHatch->SetGenerateOverlapEvents(true);
+}
 
 void AJailBuilding::InitRefDoorNVector()
 {

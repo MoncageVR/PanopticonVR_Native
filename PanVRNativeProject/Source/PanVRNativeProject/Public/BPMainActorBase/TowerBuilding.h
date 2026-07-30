@@ -74,6 +74,7 @@ private:
 	TArray<float> TargetTowerHeights;
 	FLatentActionInfo TowerLatentInfo;
 
+	UPROPERTY()
 	USoundBase* TowerMoveSFXCue;
 
 	TArray<FVector> First_SplinePointValueArrs;

@@ -460,22 +460,3 @@ void AAElevatorButton::UpdatePullingBackMoveCompleted()
 {
 	ActorBaseMesh->SetCollisionProfileName(FName("PhysicsActor"));
 }
-
-int32 AAElevatorButton::GetCurrFloorNum() const
-{
-	return CurrFloor;
-}
-int32 AAElevatorButton::GetPressedFloorNum() const
-{
-	return PressedFloorNum;
-}
-void AAElevatorButton::SetCurrFloorNum(int32 InCurrFloor)
-{
-	CurrFloor = InCurrFloor;
-	return;
-}
-void AAElevatorButton::SetPressedFloorNum(int32 InPressFloor)
-{
-	PressedFloorNum = InPressFloor;
-	return;
-}

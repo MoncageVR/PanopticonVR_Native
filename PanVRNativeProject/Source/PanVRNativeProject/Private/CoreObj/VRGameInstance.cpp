@@ -11,6 +11,10 @@ void UVRGameInstance::Init()
 {
 	Super::Init();
 
+	bIsGameResultSuccess = false;
+	bIsGameResultFail = false;
+	bIsFirstLobbyEntryFlag = false;
+
 	UVRGameInstanceSubsystem* tempVRGameInstanceSubSystem = GetSubsystem<UVRGameInstanceSubsystem>();
 
 	P_PrisonerManager = GetSubsystem<UPrisonerManagerSubsystem>();

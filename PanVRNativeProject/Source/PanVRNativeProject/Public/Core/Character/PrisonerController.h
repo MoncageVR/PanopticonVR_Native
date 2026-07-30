@@ -29,7 +29,11 @@ public:
 	void State_based_ExecutionTasks_GiventoSomeone(TArray<uint8> InUpperStates, TArray<uint8> InLowerStates);
 
 	UFUNCTION()
-	void HandlePrisonerLogic(int32 InRanNum);
+	void HandlePlayPrisonerLogic(int32 InRanNum);
+
+	// Initializes the UpperState and LowerState based on the assigned logic DataTable.
+	UFUNCTION()
+	void InitializeStatesFromLogicDT();
 
 #pragma region DebugVariables
 public:
@@ -55,7 +59,16 @@ public:
 	FORCEINLINE class UBlackboardData* GetBB() const { return BlackboardAsset; }
 	FORCEINLINE class UBlackboardComponent* GetBBComp() const { return BlackboardComp; }
 	FORCEINLINE class UPrisonerAnimInstance* GetPrisonerAnimInstance() const { return mPrisonerAnimInstancePtr; }
-	FORCEINLINE uint8 GetCurrLowerState() const { return Debug_Lower_State[Debug_CurrStateIndex-1]; }
+	FORCEINLINE uint8 GetCurrLowerState() const
+	{
+		if (Debug_CurrStateIndex <= 0 || Debug_CurrStateIndex > Debug_Lower_State.Num())
+		{
+			return 0;
+		}
+		return Debug_Lower_State[Debug_CurrStateIndex - 1];
+	}
+
+	FORCEINLINE TObjectPtr<class UDataTable> GetMyLogicDT() const { return mLogicDT; }
 #pragma endregion
 
 #pragma region Setter
@@ -84,6 +97,9 @@ protected:
 	class UBlackboardComponent* BlackboardComp;
 
 private:
+	UPROPERTY()
 	UAnimInstance* AnimInstancePtr;
+
+	UPROPERTY()
 	class UPrisonerAnimInstance* mPrisonerAnimInstancePtr;
 };

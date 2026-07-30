@@ -2,6 +2,7 @@
 
 
 #include "CoreObj/VREquipmentWorldSubsystem.h"
+#include "Core/Interface/IEquipmentInitInterface.h"
 
 void UVREquipmentWorldSubsystem::PostInitialize()
 {
@@ -17,6 +18,11 @@ void UVREquipmentWorldSubsystem::HandleAddEquipmentArrs(IIEquipmentInitInterface
 {
 	EquipmentArrs.Add(InActor);
 }
+
+//void UVREquipmentWorldSubsystem::ClearEquipmentArrs()
+//{
+//	EquipmentArrs.Empty();
+//}
 
 void UVREquipmentWorldSubsystem::NotifyGameStartBroadCast()
 {
@@ -36,6 +42,11 @@ void UVREquipmentWorldSubsystem::NotifyCloseDoorBroadCast()
 void UVREquipmentWorldSubsystem::NotifyGloveOperateBroadCast()
 {
 	FGloveOperationSignature.ExecuteIfBound();
+}
+
+void UVREquipmentWorldSubsystem::NotifyGameStartInLobbyBroadCast()
+{
+	FLobbyGameStartSignature.ExecuteIfBound();
 }
 
 void UVREquipmentWorldSubsystem::NotifyEBOperationControlBroadCast(uint8 InControlFlag)

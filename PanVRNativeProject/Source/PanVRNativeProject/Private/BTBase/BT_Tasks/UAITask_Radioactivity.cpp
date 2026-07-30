@@ -36,8 +36,8 @@ EBTNodeResult::Type UUAITask_Radioactivity::ExecuteTask(UBehaviorTreeComponent& 
 			continue;
 	}
 
-	// 4 = UpperState : Dangerous , 15 = LowerState : Radioactivity
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 15);
+	// UpperState : Dangerous(4) | LowerState : Radioactivity(14)
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 14);
 
 	MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Radioactivity::OnExplodeMontageEnded);
 	MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_Radioactivity::OnExplodeMontageEnded);

@@ -25,6 +25,4 @@ protected:
 
 private:
 	UAnimMontage* TeleportingMontage;
-
-
 };

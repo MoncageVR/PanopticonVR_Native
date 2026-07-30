@@ -27,10 +27,21 @@ public:
 	FORCEINLINE UPrisonerManagerSubsystem* GetPrisonerManager() const { return P_PrisonerManager; }
 	FORCEINLINE UMapObjManagerSubsystem* GetMapObjManager() const { return P_MapObjManager; }
 	FORCEINLINE UVREquipmentWorldSubsystem* GetVREquipmentManager() const { return P_VREquipmentManager; }
+	FORCEINLINE bool GetIsGameResultSuccess() const { return bIsGameResultSuccess; }
+	FORCEINLINE bool GetIsGameResultFail() const { return bIsGameResultFail; }
+	FORCEINLINE bool GetIsFirstLobbyEntryFlag() const { return bIsFirstLobbyEntryFlag; }
 #pragma endregion
 
 private:
+	UPROPERTY()
 	class UPrisonerManagerSubsystem* P_PrisonerManager;
+	UPROPERTY()
 	class UMapObjManagerSubsystem* P_MapObjManager;
+	UPROPERTY()
 	class UVREquipmentWorldSubsystem* P_VREquipmentManager;
+
+private:
+	bool bIsGameResultSuccess;
+	bool bIsGameResultFail;
+	bool bIsFirstLobbyEntryFlag;
 };

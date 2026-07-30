@@ -14,15 +14,30 @@ EBTNodeResult::Type UUAITask_RandomMove::ExecuteTask(UBehaviorTreeComponent& Own
 {
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed) return EBTNodeResult::Failed;
 
-	//UE_LOG(LogTemp, Log, TEXT("UAI_Task_RandomMove Success Execute!!"));
+	if (HasReachedRandomTargetPos(PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(), PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("RandomMoveTargetVec"))))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Random Move Target Vector Reach Success!"));
+		// UpperState : Idle(0) | LowerState : Default(0)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
+		PrisonerControllerObj->HandleNextTask();
+	}
+	else
+	{
+		// UpperState : Move(2) | LowerState : Run(4)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
+
+		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
+		PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("RandomMoveTargetVec"), MakeRandomVec());
+		return EBTNodeResult::Succeeded;
+	}
 
 	// 2 = UpperState : Move , 5 = LowerState : Run
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+	/*PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
 
 	PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
-	PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("RandomMoveTargetVec"), MakeRandomVec());
+	PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("RandomMoveTargetVec"), MakeRandomVec());*/
 
-	return EBTNodeResult::Succeeded;
+	return EBTNodeResult::InProgress;
 }
 
 const FVector UUAITask_RandomMove::MakeRandomVec()
@@ -34,4 +49,16 @@ const FVector UUAITask_RandomMove::MakeRandomVec()
 	FVector Center = FVector(0, 0, 0);
 
 	return (Center + Result);
+}
+
+const bool UUAITask_RandomMove::HasReachedRandomTargetPos(const FVector InChaVec, const FVector InTargetVec)
+{
+	bool XReturnValue = false;
+	bool YReturnValue = false;
+	if (FMath::IsNearlyEqual(InChaVec.X, InTargetVec.X, 5.0f))
+		XReturnValue = true;
+
+	if (FMath::IsNearlyEqual(InChaVec.Y, InTargetVec.Y, 5.0f))
+		YReturnValue = true;
+	return (XReturnValue && YReturnValue);
 }

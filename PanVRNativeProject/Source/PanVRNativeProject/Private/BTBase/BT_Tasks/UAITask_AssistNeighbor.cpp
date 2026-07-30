@@ -18,8 +18,8 @@ UUAITask_AssistNeighbor::UUAITask_AssistNeighbor()
 	GrantedUpperStates.Add(2);
 	GrantedUpperStates.Add(4);
 
-	GrantedLowerStates.Add(5);
-	GrantedLowerStates.Add(13);
+	GrantedLowerStates.Add(4);
+	GrantedLowerStates.Add(12);
 }
 
 EBTNodeResult::Type UUAITask_AssistNeighbor::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -29,8 +29,8 @@ EBTNodeResult::Type UUAITask_AssistNeighbor::ExecuteTask(UBehaviorTreeComponent&
 	if (HasReachedNeighborTargetVec(PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(),
 		PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("AssistNeighborMoveTargetVec"))))
 	{
-		// 0 = UpperState : Idle , 1 = LowerState : Default
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1); 
+		// UpperState : Idle(0) | LowerState : Default(0)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
 		PrisonerCharacterObj->GetRootComponent()->SetWorldRotation(TargetStructureInfo.TargetRotation);
 
 		// Neighbor Door Picking Montage Play Logic Parts
@@ -46,8 +46,8 @@ EBTNodeResult::Type UUAITask_AssistNeighbor::ExecuteTask(UBehaviorTreeComponent&
 	}
 	else
 	{
-		// 2 = UpperState : Move , 5 = LowerState : Run
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+		// UpperState : Move(2) | LowerState : Run(4)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
 		AdjustTargetPrisonerUniqueNum(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));
 		PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("AssistNeighborMoveTargetVec"), TargetStructureInfo.TargetPosition);

@@ -24,4 +24,5 @@ private:
 
 private:
 	const FVector MakeRandomVec();
+	const bool HasReachedRandomTargetPos(const FVector InChaVec, const FVector InTargetVec);
 };

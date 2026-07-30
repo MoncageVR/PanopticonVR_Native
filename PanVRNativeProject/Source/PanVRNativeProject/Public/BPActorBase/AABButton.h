@@ -15,55 +15,33 @@ class PANVRNATIVEPROJECT_API AAABButton : public AVRActorBase
 	GENERATED_BODY()
 
 public:
+	// Constructor
 	AAABButton();
-
+	// Called when the game starts or when the actor is spawned.
 	virtual void BeginPlay() override;
+	// Called every frame.
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	UPROPERTY()
 	TObjectPtr<USceneComponent> DefaultSceneRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|StaticMesh")
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> ButtonA;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|Collision")
+	UPROPERTY()
 	TObjectPtr<class UBoxComponent> CLButtonA;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|StaticMesh")
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> ButtonB;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component|Collision")
+	UPROPERTY()
 	TObjectPtr<class UBoxComponent> CLButtonB;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Values")
-	uint8 bIsButtonAPressed = 0;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Values")
-	uint8 bIsButtonBPressed = 0;
-
-private:
-	TArray<uint8> AnswerSaveList;
-	FTimerHandle NextAnswerCheckTimer;
-	FTimerHandle CooldownApplyTimer;
-
-	FString CorrectAnswerFirstCase = TEXT("1010");
-	FString CorrectAnswerSecondCase = TEXT("1001");
-
-	USoundBase* AButtonSFX;
-	USoundBase* BButtonSFX;
-
-private:
-	void ButtonMovement(UStaticMeshComponent* InActuallyMoveSMButton, FVector InTargetPos);
-	void NextAnswerNonInputClear();
-	void CheckCorrectAnswer();
-
-	void CoolDownApplyFunc(uint8 InCoolTimeFlag);
-	void CoolDownUnApplyFunc();
-
 protected:
+	// Begin Overlap For Collision Component Button A
 	UFUNCTION()
 	void OverlapABoxBegin(
 		class UPrimitiveComponent* OverlappedComp,
@@ -73,7 +51,7 @@ protected:
 		bool bFromSweep,
 		const FHitResult& SweepResult
 	);
-
+	// End Overlap For Collision Component Button A
 	UFUNCTION()
 	void OverlapABoxEnd(
 		class UPrimitiveComponent* OverlappedComp,
@@ -81,7 +59,7 @@ protected:
 		class UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex
 	);
-
+	// Begin Overlap For Collision Component Button B
 	UFUNCTION()
 	void OverlapBBoxBegin(
 		class UPrimitiveComponent* OverlappedComp,
@@ -91,7 +69,7 @@ protected:
 		bool bFromSweep,
 		const FHitResult& SweepResult
 	);
-
+	// End Overlap For Collision Component Button B
 	UFUNCTION()
 	void OverlapBBoxEnd(
 		class UPrimitiveComponent* OverlappedComp,
@@ -100,4 +78,25 @@ protected:
 		int32 OtherBodyIndex
 	);
 
+private:
+	TArray<uint8> AnswerSaveList;
+	FTimerHandle NextAnswerCheckTimer;
+	FTimerHandle CooldownApplyTimer;
+	FString CorrectAnswerFirstCase = TEXT("1010");
+	FString CorrectAnswerSecondCase = TEXT("1001");
+	uint8 bIsButtonAPressed = 0;
+	uint8 bIsButtonBPressed = 0;
+	
+	UPROPERTY()
+	USoundBase* AButtonSFX;
+	UPROPERTY()
+	USoundBase* BButtonSFX;
+
+private:
+	void ButtonMovement(UStaticMeshComponent* InActuallyMoveSMButton, FVector InTargetPos);
+	void NextAnswerNonInputClear();
+	void CheckCorrectAnswer();
+
+	void CoolDownApplyFunc(uint8 InCoolTimeFlag);
+	void CoolDownUnApplyFunc();
 };

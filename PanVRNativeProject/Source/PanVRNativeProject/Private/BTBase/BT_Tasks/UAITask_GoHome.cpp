@@ -21,15 +21,15 @@ EBTNodeResult::Type UUAITask_GoHome::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	))
 	{
 		UE_LOG(LogTemp, Log, TEXT("Go Home Spawn Vector Arrived!"));
-		// 0 = UpperState : Idle , 1 = LowerState : Default
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1);
+		// UpperState : Idle(0) | LowerState : Default(0)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
 		//PrisonerControllerObj->OnTaskFinished.Broadcast();
 
 	}
 	else
 	{
-		// 2 = UpperState : Move , 5 = LowerState : Run
-		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
+		// UpperState : Move(2) | LowerState : Run(4)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 		float GoHomeRunSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed")) + 60.0f;
 		//UE_LOG(LogTemp, Log, TEXT("Current Speed : %f"), GoHomeRunSpeed);
 

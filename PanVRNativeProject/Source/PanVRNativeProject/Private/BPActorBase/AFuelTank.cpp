@@ -133,9 +133,9 @@ void AAFuelTank::BeginPlay()
 	this->EquipmentRegistrable(this);
 
 	// Debug
-	EquipFuelRod = GetWorld()->SpawnActor<AAFuelRod>(AAFuelRod::StaticClass(), this->GetRootComponent()->GetComponentTransform());
+	/*EquipFuelRod = GetWorld()->SpawnActor<AAFuelRod>(AAFuelRod::StaticClass(), this->GetRootComponent()->GetComponentTransform());
 	EquipFuelRod->SetFRIsAttaching(false);
-	EquipFuelRod->HandleGaugeOperation(true);
+	EquipFuelRod->HandleGaugeOperation(true);*/
 	// Debug
 }
 

@@ -56,8 +56,6 @@ AAGrating::AAGrating()
 	mDownTimelineComp->SetLooping(false);
 	mDownTimelineComp->SetTimelineLength(0.51f);
 
-	IndividualNum = 0;
-
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_GratingUp(TEXT("/Game/VRContent/Blueprints/TimelineCurve/GratingUp_Curve.GratingUp_Curve"));
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_GratingDown(TEXT("/Game/VRContent/Blueprints/TimelineCurve/GratingDown_Curve.GratingDown_Curve"));
 	if (CurveFinder_GratingUp.Succeeded() && CurveFinder_GratingDown.Succeeded())
@@ -66,7 +64,10 @@ AAGrating::AAGrating()
 		DownTheGratingFloatCurve = CurveFinder_GratingDown.Object;
 	}
 
+	IndividualNum = 0;
 	bIsGratingNotInPlace = 0;
+	bIsAlreadyFlying = 0;
+	bIsGratingOpen = 0;
 
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
@@ -171,7 +172,7 @@ void AAGrating::GratingColOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 {
 	if (OtherComp->ComponentHasTag(TEXT("PrisonerCharacter")))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Prisoner Overlap Begin"));
+		//UE_LOG(LogTemp, Log, TEXT("Prisoner Overlap Begin"));
 
 		APrisonerCharacter* TempCha = Cast<APrisonerCharacter>(OtherActor);
 		if (!ensure(TempCha)) return;
@@ -180,14 +181,24 @@ void AAGrating::GratingColOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 		APrisonerController* TempFinalChaController = Cast<APrisonerController>(TempAIController);
 		if (!ensure(TempFinalChaController)) return;
 
-		if (this->IndividualNum == TempFinalChaController->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")))// &&TempFinalChaController->GetCurrLowerState() == 3)
-		{
-			this->GratingOpen();
-		}
+		//UE_LOG(LogTemp, Log, TEXT("%d"), TempFinalChaController->GetCurrLowerState());
 
-		/*UE_LOG(LogTemp, Log, TEXT("Prisoner Lower State : %d"), TempFinalChaController->GetCurrLowerState());
-			UE_LOG(LogTemp, Log, TEXT("Grating Num : %d"), this->IndividualNum);
-			UE_LOG(LogTemp, Log, TEXT("Prisoner Num : %d"), TempFinalChaController->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));*/
+		if (this->IndividualNum == TempFinalChaController->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")))
+		{
+			if (TempFinalChaController->GetCurrLowerState() == 2)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Return Prisoner Overlap Begin"));
+				if (TempFinalChaController->GetCurrLowerState() == 0)
+				{
+					UE_LOG(LogTemp, Log, TEXT("%d"), TempFinalChaController->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));
+				}
+				this->GratingOpen();
+			}
+			else
+			{
+				return;
+			}
+		}
 	}
 	else
 	{
@@ -203,6 +214,7 @@ void AAGrating::GratingFly(int32 InIndex)
 	}
 	else
 	{
+		bIsGratingNotInPlace = 1;
 		if (IndividualNum == InIndex)
 		{
 			if (!GetWorld()->GetTimerManager().IsTimerActive(ReGenerationTimerHandle))
@@ -257,7 +269,6 @@ void AAGrating::GratingGravityDisable()
 {
 	CollisionComp->SetSimulatePhysics(false);
 	ActorBaseMesh->SetSimulatePhysics(false);
-	bIsGratingNotInPlace = 1;
 }
 
 void AAGrating::ReGenerationGrating()

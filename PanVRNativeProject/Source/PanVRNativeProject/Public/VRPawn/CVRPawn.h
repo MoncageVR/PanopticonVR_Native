@@ -25,8 +25,9 @@ public:
 	void PlayerMovingUpAndDownInStage(uint8 InDir);
 
 	UFUNCTION()
-	void HandleMovePlayerToFloor(FName InTag, int32 InTargetFloor);
+	void HandleMovePlayerToFloor(FName InTag, int32 InTargetFloor); // Function Call By ElevatorButton
 
+	UFUNCTION()
 	void HandleDownMovePlayer(); // Call GameOver 
 
 protected:
@@ -37,7 +38,7 @@ protected:
 	TObjectPtr<UStaticMeshComponent> ChairBody;
 
 	UPROPERTY()
-	TObjectPtr<UStaticMeshComponent> ChairTowerHead;
+	TObjectPtr<UStaticMeshComponent> ChairTowerHead; 
 
 	UPROPERTY()
 	class UInputMappingContext* IMC_Default;
@@ -50,6 +51,12 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UTimelineComponent> VRPawnDownMovementTimeline;
+
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> TL_VRPawnDownMoveInLobby;
+
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> TL_VRPawnUpMoveInLobby;
 
 protected:
 	UFUNCTION()
@@ -64,17 +71,56 @@ protected:
 	UFUNCTION()
 	void VRPawnMoveDownTLEndFunc();
 
+	UFUNCTION()
+	void VRPawnDownMoveInLobbyTLFunc(float Value);
+
+	UFUNCTION()
+	void VRPawnDownMoveInLobbyTLEndFunc();
+
+	UFUNCTION()
+	void VRPawnUpMoveInLobbyTLFunc(float Value);
+
+	UFUNCTION()
+	void VRPawnUpMoveInLobbyTLEndFunc();
+
 private:
+	UPROPERTY()
 	TSubclassOf<class AVRHand> LeftHandBPClass;
+
+	UPROPERTY()
 	TSubclassOf<class AVRHand> RightHandBPClass;
 
+	UPROPERTY()
 	UCurveFloat* VRPawnMoveUpCurve;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> VRPawnLobbyDownMoveCurve;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> VRPawnLobbyUpMoveCurve;
+
+	UPROPERTY()
+	TSubclassOf<class UVRPawnHUD> VRPawnHUDWidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<class UVRPawnHUD> HUDWidgetInstance;
+
+	UPROPERTY()
+	TObjectPtr<class AVRLobbyGameMode> mVRLobbyGMRef;
+
+
 
 	int32 CurrFloorNum;
 	int32 PressedFloorNum;
 	TArray<float> TargetPlayerHeights;
 
 private:
-	void SpawnHands();
 	void InitFloorData();
+
+	void HideTowerHeadMesh(bool bIsHideFlag);
+
+	void GameStartInLobbyEvent();
+
+	UFUNCTION()
+	void SpawnHands();
 };

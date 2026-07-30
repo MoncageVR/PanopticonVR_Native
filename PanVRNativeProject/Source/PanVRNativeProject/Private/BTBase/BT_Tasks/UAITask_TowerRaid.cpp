@@ -28,8 +28,8 @@ EBTNodeResult::Type UUAITask_TowerRaid::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	//UE_LOG(LogTemp, Log, TEXT("UAI_Task_TowerRaid Execute!!"));
 
-	// 4 = UpperState : Dangerous , 14 = LowerState : TowerRaid
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 14);
+	// UpperState : Dangerous(4) | LowerState : TowerRaid(13)
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 13);
 
 	UVREquipmentWorldSubsystem* TempVREquipmentSubSystemRef = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	if (!ensure(TempVREquipmentSubSystemRef)) return EBTNodeResult::Failed;

@@ -13,8 +13,8 @@ EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed)
 		return EBTNodeResult::Failed;
 
-	// 4 = UpperState : Dangerous , 13 = LowerState : Escape
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4,13);
+	// UpperState : Dangerous(4) | LowerState : Escape(12)
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 12);
 
 	FTimerHandle TempTimer;
 	GetWorld()->GetTimerManager().SetTimer(

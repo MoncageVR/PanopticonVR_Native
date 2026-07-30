@@ -35,8 +35,8 @@ void UUAITask_Floating::OnFloatingFinishedFunc()
 
 void UUAITask_Floating::ActuallyMoveToTargetVec()
 {
-	// 2 = UpperState : Move , 6 = LowerState : Floating
-	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 6);
+	// UpperState : Move(2) | LowerState : Floating(5)
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 5);
 
 	bool TempNearlyFlag = false;
 	TempNearlyFlag = FloatingTargetVec.Equals(PrisonerCharacterObj->GetCapsuleComponent()->GetComponentLocation(), 10.0f);

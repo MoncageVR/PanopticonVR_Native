@@ -22,6 +22,9 @@ public:
 
 	void HandleSMHiddenActivation(bool bIsActivateFlag);
 
+	void SetPrisonerAppearanceByDT(bool bIsHairVisible, bool bIsBeardVisible, bool bIsMoustacheVisible);
+	void HandleSetPrisonerNewSkin();
+
 #pragma region Getter
 	FORCEINLINE FVector GetMeshDefaultPos() const { return MeshDefaultRelativePos; }
 	FORCEINLINE FRotator GetMeshDefaultRot() const { return MeshDefaultRelativeRot; }
@@ -31,6 +34,12 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
 	class APrisonerController* PrisonerControllerComp;
+
+	UPROPERTY()
+	class UPhysicalMaterial* PrisonerPhysMat;
+
+	UPROPERTY()
+	TObjectPtr < UMaterialInstance> SecondTypePrisonerMat;
 
 private:
 	FVector MeshDefaultRelativePos;

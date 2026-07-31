@@ -39,7 +39,7 @@ protected:
 	class UPhysicalMaterial* PrisonerPhysMat;
 
 	UPROPERTY()
-	TObjectPtr < UMaterialInstance> SecondTypePrisonerMat;
+	TObjectPtr <UMaterialInstance> SecondTypePrisonerMat;
 
 private:
 	FVector MeshDefaultRelativePos;

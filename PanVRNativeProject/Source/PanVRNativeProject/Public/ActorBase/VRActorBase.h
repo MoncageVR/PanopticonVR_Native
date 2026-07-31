@@ -9,6 +9,7 @@
 #include "VRActorBase.generated.h"
 
 class UVREquipmentWorldSubsystem;
+class UMapObjManagerSubsystem;
 
 UCLASS()
 class PANVRNATIVEPROJECT_API AVRActorBase : public AActor , public IIEquipmentInitInterface
@@ -17,6 +18,7 @@ class PANVRNATIVEPROJECT_API AVRActorBase : public AActor , public IIEquipmentIn
 	
 public:	
 	AVRActorBase();
+	virtual void Tick(float DeltaTime) override;
 
 	class HVRSoundPlayer* mSoundPlayer;
 
@@ -31,8 +33,8 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UVREquipmentWorldSubsystem> EquipmentWorldSubSystem;
 
-public:
-	virtual void Tick(float DeltaTime) override;
+	UPROPERTY()
+	TObjectPtr<UMapObjManagerSubsystem> MapObjManagerGameInstSubsystemRef;
 
 private:
 };

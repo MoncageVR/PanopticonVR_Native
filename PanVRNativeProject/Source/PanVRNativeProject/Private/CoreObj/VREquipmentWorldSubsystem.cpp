@@ -39,11 +39,6 @@ void UVREquipmentWorldSubsystem::NotifyCloseDoorBroadCast()
 	FCloseDoorSignature.ExecuteIfBound();
 }
 
-void UVREquipmentWorldSubsystem::NotifyGloveOperateBroadCast()
-{
-	FGloveOperationSignature.ExecuteIfBound();
-}
-
 void UVREquipmentWorldSubsystem::NotifyGameStartInLobbyBroadCast()
 {
 	FLobbyGameStartSignature.ExecuteIfBound();
@@ -52,6 +47,11 @@ void UVREquipmentWorldSubsystem::NotifyGameStartInLobbyBroadCast()
 void UVREquipmentWorldSubsystem::NotifyEBOperationControlBroadCast(uint8 InControlFlag)
 {
 	FEBOperateControlSignature.ExecuteIfBound(InControlFlag);
+}
+
+void UVREquipmentWorldSubsystem::NotifyJailOperationControlByABBroadCast(FName InOperationTargetObjectName)
+{
+	FJailOperationControlByABSignature.ExecuteIfBound(InOperationTargetObjectName);
 }
 
 void UVREquipmentWorldSubsystem::NotifyMoveOrderBroadCast(FName InTag, int32 InTargetFloor)

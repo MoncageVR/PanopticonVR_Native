@@ -1,9 +1,10 @@
 #include "CoreObj/Manager/MapObjManagerSubsystem.h"
 #include "CoreObj/Manager/PrisonerManagerSubsystem.h"
-#include "BPMainActorBase/AGrating.h"
-#include "BPMainActorBase/JailBuilding.h"
 #include "CoreObj/VRGameInstance.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
+#include "BPMainActorBase/AGrating.h"
+#include "BPMainActorBase/JailBuilding.h"
+#include "BPActorBase/BPSpawnActorBase/APickle.h"
 
 void UMapObjManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -114,4 +115,11 @@ void UMapObjManagerSubsystem::HandleFlyingTheGrating(int32 InGratingNum)
 {
 	AAGrating* TempGrating = GratingsMap.FindRef(InGratingNum);
 	TempGrating->GratingFly(InGratingNum);
+}
+
+void UMapObjManagerSubsystem::HandleSpawnPickleObj()
+{
+	GetWorld()->SpawnActor<AAPickle>(AAPickle::StaticClass(), FTransform(FRotator::ZeroRotator, FVector(82.0f, 0.f, 2250.0f), FVector::OneVector));
+
+	return;
 }

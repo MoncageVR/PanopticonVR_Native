@@ -93,10 +93,14 @@ private:
 	USoundBase* BButtonSFX;
 
 private:
+	// Actually Static Mesh Button Moving Part Function
 	void ButtonMovement(UStaticMeshComponent* InActuallyMoveSMButton, FVector InTargetPos);
+	// If there is no next Input, Clear the input Array
 	void NextAnswerNonInputClear();
+	// Answer Check Main Logic
 	void CheckCorrectAnswer();
-
+	// Cooldown Application Function
 	void CoolDownApplyFunc(uint8 InCoolTimeFlag);
+	// Cooldown removal Function
 	void CoolDownUnApplyFunc();
 };

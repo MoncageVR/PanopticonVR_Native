@@ -23,6 +23,8 @@ public:
 public:
 	void HandleFlyingTheGrating(int32 InGratingNum);
 
+	void HandleSpawnPickleObj();
+
 public:
 #pragma region Getter
 	FORCEINLINE TArray<FRotator> GetFinalAllGratingSpawnRotations() const { return FinalAllGratingSpawnRotations; }

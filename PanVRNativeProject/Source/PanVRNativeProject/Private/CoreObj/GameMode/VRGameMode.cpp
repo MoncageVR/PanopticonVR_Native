@@ -49,7 +49,7 @@ void AVRGameMode::StartPlay()
 		if (ensure(TempPrisonerManagerPtr))
 		{
 			TempPrisonerManagerPtr->CreateAllPrisoner();
-			TempPrisonerManagerPtr->Create_Paranormal_Phenomenon();
+			//TempPrisonerManagerPtr->Create_Paranormal_Phenomenon();
 		}
 
 		if (ensure(TempMapObjManangerPtr))

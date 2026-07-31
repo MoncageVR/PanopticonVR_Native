@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Core/Debug/FDebugLib.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/MapObjManagerSubsystem.h"
 #include "CoreObj/VRGameInstanceSubsystem.h"
 #include "Core/Interface/IEquipmentInitInterface.h"
 
@@ -42,15 +43,16 @@ void AVRActorBase::EquipmentRegistrable(AActor* InActor)
 			if (EquipmentWorldSubSystem)
 			{
 				EquipmentWorldSubSystem->HandleAddEquipmentArrs(TempActor);
-				//UE_LOG(LogTemp, Log, TEXT("EquipmentWorldSubsystme Cast Success!"));
 			}
 			else
 			{
-				//UE_LOG(LogTemp, Log, TEXT("EquipmentWorldSubsystme not Valid!"));
 				return;
 			}
 		}
 	}
+
+	MapObjManagerGameInstSubsystemRef = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
+	check(MapObjManagerGameInstSubsystemRef);
 }
 
 void AVRActorBase::Tick(float DeltaTime)

@@ -233,7 +233,7 @@ void AJailBuilding::BeginPlay()
 		EquipmentWorldSubSystem->FCloseDoorSignature.BindUObject(this, &AJailBuilding::HandleJailReceiveByGlove);
 
 		// AB ¡æ Jail : Bind
-		EquipmentWorldSubSystem->FGloveOperationSignature.BindUObject(this, &AJailBuilding::HandleJailReceiveByABButton);
+		EquipmentWorldSubSystem->FJailOperationControlByABSignature.BindUObject(this, &AJailBuilding::HandleJailReceiveByABButton);
 	}
 	InitRefDoorNVector();
 
@@ -297,12 +297,6 @@ void AJailBuilding::Tick(float DeltaTime)
 
 void AJailBuilding::HandleExitDoor() { MoveTheExitDoorSideward(); }
 void AJailBuilding::HandleHatchDoor() { MoveTheHatchSideward(); }
-
-void AJailBuilding::HandleSubduetoTopEscapePrisonerAtHatch()
-{
-	UE_LOG(LogTemp, Log , TEXT("TopEscape State Prisoner "))
-	CLSubdueHatch->SetGenerateOverlapEvents(true);
-}
 
 void AJailBuilding::InitRefDoorNVector()
 {
@@ -372,7 +366,7 @@ void AJailBuilding::Init_JailSplineAllPointValue()
 
 void AJailBuilding::HandleJailReceiveByEB(FName InTag, int32 InFloor)
 {
-	if (InTag == FName("EB"))
+	if (InTag == FName("EB")) 
 	{
 		CurrFloorNum = InFloor;
 	}
@@ -406,10 +400,12 @@ void AJailBuilding::DownwardMoveTheDoorPlayEvent(float Value)
 	);
 }
 
+// When the door is fully open, Glove is Operated By the JailBuilding
 void AJailBuilding::UpwardMoveTheDoorFinishedEvent()
 {
 	if (IsValid(EquipmentWorldSubSystem))
 	{
+		//UE_LOG(LogTemp, Log, TEXT("2. Glove is Operated By the JailBuilding"));
 		EquipmentWorldSubSystem->NotifyPunchStartBroadCast();
 		// Jail ¡æ Glove : BroadCast Function
 	}
@@ -451,14 +447,25 @@ void AJailBuilding::SidewardMoveTheHatchFinishedEvent()
 	// Game Over Check Logic Execute Parts!
 }
 
+// Jail Building is Operated By Glove
 void AJailBuilding::HandleJailReceiveByGlove()
 {
+	//UE_LOG(LogTemp, Log, TEXT("4. Jail Building is Operated By Glove"));
 	MoveTheDoorDownward();
 }
 
-void AJailBuilding::HandleJailReceiveByABButton()
+// Jail Door Open is Operated By the AB Button
+void AJailBuilding::HandleJailReceiveByABButton(FName InTargetName)
 {
-	EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(false);
-	MoveTheDoorUpward();
+	if (InTargetName == TEXT("Glove"))
+	{
+		//UE_LOG(LogTemp, Log, TEXT("1. Jail Door Open is Operated By the AB Button"));
+		EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(false);
+		MoveTheDoorUpward(); // Jail Glove Door Open Function
+	}
+	else if (InTargetName == TEXT("TopEscape"))
+	{
+		UE_LOG(LogTemp, Log, TEXT("TopEscape State Prisoner "));
+	}
 }
 

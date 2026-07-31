@@ -202,6 +202,8 @@ void AAGlove::BackwardMoveTheGloveFinishedEvent()
 {
 	if (IsValid(EquipmentWorldSubSystem))
 	{
+		// JailBuilding is Operated By the Glove Object
+		//UE_LOG(LogTemp, Log, TEXT("3. JailBuilding is Operated By the Glove Object"));
 		EquipmentWorldSubSystem->NotifyCloseDoorBroadCast(); 
 		// Glove ¡æ Jail : BroadCast Function
 	}
@@ -241,7 +243,7 @@ void AAGlove::HandleGloveReceiveByJail()
 
 // Forward Move Call Function In Use Timeline PlayFromStart
 void AAGlove::MoveTheGloveForward() 
-{ 
+{
 	ForwardMoveTheGloveTimeline->PlayFromStart(); 
 }
 

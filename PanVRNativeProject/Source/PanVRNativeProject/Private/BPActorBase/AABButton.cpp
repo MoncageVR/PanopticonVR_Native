@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "VRPawn/VRCharacterBase.h"
 #include "CoreObj/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/MapObjManagerSubsystem.h"
 
 AAABButton::AAABButton()
 {
@@ -141,6 +142,7 @@ void AAABButton::Tick(float DeltaTime)
 	}
 }
 
+// Begin Overlap For Collision Component Button A
 void AAABButton::OverlapABoxBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (GetWorldTimerManager().IsTimerActive(NextAnswerCheckTimer))
@@ -167,6 +169,7 @@ void AAABButton::OverlapABoxBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	return;
 }
 
+// End Overlap For Collision Component Button A
 void AAABButton::OverlapABoxEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
@@ -185,6 +188,7 @@ void AAABButton::OverlapABoxEnd(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	return;
 }
 
+// Begin Overlap For Collision Component Button B
 void AAABButton::OverlapBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (GetWorldTimerManager().IsTimerActive(NextAnswerCheckTimer))
@@ -211,9 +215,9 @@ void AAABButton::OverlapBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	return;
 }
 
+// End Overlap For Collision Component Button B
 void AAABButton::OverlapBBoxEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-
 	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
 		ButtonMovement(ButtonB, FVector(0.0f, 0.0f, 0.0f));
 
@@ -241,6 +245,7 @@ void AAABButton::ButtonMovement(UStaticMeshComponent* InActuallyMoveSMButton, FV
 	return;
 }
 
+// If there is no next Input, Clear the input Array
 void AAABButton::NextAnswerNonInputClear()
 {
 	if (AnswerSaveList.IsEmpty())
@@ -249,6 +254,7 @@ void AAABButton::NextAnswerNonInputClear()
 		AnswerSaveList.Empty();
 }
 
+// Answer Check Main Logic
 void AAABButton::CheckCorrectAnswer()
 {
 	TArray<FString> TempAnswerSaveStringList;
@@ -260,29 +266,29 @@ void AAABButton::CheckCorrectAnswer()
 
 	FString Result = FString::Join(TempAnswerSaveStringList, TEXT(""));
 
+	check(EquipmentWorldSubSystem);
+
 	if (Result == CorrectAnswerFirstCase)
 	{
-		if (IsValid(EquipmentWorldSubSystem))
-		{
-			EquipmentWorldSubSystem->NotifyGloveOperateBroadCast();
-		}
-		CoolDownApplyFunc(0);
+		EquipmentWorldSubSystem->NotifyJailOperationControlByABBroadCast(TEXT("Glove"));
+		CoolDownApplyFunc(0); // CoolDown 10 Second Apply
 	}
 	else if (Result == CorrectAnswerSecondCase)
 	{
-		// TopEscape Subdue Function Call Part!
-		CoolDownApplyFunc(0);
+		EquipmentWorldSubSystem->NotifyJailOperationControlByABBroadCast(TEXT("TopEscape"));
+		CoolDownApplyFunc(0); // CoolDown 10 Second Apply
 	}
 	else
 	{
-		// Spawn Pickle Function Call Part!
-		CoolDownApplyFunc(1);
+		MapObjManagerGameInstSubsystemRef->HandleSpawnPickleObj();
+		CoolDownApplyFunc(1); // CoolDown 2 Second Apply
 	}
 
 	TempAnswerSaveStringList.Empty();
 	AnswerSaveList.Empty();
 }
 
+// Cooldown Application Function
 void AAABButton::CoolDownApplyFunc(uint8 InCoolTimeFlag)
 {
 	CLButtonA->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -313,6 +319,7 @@ void AAABButton::CoolDownApplyFunc(uint8 InCoolTimeFlag)
 	}
 }
 
+// Cooldown removal Function
 void AAABButton::CoolDownUnApplyFunc()
 {
 	ButtonMovement(ButtonA, FVector(0.0f, 0.0f, 0.0f));

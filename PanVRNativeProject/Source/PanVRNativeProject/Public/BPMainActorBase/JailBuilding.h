@@ -24,8 +24,6 @@ public:
 
 	// Call The MoveTheHatchSideward Handle Function, 
 	void HandleHatchDoor();
-	// Finds the prisoner in the TopEscape state at the Hatch and transitions them into the Subdue state.
-	void HandleSubduetoTopEscapePrisonerAtHatch();
 
 #pragma region Getter
 	TObjectPtr<class USplineComponent> GetSpiderManMoveRouteComp() const { return mSpiderManMoveRoute; }
@@ -127,13 +125,15 @@ protected:
 
 #pragma endregion
 
-	// Glove ¡æ Jail : Receive Function
+	// Glove ¡æ Jail : Receive Function : GloveDoor DownMove(Close) Request
 	UFUNCTION()
 	void HandleJailReceiveByGlove();
 
-	// AB ¡æ Jail : Receive Function
+	// AB ¡æ Jail : Receive Function : 
+	// Case1 : InTargetName == Glove : GloveDoor UpMove(Open) Request
+	// Case2 : InTargetName == TopEscape : TopEscape State Prisoner Subdue Request
 	UFUNCTION()
-	void HandleJailReceiveByABButton();
+	void HandleJailReceiveByABButton(FName InTargetName);
 
 	UFUNCTION()
 	void HandleJailReceiveByEB(FName InTag, int32 InFloor);

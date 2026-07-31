@@ -10,11 +10,11 @@ class IIEquipmentInitInterface;
 
 DECLARE_DELEGATE_OneParam(FOnGameStartDelegateVar, bool);
 DECLARE_DELEGATE(FOnPunchStartDelegateVar);
-DECLARE_DELEGATE(FOnCloseDoorDelegateVar);
-DECLARE_DELEGATE(FOnGloveOperateDelegateVar);
+DECLARE_DELEGATE(FOnCloseDoorJailDelegateVar);
 DECLARE_DELEGATE(FOnLobbyGameStartDelegateVar);
 
 DECLARE_DELEGATE_OneParam(FOnEBOperationControlDelegateVar, uint8);
+DECLARE_DELEGATE_OneParam(FOnJailOperationControlByABDelegateVar, FName);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEBMoveOrderDelegateVar, FName, InTag, int32, InTargetFloor);
 
@@ -47,13 +47,13 @@ public:
 	// GTWLever Related GameStart Related Deletage Variable
 	FOnGameStartDelegateVar FGameStartSignature;
 	FOnPunchStartDelegateVar FPunchStartSignature;
-	FOnCloseDoorDelegateVar FCloseDoorSignature;
-	FOnGloveOperateDelegateVar FGloveOperationSignature;
+	FOnCloseDoorJailDelegateVar FCloseDoorSignature;
 	FOnLobbyGameStartDelegateVar FLobbyGameStartSignature;
 #pragma endregion
 
 #pragma region DELEGATE One Param Variables
 	FOnEBOperationControlDelegateVar FEBOperateControlSignature;
+	FOnJailOperationControlByABDelegateVar FJailOperationControlByABSignature;
 #pragma endregion
 
 #pragma region Two Param Variables
@@ -67,12 +67,12 @@ public:
 	void NotifyGameStartBroadCast();
 	void NotifyPunchStartBroadCast();
 	void NotifyCloseDoorBroadCast();
-	void NotifyGloveOperateBroadCast();
 	void NotifyGameStartInLobbyBroadCast();
 #pragma endregion
 
 #pragma region DELEGATEFUNC One Param
 	void NotifyEBOperationControlBroadCast(uint8 InControlFlag);
+	void NotifyJailOperationControlByABBroadCast(FName InOperationTargetObjectName);
 #pragma endregion
 
 #pragma region DELEGATEFUNC Two Param

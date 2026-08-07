@@ -1,13 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ActorBase/VRActorBase.h"
 #include "Components/BoxComponent.h"
-#include "Core/Debug/FDebugLib.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
-#include "CoreObj/VRGameInstanceSubsystem.h"
-#include "Core/Interface/IEquipmentInitInterface.h"
+#include "Debug/FDebugLib.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRGameInstanceSubsystem.h"
+#include "CoreCommon/Interface/IEquipmentInitInterface.h"
 
 AVRActorBase::AVRActorBase()
 {
@@ -24,6 +21,7 @@ AVRActorBase::AVRActorBase()
 void AVRActorBase::BeginPlay()
 {
 	Super::BeginPlay();
+	EquipmentWorldSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 }
 
 void AVRActorBase::EquipmentRegistrable(AActor* InActor)
@@ -35,6 +33,18 @@ void AVRActorBase::EquipmentRegistrable(AActor* InActor)
 
 	if (InActor->Implements<UIEquipmentInitInterface>())
 	{
+		if (EquipmentWorldSubSystem)
+		{
+			EquipmentWorldSubSystem->HandleAddEquipmentArrs(InActor);
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	/*if (InActor->Implements<UIEquipmentInitInterface>())
+	{
 		IIEquipmentInitInterface* TempActor = Cast<IIEquipmentInitInterface>(InActor);
 		if (TempActor)
 		{
@@ -42,14 +52,14 @@ void AVRActorBase::EquipmentRegistrable(AActor* InActor)
 
 			if (EquipmentWorldSubSystem)
 			{
-				EquipmentWorldSubSystem->HandleAddEquipmentArrs(TempActor);
+				EquipmentWorldSubSystem->HandleAddEquipmentArrs(InActor);
 			}
 			else
 			{
 				return;
 			}
 		}
-	}
+	}*/
 
 	MapObjManagerGameInstSubsystemRef = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
 	check(MapObjManagerGameInstSubsystemRef);

@@ -1,11 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/UAITask_Base.h"
-#include "Core/Character/PrisonerCharacter.h"
-#include "Core/Character/PrisonerController.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
-#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
+#include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
 #include "Animation/AnimInstance.h"
 #include "CoreObj/GameMode/VRGameMode.h"
 

@@ -1,12 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "BTBase/BT_Tasks/UAITask_TowerRaid.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "BPActorBase/AElevatorButton.h"
-#include "BPMainActorBase/TowerBuilding.h"
-#include "CoreObj/VRGameInstance.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
+#include "EquipmentActor/AElevatorButton.h"
+#include "MainActor/TowerBuilding.h"
+#include "CoreObj/Manager/VRGameInstance.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "Components/SplineComponent.h"
 
 UUAITask_TowerRaid::UUAITask_TowerRaid()
@@ -33,19 +30,20 @@ EBTNodeResult::Type UUAITask_TowerRaid::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	UVREquipmentWorldSubsystem* TempVREquipmentSubSystemRef = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	if (!ensure(TempVREquipmentSubSystemRef)) return EBTNodeResult::Failed;
-
-	for (IIEquipmentInitInterface* Var : TempVREquipmentSubSystemRef->GetEquipmentArr())
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipmentSubSystemRef->GetEquipmentArr())
 	{
-		ElevatorButtonObj = Cast<AAElevatorButton>(Var);
+		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+		ElevatorButtonObj = Cast<AAElevatorButton>(IEquipPtr);
 		if (ElevatorButtonObj)
 			break;
 		else
 			continue;
 	}
 
-	for (IIEquipmentInitInterface* Var : TempVREquipmentSubSystemRef->GetEquipmentArr())
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipmentSubSystemRef->GetEquipmentArr())
 	{
-		TowerBuildingObj = Cast<ATowerBuilding>(Var);
+		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+		TowerBuildingObj = Cast<ATowerBuilding>(IEquipPtr);
 		if (TowerBuildingObj)
 			break;
 		else

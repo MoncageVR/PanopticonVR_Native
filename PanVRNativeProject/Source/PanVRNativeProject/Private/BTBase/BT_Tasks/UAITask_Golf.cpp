@@ -1,14 +1,14 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/BT_Tasks/UAITask_Golf.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "Core/Interface/IEquipmentInitInterface.h"
-#include "BPActorBase/AElevatorButton.h"
-#include "BPActorBase/BPSpawnActorBase/AGolfClub.h"
-#include "BPActorBase/BPSpawnActorBase/AGolfBall.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreCommon/Interface/IEquipmentInitInterface.h"
+#include "EquipmentActor/AElevatorButton.h"
+#include "EquipmentActor/Spawned_Actors/AGolfClub.h"
+#include "EquipmentActor/Spawned_Actors/AGolfBall.h"
 
 UUAITask_Golf::UUAITask_Golf()
 {
@@ -146,9 +146,10 @@ float UUAITask_Golf::DeterminetheTowerHeight()
 
 	check(TempVREquipmentWorldSubSystemRef);
 
-	for (IIEquipmentInitInterface* Var : TempVREquipmentWorldSubSystemRef->GetEquipmentArr())
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipmentWorldSubSystemRef->GetEquipmentArr())
 	{
-		TempElevatorObj = Cast<AAElevatorButton>(Var);
+		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+		TempElevatorObj = Cast<AAElevatorButton>(IEquipPtr);
 		if (TempElevatorObj)
 			break;
 		else

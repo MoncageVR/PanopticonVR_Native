@@ -1,16 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "CoreObj/GameMode/VRGameMode.h"
-#include "CoreObj/VRGameInstance.h"
-#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "Core/Character/PrisonerCharacter.h"
-#include "Core/Character/PrisonerController.h"
+#include "CoreObj/Manager/VRGameInstance.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "VRPawn/VRCharacterBase.h"
-#include "VRPawn/CVRPawn.h"
+#include "CoreCommon/VRPawn/VRCharacterBase.h"
+#include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Kismet/GameplayStatics.h"
 
 void AVRGameMode::InitGameState()
@@ -49,7 +46,7 @@ void AVRGameMode::StartPlay()
 		if (ensure(TempPrisonerManagerPtr))
 		{
 			TempPrisonerManagerPtr->CreateAllPrisoner();
-			//TempPrisonerManagerPtr->Create_Paranormal_Phenomenon();
+			TempPrisonerManagerPtr->Create_Paranormal_Phenomenon();
 		}
 
 		if (ensure(TempMapObjManangerPtr))

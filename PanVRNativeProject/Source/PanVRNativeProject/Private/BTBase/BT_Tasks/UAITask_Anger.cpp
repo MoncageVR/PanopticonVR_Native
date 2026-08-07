@@ -1,6 +1,6 @@
 #include "BTBase/BT_Tasks/UAITask_Anger.h"
-#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 
 UUAITask_Anger::UUAITask_Anger()

@@ -1,8 +1,8 @@
 #include "BTBase/BT_Tasks/UAITask_AssistNeighbor.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
-#include "BPMainActorBase/AGrating.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
+#include "MainActor/AGrating.h"
 
 UUAITask_AssistNeighbor::UUAITask_AssistNeighbor()
 {

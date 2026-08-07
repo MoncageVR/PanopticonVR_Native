@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/BT_Tasks/UAITask_Subdue.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
-#include "CoreObj/Manager/PrisonerManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
 
 UUAITask_Subdue::UUAITask_Subdue()
 {

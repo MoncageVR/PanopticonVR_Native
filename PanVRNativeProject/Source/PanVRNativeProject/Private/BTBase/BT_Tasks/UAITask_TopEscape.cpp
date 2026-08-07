@@ -1,10 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/BT_Tasks/UAITask_TopEscape.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "BPMainActorBase/JailBuilding.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "MainActor/JailBuilding.h"
 
 UUAITask_TopEscape::UUAITask_TopEscape()
 {
@@ -22,9 +22,11 @@ EBTNodeResult::Type UUAITask_TopEscape::ExecuteTask(UBehaviorTreeComponent& Owne
 	//bIsRotatePossibleFlag = false;
 	UVREquipmentWorldSubsystem* TempVREquipmentSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	if (!ensure(TempVREquipmentSubSystem)) return EBTNodeResult::Failed;
-	for (IIEquipmentInitInterface* Var : TempVREquipmentSubSystem->GetEquipmentArr())
+
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipmentSubSystem->GetEquipmentArr())
 	{
-		mJailBuildingObj = Cast<AJailBuilding>(Var);
+		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+		mJailBuildingObj = Cast<AJailBuilding>(IEquipPtr);
 		if (mJailBuildingObj)
 			break;
 		else

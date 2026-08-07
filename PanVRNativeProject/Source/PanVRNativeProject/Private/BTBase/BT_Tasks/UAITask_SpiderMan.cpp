@@ -1,11 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/BT_Tasks/UAITask_SpiderMan.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "Components/SplineComponent.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "BPMainActorBase/JailBuilding.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "MainActor/JailBuilding.h"
 
 UUAITask_SpiderMan::UUAITask_SpiderMan()
 {
@@ -40,9 +40,11 @@ EBTNodeResult::Type UUAITask_SpiderMan::ExecuteTask(UBehaviorTreeComponent& Owne
 
 		UVREquipmentWorldSubsystem* TempVREquipmentSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 		if (!ensure(TempVREquipmentSubSystem)) return EBTNodeResult::Failed;
-		for (IIEquipmentInitInterface* Var : TempVREquipmentSubSystem->GetEquipmentArr())
+
+		for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipmentSubSystem->GetEquipmentArr())
 		{
-			JailBuildingObj = Cast<AJailBuilding>(Var);
+			IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+			JailBuildingObj = Cast<AJailBuilding>(IEquipPtr);
 			if (JailBuildingObj)
 				break;
 			else

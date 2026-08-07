@@ -1,12 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
-#include "CoreObj/VRGameInstance.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "VRPawn/CVRPawn.h"
+#include "CoreObj/Manager/VRGameInstance.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Kismet/GameplayStatics.h"
-#include "BPMainActorBase/AGameResultScreen.h"
+#include "MainActor/AGameResultScreen.h"
 
 AVRLobbyGameMode::AVRLobbyGameMode()
 {
@@ -31,7 +31,7 @@ void AVRLobbyGameMode::CheckGameResult()
 	UVREquipmentWorldSubsystem* TempVREquipmentWorldSubSystemRef = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	AAGameResultScreen* TempGameResultScreen = nullptr;
 
-	check(TempVREquipmentWorldSubSystemRef);
+	/*check(TempVREquipmentWorldSubSystemRef);
 	for (IIEquipmentInitInterface* Var : TempVREquipmentWorldSubSystemRef->GetEquipmentArr())
 	{
 		TempGameResultScreen = Cast<AAGameResultScreen>(Var);
@@ -39,7 +39,7 @@ void AVRLobbyGameMode::CheckGameResult()
 			break;
 		else
 			continue;
-	}
+	}*/
 
 	if (!mVRGameInstanceRef->GetIsFirstLobbyEntryFlag())
 	{

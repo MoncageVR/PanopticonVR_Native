@@ -1,9 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/BT_Tasks/UAITask_Flame.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "CoreObj/Manager/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
 #include "NavigationSystem.h"
 #include "NavigationSystem/Public/NavigationPath.h"
 #include "Components/SphereComponent.h"

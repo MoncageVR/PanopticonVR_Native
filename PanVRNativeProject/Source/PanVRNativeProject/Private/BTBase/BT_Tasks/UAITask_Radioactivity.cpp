@@ -1,11 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+
 
 
 #include "BTBase/BT_Tasks/UAITask_Radioactivity.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
-#include "CoreObj/VREquipmentWorldSubsystem.h"
-#include "BPActorBase/AFuelTank.h"
-#include "BPActorBase/AFuelRod.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "EquipmentActor/FuelRelated_Actors/AFuelTank.h"
+#include "EquipmentActor/Spawned_Actors/AFuelRod.h"
 
 UUAITask_Radioactivity::UUAITask_Radioactivity()
 {
@@ -27,9 +27,11 @@ EBTNodeResult::Type UUAITask_Radioactivity::ExecuteTask(UBehaviorTreeComponent& 
 
 	UVREquipmentWorldSubsystem* TempVREquipmentSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	if (!ensure(TempVREquipmentSubSystem)) return EBTNodeResult::Failed;
-	for (IIEquipmentInitInterface* Var : TempVREquipmentSubSystem->GetEquipmentArr())
+
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipmentSubSystem->GetEquipmentArr())
 	{
-		FuelTankObj = Cast<AAFuelTank>(Var);
+		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+		FuelTankObj = Cast<AAFuelTank>(IEquipPtr);
 		if (FuelTankObj)
 			break;
 		else

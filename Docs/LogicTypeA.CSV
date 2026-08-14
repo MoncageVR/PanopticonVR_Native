@@ -1,0 +1,16 @@
+RowName,ActionUpperState,ActionLowerState
+1_Prisoner,"(Interact,Move,Dangerous)","(DoorPicking,Run,Escape)"
+2_Prisoner,"(Interact,Interact,Move,Dangerous)","(DoorPicking,AssistNeighbor,Run,Escape)"
+3_Prisoner,(Dangerous),(Radioactivity)
+4_Prisoner,"(Interact,Confusion,Confusion)","(DoorPicking,Distract,Golf)"
+5_Prisoner,"(Confusion,Interact,Move,Interact,Move,Dangerous)","(Roar,Anger,RandomMove,AssistNeighbor,Run,Escape)"
+6_Prisoner,"(Confusion,Confusion,Interact,Move,Dangerous)","(Distract,Distract,Teleport,SpiderMan,TopEscape)"
+7_Prisoner,"(Interact,Move,Confusion,Move)","(DoorPicking,RandomMove,Distract,GoHome)"
+8_Prisoner,"(Interact,Interact,Move)","(DoorPicking,AssistNeighbor,GoHome)"
+9_Prisoner,"(Interact,Move,Move,Dangerous)","(DoorPicking,RandomMove,Floating,TopEscape)"
+10_Prisoner,"(Confusion,Interact,Stop)","(Roar,Teleport,Subdue)"
+11_Prisoner,(Confusion),(Distract)
+12_Prisoner,(Confusion),(Roar)
+13_Prisoner,"(Interact,Move,Move,Interact,Move,Dangerous)","(Anger,Run,GoHome,Anger,Run,Escape)"
+14_Prisoner,"(Interact,Confusion,Stop)","(DoorPicking,Distract,Subdue)"
+15_Prisoner,"(Interact,Move,Move,Move,Move)","(Teleport,RandomMove,Run,RandomMove,GoHome)"

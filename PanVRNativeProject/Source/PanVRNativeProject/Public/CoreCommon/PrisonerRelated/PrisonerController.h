@@ -2,9 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "PrisonerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskFinishedVar);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPrisonerLowerStateChangedDelegateVar, APrisonerController*, PrisonerCon, uint8, NewLowerState);
+
 
 /**
  *
@@ -18,12 +22,15 @@ public:
 	UPROPERTY()
 	FOnTaskFinishedVar OnTaskFinished;
 
+	UPROPERTY()
+	FOnPrisonerLowerStateChangedDelegateVar FOnPrisonerLowerStateChangedSignature;
+
 public:
 	APrisonerController();
 
 	virtual void Tick(float DeltaTimes) override;
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void State_based_ExecutionTasks_GiventoSomeone(TArray<uint8> InUpperStates, TArray<uint8> InLowerStates);
 
 	UFUNCTION()
@@ -32,6 +39,11 @@ public:
 	// Initializes the UpperState and LowerState based on the assigned logic DataTable.
 	UFUNCTION()
 	void InitializeStatesFromLogicDT();
+
+	void HandleFlameTransitionColNTimer(uint8 InHandleFlag);
+
+	UFUNCTION()
+	void HandleRunBT();
 
 #pragma region DebugVariables
 public:
@@ -53,18 +65,11 @@ public:
 
 public:
 #pragma region Getter
-	FORCEINLINE class UBehaviorTree* GetBT() const { return BehaviorTreeAsset; }
-	FORCEINLINE class UBlackboardData* GetBB() const { return BlackboardAsset; }
+	FORCEINLINE TObjectPtr<class UBehaviorTree> GetBT() const { return BehaviorTreeAsset; }
+	FORCEINLINE TObjectPtr<class UBlackboardData> GetBB() const { return BlackboardAsset; }
 	FORCEINLINE class UBlackboardComponent* GetBBComp() const { return BlackboardComp; }
-	FORCEINLINE class UPrisonerAnimInstance* GetPrisonerAnimInstance() const { return mPrisonerAnimInstancePtr; }
-	FORCEINLINE uint8 GetCurrLowerState() const
-	{
-		if (Debug_CurrStateIndex <= 0 || Debug_CurrStateIndex > Debug_Lower_State.Num())
-		{
-			return 0;
-		}
-		return Debug_Lower_State[Debug_CurrStateIndex - 1];
-	}
+	FORCEINLINE TObjectPtr<class UPrisonerAnimInstance > GetPrisonerAnimInstance() const { return mPrisonerAnimInstancePtr; }
+	FORCEINLINE uint8 GetCurrLowerState() const { return BlackboardComp ? BlackboardComp->GetValueAsEnum(TEXT("CurrLowerState")) : 0; }
 
 	FORCEINLINE TObjectPtr<class UDataTable> GetMyLogicDT() const { return mLogicDT; }
 #pragma endregion
@@ -86,18 +91,40 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
 	UPROPERTY()
-	class UBehaviorTree* BehaviorTreeAsset;
+	TObjectPtr<class UBehaviorTree> BehaviorTreeAsset;
 
 	UPROPERTY()
-	class UBlackboardData* BlackboardAsset;
+	TObjectPtr<class UBlackboardData> BlackboardAsset;
 
 	UPROPERTY()
 	class UBlackboardComponent* BlackboardComp;
 
+	UFUNCTION()
+	void FlameCLOverlapBegin(
+		class UPrimitiveComponent* OverlappedComp,
+		class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
 private:
 	UPROPERTY()
-	UAnimInstance* AnimInstancePtr;
+	TObjectPtr<UAnimInstance> AnimInstancePtr;
 
 	UPROPERTY()
-	class UPrisonerAnimInstance* mPrisonerAnimInstancePtr;
+	TObjectPtr<class UPrisonerAnimInstance> mPrisonerAnimInstancePtr;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class USphereComponent> CL_FlameTransition;
+
+	FTimerHandle FLameTransitionTimer;
+
+private:
+	UFUNCTION()
+	void AttachSphereCollision();
+
+	UFUNCTION()
+	void ActuallyFlameTransition();
 };

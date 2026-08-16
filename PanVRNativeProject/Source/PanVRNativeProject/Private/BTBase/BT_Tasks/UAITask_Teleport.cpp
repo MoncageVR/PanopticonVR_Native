@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Teleport.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 
@@ -22,6 +19,7 @@ EBTNodeResult::Type UUAITask_Teleport::ExecuteTask(UBehaviorTreeComponent& Owner
 	PrisonerCharacterObj->GetRootComponent()->SetWorldLocationAndRotation(PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("TeleportTargetVec")), FRotator(0.0f, 180.0f, 0.0f));
 
 	MyAnimInst->Montage_Play(TeleportingMontage);
+	MyVRGameMode->HandleListOfFloatNTelePrisoners(1, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 	if (MyAnimInst)
 	{
 		MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Teleport::OnTeleportMontageEnded);
@@ -34,8 +32,10 @@ void UUAITask_Teleport::OnTeleportMontageEnded(UAnimMontage* Montage, bool bInte
 {
 	//UE_LOG(LogTemp, Log, TEXT("Teleport Montage Play Ended"));
 
-	PrisonerControllerObj->HandleNextTask();
 	MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Teleport::OnTeleportMontageEnded);
+	MyVRGameMode->HandleListOfFloatNTelePrisoners(0, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
+
+	PrisonerControllerObj->HandleNextTask();
 
 	return;
 }

@@ -1,5 +1,7 @@
 #include "EquipmentActor/KeyPad_Related_Actors/AEmergencyButton.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "Components/BoxComponent.h"
 #include "Components/SplineComponent.h"
 
@@ -87,35 +89,34 @@ void AAEmergencyButton::EMButtonColOverlapBegin(UPrimitiveComponent* OverlappedC
 {
 	if (OtherComp->ComponentHasTag(FName("HandIndex")) && !bIsHitting)
 	{
+		UPrisonerManagerSubsystem* PrisonerMgrSubSy = (GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>());
+		checkf(PrisonerMgrSubSy, TEXT("UPrisonerManagerSubSystem Not Valid"));
+
 		EMButton->SetRelativeLocation(SCButtonMoveRail->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::Local));
 		bIsHitting = 1;
 
 		CLButton->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-		if (StopButtonFinalOutputIntArrays.Num() == 4)
+		if (TryGetSubdueRoomNumber())
 		{
-			UE_LOG(LogTemp, Log, TEXT("%d"), StopButtonFinalOutputIntArrays.Num());
+			UE_LOG(LogTemp, Log, TEXT("%d Prisoner Subdue Play!"), FinalRoomNum);
 			mSoundPlayer->PlaySoundEffect(this, ButtonSuccessSFX, ActorBaseMesh->GetComponentLocation());
 			ClearStopButtonOutputArray();
-			GetWorldTimerManager().SetTimer(
-				ReturnTimer,
-				this,
-				&AAEmergencyButton::OperateAfterReturn,
-				10.0f,
-				false
-			);
+			CoolDownOperation(10.0f);
+
+			TArray<uint8> GivenUpperStates = { 1 };
+			TArray<uint8> GivenLowerStates = { 1 };
+
+			PrisonerMgrSubSy->GetAllPrisonerControllerArr()[FinalRoomNum]->State_based_ExecutionTasks_GiventoSomeone(GivenUpperStates, GivenLowerStates);
+
+			FinalRoomNum = 0;
 		}
 		else
 		{
 			mSoundPlayer->PlaySoundEffect(this, ButtonFailSFX, ActorBaseMesh->GetComponentLocation());
 			ClearStopButtonOutputArray();
-			GetWorldTimerManager().SetTimer(
-				ReturnTimer,
-				this,
-				&AAEmergencyButton::OperateAfterReturn,
-				1.0f,
-				false
-			);
+			CoolDownOperation(1.0f);
+			FinalRoomNum = 0;
 		}
 	}
 }
@@ -139,7 +140,11 @@ void AAEmergencyButton::HandleThisReceiveByKeyPad(bool bIsFlag, uint32 InputInde
 	}
 	else
 	{
-		StopButtonFinalOutputIntArrays.Add(InputIndex);
+		if (InputIndex == 10)
+			StopButtonFinalOutputIntArrays.Add(0);
+		else
+			StopButtonFinalOutputIntArrays.Add(InputIndex);
+
 		if (StopButtonFinalOutputIntArrays.Num() >= 4)
 		{
 			//CLButton->SetGenerateOverlapEvents(true);
@@ -152,4 +157,38 @@ void AAEmergencyButton::ClearStopButtonOutputArray()
 {
 	StopButtonFinalOutputIntArrays.Empty(); // EmergencyButton Output Array Clear
 	EquipmentWorldSubSystem->NotifyKeyPadArrClearBroadCast(); // KeyPad Out Array Clear
+}
+
+void AAEmergencyButton::CoolDownOperation(float CoolDownTime)
+{
+	GetWorldTimerManager().SetTimer(
+		ReturnTimer,
+		this,
+		&AAEmergencyButton::OperateAfterReturn,
+		CoolDownTime,
+		false
+	);
+}
+
+bool AAEmergencyButton::TryGetSubdueRoomNumber()
+{
+	if (StopButtonFinalOutputIntArrays.Num() != 4)
+		return false;
+
+	FinalRoomNum = 0;
+	for (uint32 digit : StopButtonFinalOutputIntArrays)
+	{
+		if (digit > 9) return false;
+		FinalRoomNum = (FinalRoomNum * 10) + (int32)digit;
+	}
+
+	if (FinalRoomNum < 1 || FinalRoomNum > 24)
+		return false;
+
+	//UE_LOG(LogTemp, Log, TEXT("FinalRoomNum : %d"), FinalRoomNum);
+	//UE_LOG(LogTemp, Log, TEXT("SB Subdue PrisonerNum : %d"), FinalRoomNum - 1);
+
+	FinalRoomNum -= 1;
+
+	return true;
 }

@@ -11,6 +11,7 @@ AACarKey::AACarKey()
 	}
 
 	ActorBaseMesh->ComponentTags.Add(FName("CarKey"));
+	ActorBaseMesh->ComponentTags.Add(FName("Trash"));
 	ActorBaseMesh->SetCollisionProfileName(FName("PhysicsActor"));
 
 	GC->SetPrimitiveCompPhysics(true);

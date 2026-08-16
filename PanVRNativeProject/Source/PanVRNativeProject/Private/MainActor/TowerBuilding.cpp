@@ -1,11 +1,11 @@
-
-
-
 #include "MainActor/TowerBuilding.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/SplineComponent.h"
-#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 ATowerBuilding::ATowerBuilding()
 {
@@ -80,15 +80,7 @@ ATowerBuilding::ATowerBuilding()
 		CLSubdueForToilet->SetupAttachment(MainRoot);
 		CLSubdueForToilet->SetBoxExtent(FVector(350.0f, 250.0f, 1700.0f));
 		CLSubdueForToilet->SetHiddenInGame(false); // Debug
-	}
-
-	CLSubdueForKeyPad = CreateDefaultSubobject<UBoxComponent>("CL_SubdueFiveState");
-	if (CLSubdueForKeyPad)
-	{
-		CLSubdueForKeyPad->SetupAttachment(CLSubdueForToilet);
-		CLSubdueForKeyPad->SetRelativeLocation(FVector(0.0f, 0.0f, 1300.0f));
-		CLSubdueForKeyPad->SetBoxExtent(FVector(2300.0f, 2300.f, 50.0f));
-		CLSubdueForKeyPad->SetHiddenInGame(false); // Debug
+		CLSubdueForToilet->SetGenerateOverlapEvents(false);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Tower(TEXT("/Game/VRContent/Material/SRS_STAGE_TOWER.SRS_STAGE_TOWER"));
@@ -210,6 +202,18 @@ void ATowerBuilding::SetSplinePointValueByCurrFloorNum(int32 InTempFloorNum)
 	}
 }
 
+void ATowerBuilding::HandleRaidSubdueReceiveByToilet(uint8 bIsSubdueFlag)
+{
+	if (bIsSubdueFlag)
+	{
+		CLSubdueForToilet->SetGenerateOverlapEvents(true);
+	}
+	else
+	{
+		CLSubdueForToilet->SetGenerateOverlapEvents(false);
+	}
+}
+
 void ATowerBuilding::BeginPlay()
 {
 	Super::BeginPlay();
@@ -223,7 +227,10 @@ void ATowerBuilding::BeginPlay()
 	if (EquipmentWorldSubSystem)
 	{
 		EquipmentWorldSubSystem->FEBMoveOrderSignature.AddDynamic(this, &ATowerBuilding::HandleTowerReceiveByEB);
+		EquipmentWorldSubSystem->FToiletToTowerSignature.BindUObject(this, &ATowerBuilding::HandleRaidSubdueReceiveByToilet);
 	}
+
+	CLSubdueForToilet->OnComponentBeginOverlap.AddDynamic(this, &ATowerBuilding::TowerSubdueOverlapBegin);
 
 	if (TBAudioPlayer && TowerMoveSFXCue)
 	{
@@ -235,21 +242,6 @@ void ATowerBuilding::BeginPlay()
 void ATowerBuilding::EquipmentRegistrable(AActor* InActor)
 {
 	Super::EquipmentRegistrable(InActor);
-}
-
-void ATowerBuilding::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-int32 ATowerBuilding::GetTowerCurrFloorNum() const
-{
-	return ActuallyCurrFloorNum;
-}
-void ATowerBuilding::SetTowerCurrFloorNum(int32 InCurrFloor)
-{
-	ActuallyCurrFloorNum = InCurrFloor;
 }
 
 void ATowerBuilding::HandleTowerReceiveByEB(FName InTag, int32 InFloor)
@@ -283,6 +275,27 @@ void ATowerBuilding::ActuallyTowerMoveCompleted()
 {
 	TBAudioPlayer->Stop();
 	return;
+}
+
+void ATowerBuilding::TowerSubdueOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->ComponentHasTag(FName(TEXT("PrisonerCharacter"))))
+	{
+		APrisonerCharacter* OverlapPrisonerCha = Cast<APrisonerCharacter>(OtherActor);
+		checkf(OverlapPrisonerCha, TEXT("In CarCrane, Overlap Prisoner Not Valid!"));
+		APrisonerController* OverlapPrisonerCon = Cast<APrisonerController>(OverlapPrisonerCha->GetController());
+		checkf(OverlapPrisonerCon, TEXT("In CarCrane, Overlap Prisoner Controller Not Valid"));
+
+		if (OverlapPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState")) == 4 && OverlapPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState")) == 13)
+		{
+			UE_LOG(LogTemp, Log, TEXT("TowerRaid State Prisoner Overlap Success!"));
+
+			TArray<uint8> GivenUpperStates = { 1 };
+			TArray<uint8> GivenLowerStates = { 1 };
+
+			OverlapPrisonerCon->State_based_ExecutionTasks_GiventoSomeone(GivenUpperStates, GivenLowerStates);
+		}
+	}
 }
 
 void ATowerBuilding::ActuallyMoveTower(float TargetTowerHeight)

@@ -1,10 +1,10 @@
-
-
-
 #include "EquipmentActor/FastGod_Actors/AFax.h"
 #include "EquipmentActor/Spawned_Actors/APaper.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreObj/GameMode/VRGameMode.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
 
 AAFax::AAFax()
 {
@@ -63,8 +63,6 @@ AAFax::AAFax()
 		SFXShredSuccess = SoundFinder_Success.Object;
 		SFXShredFail = SoundFinder_Fail.Object;
 	}
-
-	//SFXShredSuccess
 
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
@@ -142,6 +140,22 @@ void AAFax::PaperShredding()
 	}
 	else
 	{
+		UPrisonerManagerSubsystem* TempPriMgrSubSy = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
+		check(TempPriMgrSubSy);
+		AVRGameMode* TempVRGM = Cast<AVRGameMode>(GetWorld()->GetAuthGameMode());
+		check(TempVRGM);
+
+		if (!TempVRGM->GetListFloatNTelePrisoner().IsEmpty())
+		{
+			for (int32 PrisonerUniqueNum : TempVRGM->GetListFloatNTelePrisoner())
+			{
+				UE_LOG(LogTemp, Log, TEXT("Unique Num : %d"), PrisonerUniqueNum);
+				TArray<uint8> GivenUpperStates = { 1 };
+				TArray<uint8> GivenLowerStates = { 1 };
+				TempPriMgrSubSy->GetAllPrisonerControllerArr()[PrisonerUniqueNum]->State_based_ExecutionTasks_GiventoSomeone(GivenUpperStates, GivenLowerStates);
+			}
+		}
+
 		/*
 		Teleport And Floating State Subdue Event Part
 		*/

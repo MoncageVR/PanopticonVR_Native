@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -28,18 +26,49 @@ public:
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
 protected:
-	UPROPERTY()
-	TObjectPtr<UStaticMeshComponent> SMDeLoreanLever;
+	// Begin Overlap For Collision Component Target Trash
+	UFUNCTION()
+	void OverlapTrashBoxBegin(
+		class UPrimitiveComponent* OverlappedComp,
+		class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 
-	UPROPERTY()
-	TObjectPtr<class UBoxComponent> CLRemover;
-
-	UPROPERTY()
-	TObjectPtr<USceneComponent> SCMoveStandard;
-
-	UPROPERTY()
-	TObjectPtr<class UTextRenderComponent> TRTrashNum;
-
+	UFUNCTION()
+	void UpdateDeLoreanLeverMove();
 
 private:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SMDeLoreanLever;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UBoxComponent> CLRemover;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> SCMoveStandard;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UTextRenderComponent> TRTrashNum;
+
+private:
+	int32 RemoveTrashNum;
+
+	FTimerHandle DeLoreanLeverMoveTimer;
+	FTimerHandle PumpOperationTimer;
+
+	UPROPERTY()
+	TObjectPtr<UMotionControllerComponent> TempMC;
+
+	UPROPERTY()
+	TObjectPtr<class ACPumpHorse> SpawnPumpHorse;
+
+private:
+	UFUNCTION()
+	void PumpOperation();
+
+	UFUNCTION()
+	void PumpOperationStop();
 };

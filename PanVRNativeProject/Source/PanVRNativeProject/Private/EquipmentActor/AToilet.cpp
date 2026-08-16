@@ -1,10 +1,10 @@
-
-
-
 #include "EquipmentActor/AToilet.h"
-#include "Components/CapsuleComponent.h"
+#include "EquipmentActor/AElevatorButton.h"
+#include "MainActor/TowerBuilding.h"
+#include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "CoreCommon/Component/UGrabComp.h"
 #include "CoreCommon/VRPawn/Hand/VRHand.h"
+#include "Components/CapsuleComponent.h"
 
 AAToilet::AAToilet()
 {
@@ -129,15 +129,20 @@ void AAToilet::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AAToilet::Tick(float DeltaTimes)
-{
-	Super::Tick(DeltaTimes);
-}
-
 void AAToilet::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {
-
 	TempGrabbingHandRed = InGrabbingHand;
+
+	checkf(EquipmentWorldSubSystem, TEXT("AToilet : VREquipmentWorldSubSystem Is Not Valid"));
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : EquipmentWorldSubSystem->GetEquipmentArr())
+	{
+		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+		TempElevatorObj = Cast<AAElevatorButton>(IEquipPtr);
+		if (TempElevatorObj)
+			break;
+		else
+			continue;
+	}
 
 	if (OvenDoorGC->MCRef == &InMCRef)
 	{
@@ -280,8 +285,7 @@ void AAToilet::OvenDoorGrabColOverlapEnd(UPrimitiveComponent* OverlappedComp, AA
 
 void AAToilet::AdjustOvenDoorGC(uint32 TempHandDir)
 {
-	// TempHandDir is 1 = RightHand
-	// TempHandDir is 0 = LeftHand
+	// TempHandDir 1 = RightHand / TempHandDir 0 = LeftHand
 	if (TempHandDir)
 		OvenDoorGC->SetRelativeLocationAndRotation(FVector(14.f, -31.f, 11.f), FRotator(90.f, 0.f, -90.f), false, nullptr, ETeleportType::TeleportPhysics);
 	else
@@ -304,8 +308,7 @@ void AAToilet::UpdateOvenDoorRotation()
 
 void AAToilet::AdjustLeverGC(uint32 TempHandDir)
 {
-	// TempHandDir is 1 = RightHand
-	// TempHandDir is 0 = LeftHand
+	// TempHandDir 1 = RightHand / TempHandDir 0 = LeftHand
 	if (TempHandDir)
 		GC->SetRelativeLocationAndRotation(FVector(14.f, -2.f, 57.72f), FRotator(90.f, 0.f, -90.f), false, nullptr, ETeleportType::TeleportPhysics);
 	else
@@ -339,12 +342,12 @@ void AAToilet::WaterFlushing()
 {
 	TempGrabbingHandRed->ReleaseObject();
 
-	/*
-	TowerRaid Subdue Logic Part
-
-	ElevatorButton Object Stop Operate Logic Part
-
-	*/
+	// ElevatorButton Object Stop Operate Logic Part
+	TempElevatorObj->HandleCollisionEnabled(0);
+	
+	// TowerRaid Subdue Logic Part
+	EquipmentWorldSubSystem->NotifyTowerSubdueBroadCast(1);
+	
 	
 	GetWorldTimerManager().SetTimer(
 		RubberDuckMovementTimer,
@@ -382,12 +385,10 @@ void AAToilet::StopRubberDuck()
 
 	TRubberDuck->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 
+	// ElevatorButton Object Continue Operate Logic Part
+	TempElevatorObj->HandleCollisionEnabled(1);
 
-	/*
-	
-	ElevatorButton Object Continue Operate Logic Part
-
-	*/
+	EquipmentWorldSubSystem->NotifyTowerSubdueBroadCast(0);
 
 	bIsLeverCoolDown = 0;
 }

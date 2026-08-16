@@ -1,6 +1,3 @@
-
-
-
 #include "CoreCommon/VRPawn/Hand/VRHand.h"
 #include "MotionControllerComponent.h"
 #include "Components/BoxComponent.h"

@@ -20,12 +20,20 @@ public:
 
 	void GameOverCheckEvent();
 
+	// T : Add Prisoner , F : Remove Prisoner - Prisoner State Is Only Teleport And Floating
+	void HandleListOfFloatNTelePrisoners(uint8 InHandleFlag, int32 InUniqueNum);
+
+	// T : Add Prisoner , F : RemovePrisoner - Prisoner State Is Only Flame
+	void HandleListOfFlamePrisoners(uint8 InHandleFlag, int32 InFlameUniqueNum);
+
 #pragma region Setter
 	FORCEINLINE void SetIsGameOverFlag(bool bInFlag) { bIsGameOverFlag = bInFlag; }
 #pragma endregion
 
 #pragma region Getter
 	FORCEINLINE bool GetIsGameOverFlag() const { return bIsGameOverFlag; }
+	FORCEINLINE TArray<int32> GetListFloatNTelePrisoner() const { return ListOfPrisonersWithFloatingORTeleportStatus; }
+	FORCEINLINE TArray<int32> GetListFlamePrisoners() const { return ListOfPrisonersWithFlameStatus; }
 #pragma endregion
 
 
@@ -43,7 +51,22 @@ private:
 
 	bool bIsGameOverFlag;
 
+	UPROPERTY(VisibleAnywhere)
+	TArray<int32> ListOfPrisonersWithFloatingORTeleportStatus;
 
+	UPROPERTY(VisibleAnywhere)
+	TArray<int32> ListOfPrisonersWithFlameStatus;
+
+	UPROPERTY()
+	TObjectPtr<class UPrisonerManagerSubsystem> UPrisonerMgrSubSyPtr;
+
+	UPROPERTY()
+	TObjectPtr<class UMapObjManagerSubsystem> UMapObjMgrSubSyPtr;
+
+	UPROPERTY()
+	TObjectPtr<class UVREquipmentWorldSubsystem> VREquipWorldSubSyPtr;
 
 private:
+	UFUNCTION()
+	void HandleGMReceiveByGTW(bool bIsGameStartFlag);
 };

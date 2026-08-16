@@ -1,10 +1,10 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "ActorBase/VRGrabActorBase.h"
 #include "TowerBuilding.generated.h"
+
+class IIEquipmentInitInterface;
 
 UCLASS()
 class PANVRNATIVEPROJECT_API ATowerBuilding : public AVRActorBase
@@ -15,46 +15,39 @@ public:
 	ATowerBuilding();
 
 	virtual void BeginPlay() override;
+	// IIEquipmentInitInterface In Natural Virtual Function Overriding , For Use Delegate System 
 	virtual void EquipmentRegistrable(AActor* InActor) override;
-	virtual void Tick(float DeltaTime) override;
 
 	void HandleSplinePointValue(int32 InFloorNum);
 
 public:
 #pragma region Getter
-
-	int32 GetTowerCurrFloorNum() const;
-	TObjectPtr<class USplineComponent> GetTowerRaidMoveRouteComp() const { return mTowerRaidMoveRoute; }
-
+	FORCEINLINE int32 GetTowerCurrFloorNum() const { return ActuallyCurrFloorNum; }
+	FORCEINLINE TObjectPtr<class USplineComponent> GetTowerRaidMoveRouteComp() const { return mTowerRaidMoveRoute; }
 #pragma endregion
 
 #pragma region Setter
-
-	void SetTowerCurrFloorNum(int32 InCurrFloor);
-
+	FORCEINLINE void SetTowerCurrFloorNum(int32 InCurrFloor) { ActuallyCurrFloorNum = InCurrFloor; }
 #pragma endregion
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComp")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> MainRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> TowerMainBody;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> MainDesk;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SubDesk;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Barricade;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CLSubdueForToilet;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
-	TObjectPtr<class UBoxComponent> CLSubdueForKeyPad;
 
 	UPROPERTY()
 	TObjectPtr<class UAudioComponent> TBAudioPlayer;
@@ -69,13 +62,23 @@ protected:
 	UFUNCTION()
 	void ActuallyTowerMoveCompleted();
 
+	UFUNCTION()
+	void TowerSubdueOverlapBegin(
+		class UPrimitiveComponent* OverlappedComp,
+		class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
 private:
 	int32 ActuallyCurrFloorNum = 3;
 	TArray<float> TargetTowerHeights;
 	FLatentActionInfo TowerLatentInfo;
 
 	UPROPERTY()
-	USoundBase* TowerMoveSFXCue;
+	TObjectPtr<USoundBase> TowerMoveSFXCue;
 
 	TArray<FVector> First_SplinePointValueArrs;
 	TArray<FVector> Second_SplinePointValueArrs;
@@ -85,6 +88,7 @@ private:
 	void ActuallyMoveTower(float TargetTowerHeight);
 	void Init_TowerSplinePointValue();
 	void Init_TowerSplineDefaultPointValue();
-
 	void SetSplinePointValueByCurrFloorNum(int32 InTempFloorNum);
+	// T(1) : Subdue On / F(0) : Subdue Off
+	void HandleRaidSubdueReceiveByToilet(uint8 bIsSubdueFlag);
 };

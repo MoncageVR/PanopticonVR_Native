@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/FastGod_Actors/AStamp.h"
 #include "EquipmentActor/Spawned_Actors/APaper.h"
 #include "Components/SplineComponent.h"
@@ -39,7 +36,7 @@ AAStamp::AAStamp()
 	if (CLPaperTarget)
 	{
 		CLPaperTarget->SetupAttachment(ActorBaseMesh);
-		CLPaperTarget->SetRelativeLocation(FVector(0.f, 0.f, 0.7f));
+		CLPaperTarget->SetRelativeLocation(FVector(0.f, -5.0f, -3.7f));
 		CLPaperTarget->SetBoxExtent(FVector(8.f, 3.f, 0.2f));
 		CLPaperTarget->SetHiddenInGame(false); // Debug
 
@@ -62,7 +59,7 @@ AAStamp::AAStamp()
 		if (GC)
 		{
 			GC->SetupAttachment(SMStampHandle);
-			GC->SetRelativeLocation(FVector(0.f, 0.f, 5.5f));
+			GC->SetRelativeLocation(FVector(0.f, 0.f, 2.5f));
 			GC->EEGrabType = EGrabType::HandToObj;
 		}
 
@@ -80,7 +77,7 @@ AAStamp::AAStamp()
 	if (CLStamp)
 	{
 		CLStamp->SetupAttachment(SMStampHandleHead);
-		CLStamp->SetRelativeLocation(FVector(0.f, 0.f, 3.f));
+		CLStamp->SetRelativeLocation(FVector(0.f, -5.1f, -1.7f));
 		CLStamp->SetBoxExtent(FVector(3.8f, 2.0f, 1.0f));
 		//CLStamp->SetHiddenInGame(false); // Debug
 		CLStamp->OnComponentBeginOverlap.AddDynamic(this, &AAStamp::CLStampOverlapBegin);
@@ -170,7 +167,7 @@ void AAStamp::MoveStamp()
 void AAStamp::AdjustGCPosNRot(uint32 InFlag)
 {
 	if (InFlag)
-		GC->SetRelativeLocationAndRotation(FVector(0.f, 4.f, 13.f), FRotator(0.f, 180.f, 20.f));
+		GC->SetRelativeLocationAndRotation(FVector(0.f, 4.f, 10.f), FRotator(0.f, 180.f, 20.f));
 	else
 		GC->SetRelativeLocationAndRotation(FVector(0.f, 0.f, 0.f), FRotator(0.f, 0.f, 0.f));
 }

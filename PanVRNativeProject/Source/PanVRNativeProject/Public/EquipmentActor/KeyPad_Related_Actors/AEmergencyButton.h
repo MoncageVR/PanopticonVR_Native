@@ -48,6 +48,8 @@ private:
 	uint32 bIsHitting = 0;
 	FTimerHandle ReturnTimer;
 
+	int32 FinalRoomNum = 0;
+
 	UPROPERTY(VisibleAnywhere)
 	TArray<uint32> StopButtonFinalOutputIntArrays;
 
@@ -60,4 +62,8 @@ private:
 
 	// EmergencyButton In OutputInArray Clear And KeyPad OutputArray Clear
 	void ClearStopButtonOutputArray();
+
+	void CoolDownOperation(float CoolDownTime);
+
+	bool TryGetSubdueRoomNumber();
 };

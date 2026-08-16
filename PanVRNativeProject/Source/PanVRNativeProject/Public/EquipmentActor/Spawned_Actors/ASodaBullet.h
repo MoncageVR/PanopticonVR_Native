@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -17,14 +15,12 @@ class PANVRNATIVEPROJECT_API AASodaBullet : public AVRGrabActorBase, public IIGr
 
 public:
 	AASodaBullet(); // Constructor
+	virtual void BeginPlay() override;
 
 	void SetActorPhysics(bool PhysicsFlag);
 
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
-
 	virtual void OnDropped() override;
-
-	virtual void Tick(float DeltaTime) override;
 
 	void CurveMove(FVector InDir);
 
@@ -37,7 +33,6 @@ public:
 #pragma endregion
 
 protected:
-	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
 	TObjectPtr<class UBoxComponent> CLBox;

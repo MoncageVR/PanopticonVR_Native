@@ -1,10 +1,9 @@
-
-
-
 #include "EquipmentActor/PumpHorse_Actors/APumpBin.h"
+#include "MainActor/CPumpHorse.h"
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AAPumpBin::AAPumpBin()
 {
@@ -24,14 +23,14 @@ AAPumpBin::AAPumpBin()
 	{
 		SMDeLoreanLever->SetupAttachment(ActorBaseMesh);
 		SMDeLoreanLever->SetStaticMesh(ModelingFinder_DeloreanLever.Object);
-		SMDeLoreanLever->SetRelativeLocation(FVector(0.f, 16.f, 0.f));
+		SMDeLoreanLever->SetRelativeLocation(FVector(0.f, -16.f, 0.f));
 	}
 
 	if (GC)
 	{
 		GC->SetupAttachment(SMDeLoreanLever);
-		GC->SetRelativeLocation(FVector(0.f, 3.f, 3.f));
-		GC->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+		GC->SetRelativeLocation(FVector(0.f, -3.f, 3.f));
+		GC->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 		GC->EEGrabType = EGrabType::HandToObj;
 	}
 
@@ -46,18 +45,19 @@ AAPumpBin::AAPumpBin()
 	if (CLRemover)
 	{
 		CLRemover->SetupAttachment(ActorBaseMesh);
-		CLRemover->SetRelativeLocation(FVector(-24.0f, 0.f, 3.f));
-		CLRemover->SetRelativeRotation(FRotator(17.5f, 0.f, 0.f));
+		CLRemover->SetRelativeLocation(FVector(24.0f, 0.f, 3.f));
+		CLRemover->SetRelativeRotation(FRotator(-17.5f, 0.f, 0.f));
 		CLRemover->SetBoxExtent(FVector(3.f, 9.f, 5.f));
 		CLRemover->SetHiddenInGame(false); // Debug
+		CLRemover->OnComponentBeginOverlap.AddDynamic(this, &AAPumpBin::OverlapTrashBoxBegin);
 	}
 
 	TRTrashNum = CreateDefaultSubobject<UTextRenderComponent>("TRComp");
 	if (TRTrashNum)
 	{
 		TRTrashNum->SetupAttachment(ActorBaseMesh);
-		TRTrashNum->SetRelativeLocation(FVector(-0.78f, -24.5f, 4.9f));
-		TRTrashNum->SetRelativeRotation(FRotator(21.f, 68.f, 0.f));
+		TRTrashNum->SetRelativeLocation(FVector(1.0f, 24.3f, 5.0f));
+		TRTrashNum->SetRelativeRotation(FRotator(21.0f, -107.f, 0.f));
 
 		TRTrashNum->SetTextRenderColor(FColor::Red);
 		TRTrashNum->SetWorldSize(10.f);
@@ -88,6 +88,10 @@ void AAPumpBin::BeginPlay()
 {
 	Super::BeginPlay();
 	this->EquipmentRegistrable(this);
+	// RemoveTrashNum = 0;
+	RemoveTrashNum = 4; // Debug
+
+	TRTrashNum->SetText(FText::FromString(FString::FromInt(RemoveTrashNum)));
 }
 
 void AAPumpBin::Tick(float DeltaTimes)
@@ -100,11 +104,118 @@ void AAPumpBin::EquipmentRegistrable(AActor* InActor)
 	Super::EquipmentRegistrable(InActor);
 }
 
+void AAPumpBin::OverlapTrashBoxBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	const bool bIsTrash = (OtherComp && OtherComp->ComponentHasTag(FName("Trash"))) || (OtherActor && OtherActor->ActorHasTag(FName("Trash")));
+	if (!bIsTrash) return;
+	if (!IsValid(OtherActor)) return;
+
+	if (OtherActor->GetAttachParentActor() != nullptr)
+	{
+		OtherActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	}
+
+	OtherActor->Destroy();
+	RemoveTrashNum++;
+
+	if (RemoveTrashNum >= 5)
+	{
+		TRTrashNum->SetWorldSize(5.0f);
+		TRTrashNum->SetText(FText::FromString(TEXT("FULL")));
+	}
+	else
+	{
+		TRTrashNum->SetWorldSize(10.0f);
+		TRTrashNum->SetText(FText::FromString(FString::FromInt(RemoveTrashNum)));
+	}
+}
+
 void AAPumpBin::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, AVRHand* InGrabbingHand)
 {
+	TempMC = &InMCRef;
+	if (RemoveTrashNum >= 4)
+	{
+		if (UWorld* mWorld = GetWorld())
+		{
+			mWorld->GetTimerManager().SetTimer(
+				DeLoreanLeverMoveTimer,
+				this,
+				&AAPumpBin::UpdateDeLoreanLeverMove,
+				0.01f,
+				true
+			);
+		}
+	}
 }
 
 void AAPumpBin::OnDropped()
 {
+	TempMC = nullptr;
+	if (UWorld* mWorld = GetWorld())
+	{
+		mWorld->GetTimerManager().ClearTimer(DeLoreanLeverMoveTimer);
+	}
+	SMDeLoreanLever->SetRelativeLocation(FVector(0.f, -16.f, 0.f));
 }
 
+void AAPumpBin::UpdateDeLoreanLeverMove()
+{
+	if (RemoveTrashNum >= 4)
+	{
+		FTransform Between_MCAndStandard_MakeRelativeTransformVar = TempMC->GetComponentTransform().GetRelativeTransform(SCMoveStandard->GetComponentTransform());
+
+		float DeLoreanLeverMovementDir = (SMDeLoreanLever->GetRelativeLocation().Y) + (Between_MCAndStandard_MakeRelativeTransformVar.GetLocation().Y);
+
+		float TargetPosY = FMath::Clamp(DeLoreanLeverMovementDir, -16.0f, 8.0f);
+
+		SMDeLoreanLever->SetRelativeLocation(FVector(0.f, TargetPosY, 0.f));
+
+		float CheckOperationResult = FMath::GetMappedRangeValueClamped(FVector2D(-16.0f, 8.0f), FVector2D(0.0f, 100.0f), TargetPosY);
+
+		if (FMath::IsNearlyEqual(CheckOperationResult, 100.0f))
+		{
+			RemoveTrashNum = 0;
+			TRTrashNum->SetText(FText::FromString(FString::FromInt(RemoveTrashNum)));
+			this->PumpOperation();
+		}
+	}
+
+	//UE_LOG(LogTemp, Log, TEXT("%f"), CheckOperationResult);
+}
+
+void AAPumpBin::PumpOperation()
+{
+	EquipmentWorldSubSystem->NotifyPumpOperationBroadCast(10.0f);
+	SMDeLoreanLever->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	if (UWorld* mWorld = GetWorld())
+	{
+		mWorld->GetTimerManager().SetTimer(
+			PumpOperationTimer,
+			this,
+			&AAPumpBin::PumpOperationStop,
+			10.0f,
+			false
+		);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Spawn Horse Character Part!"));
+	SpawnPumpHorse = this->GetWorld()->SpawnActor<ACPumpHorse>(ACPumpHorse::StaticClass(),
+		FTransform(
+			FRotator(0.f, 180.0f, 0.f),
+			FVector(-400.0f, 0.0f, 150.15f),
+			FVector::OneVector
+		)
+	);
+}
+
+void AAPumpBin::PumpOperationStop()
+{
+	EquipmentWorldSubSystem->NotifyPumpOperationBroadCast(0.0f);
+
+	SpawnPumpHorse->HandleMoveEndAndDestroySelf();
+
+	SMDeLoreanLever->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	if (UWorld* MyWorld = GetWorld())
+		MyWorld->GetTimerManager().ClearTimer(PumpOperationTimer);
+}

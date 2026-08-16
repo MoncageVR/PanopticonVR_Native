@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/FuelRelated_Actors/AFuelRodStorage.h"
 #include "EquipmentActor/Spawned_Actors/AFuelRod.h"
 #include "Components/BoxComponent.h"
@@ -60,8 +57,6 @@ void AAFuelRodStorage::Tick(float DeltaTime)
 
 void AAFuelRodStorage::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {
-	UE_LOG(LogTemp, Log, TEXT("FuelRod Spawn Part!"));
-
 	UWorld* TempMyWorld = GetWorld();
 	FTransform TempSpawnTransform(FTransform::Identity); // Default Spawn Trnasform
 

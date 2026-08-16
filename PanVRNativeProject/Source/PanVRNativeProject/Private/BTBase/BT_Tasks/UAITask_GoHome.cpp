@@ -20,7 +20,7 @@ EBTNodeResult::Type UUAITask_GoHome::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("SpawnVec"))
 	))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Go Home Spawn Vector Arrived!"));
+		//UE_LOG(LogTemp, Log, TEXT("Go Home Spawn Vector Arrived!"));
 		// UpperState : Idle(0) | LowerState : Default(0)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
 		//PrisonerControllerObj->OnTaskFinished.Broadcast();

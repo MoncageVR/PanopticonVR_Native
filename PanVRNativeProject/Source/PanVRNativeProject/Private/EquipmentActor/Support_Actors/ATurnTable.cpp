@@ -30,7 +30,7 @@ AATurnTable::AATurnTable()
 
 	// Glass Mesh Setting
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Glass(TEXT("/Game/VRContent/Modeling/26_TurnTable/SM_TurnTableGlass.SM_TurnTableGlass"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_SW(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass1_SunnyWeather.MI_Stage_TurnTableGlass1_SunnyWeather"));
+	//static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_SW(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass1_SunnyWeather.MI_Stage_TurnTableGlass1_SunnyWeather"));
 	TTGlass = CreateDefaultSubobject<UStaticMeshComponent>("SM_Glass");
 	if (TTGlass)
 	{
@@ -40,10 +40,10 @@ AATurnTable::AATurnTable()
 		{
 			TTGlass->SetStaticMesh(ModelingFinder_Glass.Object);
 		}
-		if (MaterialFinder_Glass_SW.Succeeded())
+		/*if (MaterialFinder_Glass_SW.Succeeded())
 		{
 			TTGlass->SetMaterial(0, MaterialFinder_Glass_SW.Object);
-		}
+		}*/
 	}
 
 	// Handle Lever And GrabComponent Setting
@@ -148,14 +148,14 @@ AATurnTable::AATurnTable()
 	CLLPTarget->OnComponentEndOverlap.AddDynamic(this, &AATurnTable::OverlapLPBoxEnd);
 	CLLPSpawn->OnComponentEndOverlap.AddDynamic(this, &AATurnTable::OverlapSpawnLPBoxEnd);
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_PE(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass2_PrisonerElevator.MI_Stage_TurnTableGlass2_PrisonerElevator"));
+	/*static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_PE(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass2_PrisonerElevator.MI_Stage_TurnTableGlass2_PrisonerElevator"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_FJ(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass3_FastJazz.MI_Stage_TurnTableGlass3_FastJazz"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_EP(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass4_ElectricPickle.MI_Stage_TurnTableGlass4_ElectricPickle"));
 
 	if (MaterialFinder_Glass_SW.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_SW.Object); }
 	if (MaterialFinder_Glass_PE.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_PE.Object); }
 	if (MaterialFinder_Glass_FJ.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_FJ.Object); }
-	if (MaterialFinder_Glass_EP.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_EP.Object); }
+	if (MaterialFinder_Glass_EP.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_EP.Object); }*/
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_TTPublicMat(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));
 	if (MaterialFinder_TTPublicMat.Succeeded())
@@ -199,6 +199,21 @@ AATurnTable::AATurnTable()
 		TTSCAudioPlayer->bAllowSpatialization = false;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_SW(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass1_SunnyWeather.MI_Stage_TurnTableGlass1_SunnyWeather"));
+	if (MatFinder_SW.Succeeded()) GlassBaseMat = MatFinder_SW.Object;
+
+	static ConstructorHelpers::FObjectFinder<UTexture> TFinder_SW(TEXT("/Game/VRContent/Material/BasePhotos/TunrTable/SunnyWeather.SunnyWeather"));
+	static ConstructorHelpers::FObjectFinder<UTexture> TFinder_PE(TEXT("/Game/VRContent/Material/BasePhotos/TunrTable/PrisonElevator.PrisonElevator"));
+	static ConstructorHelpers::FObjectFinder<UTexture> TFinder_FJ(TEXT("/Game/VRContent/Material/BasePhotos/TunrTable/FastJazz.FastJazz"));
+	static ConstructorHelpers::FObjectFinder<UTexture> TFinder_EP(TEXT("/Game/VRContent/Material/BasePhotos/TunrTable/ElectricPickle.ElectricPickle"));
+	if (TFinder_SW.Succeeded() && TFinder_PE.Succeeded() && TFinder_FJ.Succeeded() && TFinder_EP.Succeeded())
+	{
+		TTGlassTextures.Add(TFinder_SW.Object);
+		TTGlassTextures.Add(TFinder_PE.Object);
+		TTGlassTextures.Add(TFinder_FJ.Object);
+		TTGlassTextures.Add(TFinder_EP.Object);
+	}
+
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
@@ -219,7 +234,12 @@ void AATurnTable::BeginPlay()
 	EquipmentRegistrable(this);
 	if (EquipmentWorldSubSystem)
 	{
-		EquipmentWorldSubSystem->FGameStartSignature.BindUObject(this, &AATurnTable::HandleTTReceiveByGTWLever);
+		EquipmentWorldSubSystem->FGameStartSignature.AddDynamic(this, &AATurnTable::HandleTTReceiveByGTW);
+	}
+
+	if (GlassBaseMat)
+	{
+		TTGlassMID = TTGlass->CreateDynamicMaterialInstance(0, GlassBaseMat);
 	}
 
 	// TurnTable Default LP Spawn Function Call
@@ -290,7 +310,7 @@ void AATurnTable::OperateTTLeverMovement()
 	TTHandleLever->SetRelativeRotation(FRotator(TTHandleLever->GetRelativeRotation().Pitch, TTHandleLever->GetRelativeRotation().Yaw, FinalLeverRoll));
 
 	// When the End of the Lever Movement Range is Reached, Spawn New LP Function Call
-	if (TTHandleLever->GetRelativeRotation().Roll >= 179.0f && TTHandleLever->GetRelativeRotation().Roll <= 180.0f)
+	if (TTHandleLever->GetRelativeRotation().Roll >= 120.0f && TTHandleLever->GetRelativeRotation().Roll <= 180.0f)
 	{
 		if (!bIsAlreadySpawnLP) // Check Already Spawn LP Exist?
 		{
@@ -411,7 +431,7 @@ void AATurnTable::OverlapLBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor*
 			if (CurrSongNum == 0) { CurrSongNum = 3; }
 			else { CurrSongNum -= 1; }
 
-			TTGlass->SetMaterial(0, TTGlassMats[CurrSongNum]);
+			TTGlassMID->SetTextureParameterValue(FName("MainSprite"), TTGlassTextures[CurrSongNum]);
 		}
 	}
 }
@@ -437,7 +457,7 @@ void AATurnTable::OverlapRBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor*
 			if (CurrSongNum == 3) { CurrSongNum = 0; }
 			else { CurrSongNum += 1; }
 
-			TTGlass->SetMaterial(0, TTGlassMats[CurrSongNum]);
+			TTGlassMID->SetTextureParameterValue(FName("MainSprite"), TTGlassTextures[CurrSongNum]);
 		}
 	}
 }
@@ -574,10 +594,11 @@ void AATurnTable::PlaySoundBGM(int TempCueNum)
 	}
 }
 
-void AATurnTable::HandleTTReceiveByGTWLever(bool TempGameStartFlag)
+void AATurnTable::HandleTTReceiveByGTW(bool TempGameStartFlag)
 {
 	if (TempGameStartFlag)
 	{
+		UE_LOG(LogTemp, Log, TEXT("TurnTable Sound Start By GTWLever"));
 		if (AttachingLP && TTSCAudioPlayer)
 		{
 			bIsGameStarted = TempGameStartFlag;

@@ -167,12 +167,12 @@ void AAElevatorButton::HandleCollisionEnabled(uint8 bIsColActivated)
 	TArray<UPrimitiveComponent*> AllColComps;
 	GetComponents<UPrimitiveComponent>(AllColComps);
 
-	if (bIsColActivated) // bIsColActivated => true
+	if (bIsColActivated) // bIsColActivated => 1 = true
 	{
 		for (UPrimitiveComponent* BoxCompVar : AllColComps)
 			BoxCompVar->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
-	else // bIsColActivated => false
+	else // bIsColActivated => 0 = false
 	{
 		for (UPrimitiveComponent* BoxCompVar : AllColComps)
 			BoxCompVar->SetCollisionEnabled(ECollisionEnabled::NoCollision);

@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -53,13 +51,13 @@ protected:
 	TObjectPtr<UStaticMeshComponent> SM_MaskPlane;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> SM_MaskPlane_Hole;
-
-	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UMaterialInstance> MaskMI;
 
 	UPROPERTY()
-	TObjectPtr<UMaterialInstanceDynamic> MaskMID;
+	TObjectPtr<UMaterialInstanceDynamic> MaskMID_0Index;
+
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> MaskMID_1Index;
 
 	UPROPERTY()
 	class UInputMappingContext* IMC_Default;
@@ -126,6 +124,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UVRPawnHUD> HUDWidgetInstance;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UWidgetComponent> HUDWidgetComp;
+
 	UPROPERTY()
 	TObjectPtr<class AVRLobbyGameMode> mVRLobbyGMRef;
 
@@ -141,6 +142,9 @@ private:
 	void HideTowerHeadMesh(bool bIsHideFlag);
 
 	void GameStartInLobbyEvent();
+
+	UFUNCTION()
+	void HandleVRPawnReceivceByGTW(bool InFlag);
 
 	UFUNCTION()
 	void SpawnHands();

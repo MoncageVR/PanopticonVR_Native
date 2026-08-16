@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/Spawned_Actors/AFuelRod.h"
 #include "Components/BoxComponent.h"
 #include "Debug/FDebugLib.h"
@@ -31,6 +28,7 @@ AAFuelRod::AAFuelRod()
 		FRCLStick->SetupAttachment(ActorBaseMesh);
 		FRCLStick->SetRelativeLocation(FVector(0.f, 0.f, 12.f));
 		FRCLStick->ComponentTags.Add(FName("FuelRod"));
+		FRCLStick->ComponentTags.Add(FName("Trash"));
 		FRCLStick->SetBoxExtent(FVector(2.f, 2.f, 13.f));
 		FRCLStick->SetHiddenInGame(false); // Debug
 	}
@@ -117,7 +115,7 @@ void AAFuelRod::GaugeOperatingTimeline(float Value)
 	
 	bool bIsLowGauge = (Value < 25.f);
 
-	if (bIsLowGauge)
+	if (bIsLowGauge) // Debug
 	{
 		UE_LOG(LogTemp, Log, TEXT("FuelRod is LowGauge!"));
 	}

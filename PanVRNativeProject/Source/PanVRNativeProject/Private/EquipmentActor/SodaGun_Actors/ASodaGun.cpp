@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/SodaGun_Actors/ASodaGun.h"
 #include "EquipmentActor/Spawned_Actors/ASodaBullet.h"
 #include "Components/BoxComponent.h"
@@ -220,7 +217,7 @@ void AASodaGun::LoadCheckColOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 				EquipSodaBullet->GC->SetPrimitiveCompPhysics(false);
 				EquipSodaBullet->GC->CurrentIGrabInterface = nullptr;
 				EquipSodaBullet->AttachToComponent(CL_SodaCanLoadBox, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-				EquipSodaBullet->SetActorRelativeLocation(FVector(0.f, -6.f, 0.f));
+				EquipSodaBullet->SetActorRelativeLocation(FVector(0.f, 0.f, 0.f));
 				EquipSodaBullet->SetActorRelativeRotation(FRotator(0.f, 0.f, 90.f));
 
 				mSoundPlayer->PlaySoundEffect(this, SFXReloadCan, CL_SodaCanLoadBox->GetComponentLocation());
@@ -255,7 +252,10 @@ void AASodaGun::OnShootFunc()
 		mSoundPlayer->PlaySoundEffect(this, SFXShoot, MuzzleStandardLocation->GetComponentLocation());
 		MuzzleStandardLocation->GetComponentTransform();
 
-		GetWorld()->SpawnActor<AActor>(SodaGunBulletSmoke, MuzzleStandardLocation->GetComponentTransform());
+		if (UWorld* MyWorld = GetWorld())
+		{
+			GetWorld()->SpawnActor<AActor>(SodaGunBulletSmoke, MuzzleStandardLocation->GetComponentTransform());
+		}
 
 		AttachingSodaBullet = 0;
 		ShootAfterEjaculationFunc();

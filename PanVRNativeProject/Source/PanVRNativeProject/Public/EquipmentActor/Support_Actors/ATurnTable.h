@@ -30,38 +30,37 @@ public:
 
 protected:
 #pragma region Components
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComp")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> TTMainRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> TTGlass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> TTHandleLever;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComp")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> LeverStandardSceneRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> TTLeftButton;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> TTCLLB;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> TTRightButton;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> TTCLRB;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CLLPTarget;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CLLPSpawn;
 
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Audio")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UAudioComponent> TTSCAudioPlayer;
 
 #pragma endregion
@@ -176,28 +175,38 @@ private:
 	int32 PlaySongNum = 0;
 	uint32 bIsTouching = 0;
 
-	TArray<UMaterialInstance*> TTGlassMats;
+	//TArray<UMaterialInstance*> TTGlassMats;
+
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> TTGlassMID;
+
+	UPROPERTY()
+	TObjectPtr<UMaterialInstance> GlassBaseMat;
+
+	UPROPERTY()
+	TArray<TObjectPtr<UTexture>> TTGlassTextures;
 
 	uint32 bIsAlreadySpawnLP = 0;
 	uint32 bIsLPSpawnOperation = 0;
 
 protected:
-	USoundBase* SFXLPDropSound;
-	USoundBase* SFXButtonPressSound;
-	USoundBase* SFXLeverPullSound;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXLPDropSound;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXButtonPressSound;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXLeverPullSound;
 
-	USoundBase* SCSfxTTBGMCues;
-
-	//UFUNCTION()
-	//void PlaySoundEffect(USoundBase* TempSFXSound, FVector TempSoundPlayPos);
+	UPROPERTY()
+	TObjectPtr<USoundBase> SCSfxTTBGMCues;
 
 	UFUNCTION()
 	void PlaySoundBGM(int TempCueNum);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "VALUE|Flag")
+	UPROPERTY(VisibleAnywhere)
 	bool bIsGameStarted = 0;
 
 public:
 	UFUNCTION()
-	void HandleTTReceiveByGTWLever(bool TempGameStartFlag);
+	void HandleTTReceiveByGTW(bool TempGameStartFlag);
 };

@@ -25,6 +25,11 @@ public:
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
 	virtual void OnDropped() override;
 
+	virtual void EquipmentRegistrable(AActor* InActor) override;
+
+	// True : DownMove , False : UpMove
+	void HandleKeyPadMove(uint8 InMoveFlag);
+
 protected:
 	UFUNCTION()
 	void OnKeyOverlapBegin(
@@ -129,15 +134,30 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMotionControllerComponent> TempMCRef;
 
-private:
+	UPROPERTY()
+	TObjectPtr<class ACVRPawn> mVRPlayerPawn;
+
+	UPROPERTY()
+	TObjectPtr<class AAScopeCamera> ScopeCameraRef;
+
 	UPROPERTY()
 	TObjectPtr<USoundBase> ButtonPressSFX;
 
 	UPROPERTY()
 	TObjectPtr<USoundBase> ReturnButtonPressSFX;
 
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> KeyPadMoveTimelineComp;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> KeyPadMove_CurveF;
+
+private:
+
 	bool bIsOverlapping;
+	UPROPERTY(VisibleAnywhere)
 	TArray<uint32> FinalOutputIntArrays;
+	UPROPERTY(VisibleAnywhere)
 	TArray<FText> FinalOutputTextArrays;
 	uint32 FinalOutputTextLength;
 	uint32 CurrTextLength;
@@ -148,8 +168,11 @@ private:
 
 	float MaxPeekDist;
 
-	UPROPERTY()
-	TObjectPtr<class ACVRPawn> mVRPlayerPawn;
+	bool  bIsInScopeView = false;
+	bool  bArmed = true;
+	float EnterDist = 2.0f;
+	float ExitDist = 8.0f;
+	float ReArmDist = 12.0f;
 
 private:
 	void ClearOutputArrays();
@@ -157,4 +180,12 @@ private:
 	bool CheckOverlapColToText(uint32 InBoxNum);
 
 	void HandleKeyPadReceiveByEmergencyButton();
+
+	FVector GetHMDWorldLocation() const;
+
+	UFUNCTION()
+	void KeyPadMovePlayEvent(float Value);
+
+	UFUNCTION()
+	void KeyPadMoveFinishedEvent();
 };

@@ -137,7 +137,7 @@ void AAGTWLever::OnDropped()
 
 	if (CheckGTWLeverOpationAngle())
 	{
-		UE_LOG(LogTemp, Log, TEXT("On Dropped Angle is IN Operate Angle!"));
+		UE_LOG(LogTemp, Log, TEXT("GTWLever Operate Success!"));
 		SM_Handle->SetRelativeRotation(FRotator(0.0f, 180.0f, 89.0f));
 		HandleCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -168,16 +168,12 @@ void AAGTWLever::OperateLever()
 	SM_Handle->SetRelativeRotation(FRotator(0.0f, 180.0f, TargetRoll));
 }
 
-bool AAGTWLever::CheckGTWLeverOpationAngle()
-{
-	bool TempResult = FMath::IsWithinInclusive(SM_Handle->GetRelativeRotation().Roll, 80.0f, 89.0f);
-	return TempResult;
-}
+bool AAGTWLever::CheckGTWLeverOpationAngle() { return (FMath::IsWithinInclusive(SM_Handle->GetRelativeRotation().Roll, 80.0f, 89.0f)); }
 
 void AAGTWLever::CountForGameStart()
 {
 	if (EquipmentWorldSubSystem)
-		EquipmentWorldSubSystem->NotifyGameStartBroadCast();
+		EquipmentWorldSubSystem->NotifyGameStartBroadCast(true);
 
 	GetWorldTimerManager().PauseTimer(CountGameStartTimer);
 }

@@ -1,7 +1,7 @@
-
-
-
 #include "EquipmentActor/FireRelated_Actors/AFireAlarm.h"
+#include "CoreObj/GameMode/VRGameMode.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -108,11 +108,24 @@ void AAFireAlarm::FireCheckColOverlapEnd(UPrimitiveComponent* OverlappedComp, AA
 
 void AAFireAlarm::SprinklerOperation()
 {
-	UGameplayStatics::PlaySoundAtLocation(this, SFXFireAlarm, CLFAFireCheck->GetComponentLocation());
+	mSoundPlayer->PlaySoundEffect(this, SFXFireAlarm, ActorBaseMesh->GetComponentLocation());
 
-	/*
-	Sprinkler Logic Execution Part
-	*/
+	//UE_LOG(LogTemp, Log, TEXT("Sprinkler Logic Execution Part"));
+
+	AVRGameMode* TempGM = Cast<AVRGameMode>(GetWorld()->GetAuthGameMode());
+	check(TempGM);
+	UPrisonerManagerSubsystem* TempPriMgrSubSy = Cast<UPrisonerManagerSubsystem>(GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>());
+	check(TempPriMgrSubSy);
+
+	TArray<uint8> GivenUpperStates = { 2 };
+	TArray<uint8> GivenLowerStates = { 2 };
+
+	for (int32 FlamePrisonerUniqueNum : TempGM->GetListFlamePrisoners())
+	{
+		TempPriMgrSubSy->GetAllPrisonerControllerArr()[FlamePrisonerUniqueNum]->State_based_ExecutionTasks_GiventoSomeone(GivenUpperStates, GivenLowerStates);
+	}
+
+	TempGM->HandleListOfFlamePrisoners(2, 0);
 
 	SprinklerCoolDown();
 }

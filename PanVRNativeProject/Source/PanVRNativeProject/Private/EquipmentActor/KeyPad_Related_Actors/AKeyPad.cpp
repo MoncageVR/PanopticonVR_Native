@@ -1,8 +1,11 @@
 #include "EquipmentActor/KeyPad_Related_Actors/AKeyPad.h"
+#include "CoreCommon/VRPawn/AScopeCamera.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Components/TimelineComponent.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
 
 AAKeyPad::AAKeyPad()
 {
@@ -24,7 +27,7 @@ AAKeyPad::AAKeyPad()
 		// Attach the main body to the root and set its mesh
 		ActorBaseMesh->SetupAttachment(SC_MainRoot);
 		ActorBaseMesh->SetStaticMesh(ModelingFinder_MainBody.Object);
-		ActorBaseMesh->SetRelativeLocation(FVector(10.0f, 30.0f, 65.0f));
+		ActorBaseMesh->SetRelativeLocation(FVector(10.0f, 30.0f, 165.0f));
 		ActorBaseMesh->SetRelativeRotation(FRotator(0.f));
 		ActorBaseMesh->SetRelativeScale3D(FVector(1.0f));
 	}
@@ -276,10 +279,20 @@ AAKeyPad::AAKeyPad()
 	{
 		CL_PerisScope->SetupAttachment(ActorBaseMesh);
 		CL_PerisScope->SetRelativeLocation(FVector(0.0f, 14.0f, -18.0f));
-		CL_PerisScope->SetBoxExtent(FVector(10.0f));
-		CL_PerisScope->SetGenerateOverlapEvents(true);
+		CL_PerisScope->SetBoxExtent(FVector(10.0f, 20.0f, 10.0f));
+		CL_PerisScope->SetGenerateOverlapEvents(false);
 		CL_PerisScope->OnComponentBeginOverlap.AddDynamic(this, &AAKeyPad::OnCameraOverlapBegin);
 		CL_PerisScope->OnComponentEndOverlap.AddDynamic(this, &AAKeyPad::OnCameraOverlapEnd);
+	}
+
+	KeyPadMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("MoveTLComp");
+	KeyPadMoveTimelineComp->SetLooping(false);
+	KeyPadMoveTimelineComp->SetTimelineLength(3.01f);
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_KeyPadMove(TEXT("/Game/VRContent/Blueprints/TimelineCurve/KeyPadBody_UpNDown_Curve.KeyPadBody_UpNDown_Curve"));
+	if (CurveFinder_KeyPadMove.Succeeded())
+	{
+		KeyPadMove_CurveF = CurveFinder_KeyPadMove.Object;
 	}
 
 	// Debug
@@ -316,7 +329,20 @@ void AAKeyPad::BeginPlay()
 	FinalOutputIntArrays.Empty();
 	FinalOutputTextArrays.Empty();
 
+	this->EquipmentRegistrable(this);
+
 	EquipmentWorldSubSystem->FKeyPadArrClearSignature.BindUObject(this, &AAKeyPad::HandleKeyPadReceiveByEmergencyButton);
+
+	EquipmentWorldSubSystem->FToggleToKeyPadSignature.BindUObject(this, &AAKeyPad::HandleKeyPadMove);
+
+	FOnTimelineFloat MoveProgressFunc;
+	FOnTimelineEvent MoveFinishedEvent;
+
+	MoveProgressFunc.BindUFunction(this, FName("KeyPadMovePlayEvent"));
+	MoveFinishedEvent.BindUFunction(this, FName("KeyPadMoveFinishedEvent"));
+
+	KeyPadMoveTimelineComp->AddInterpFloat(KeyPadMove_CurveF, MoveProgressFunc);
+	KeyPadMoveTimelineComp->SetTimelineFinishedFunc(MoveFinishedEvent);
 
 	// For Initialize, Clear Output Array 
 	for (UTextRenderComponent* TextRender : TR_ScoreBoard_Text)
@@ -328,19 +354,50 @@ void AAKeyPad::BeginPlay()
 	FinalOutputTextArrays.Empty();
 	GetWorld()->GetTimerManager().PauseTimer(ArrayClearTimer);
 	GetWorld()->GetTimerManager().ClearTimer(ArrayClearTimer);
+
+	bIsInScopeView = false;
+	bArmed = true;
+	EnterDist = 2.0f;
+	ExitDist = 8.0f;
+	ReArmDist = 12.0f;
 }
 
 void AAKeyPad::Tick(float DeltaTimes)
 {
 	Super::Tick(DeltaTimes);
 
-	if (bIsScopeFlag)
+	if (bIsScopeFlag && mVRPlayerPawn)
 	{
-		if (mVRPlayerPawn)
+		FVector HMDWorld = GetHMDWorldLocation();
+		double Dist = FMath::Abs(TargetPos.X - HMDWorld.X);
+		float TempOpacity = (1.0f - FMath::Clamp((Dist - 2.0f) / (MaxPeekDist - 2.0f), 0.0f, 1.0f));
+		mVRPlayerPawn->HandleMaskOpacity(TempOpacity);
+
+		APlayerController* TempPC = Cast<APlayerController>(mVRPlayerPawn->GetController());
+		checkf(TempPC, TEXT("PC Not Valid!"));
+		if (!TempPC) return;
+
+		if (!bIsInScopeView)
 		{
-			double Dist = FVector::Dist2D(TargetPos, mVRPlayerPawn->GetHMDSMComp()->GetComponentLocation());
-			float TempOpacity = (1.0f - FMath::Clamp((Dist - 2.0f) / (MaxPeekDist - 2.0f), 0.0f, 1.0f));
-			mVRPlayerPawn->HandleMaskOpacity(TempOpacity);
+			if (bArmed && Dist <= EnterDist)
+			{
+				TempPC->SetViewTargetWithBlend(ScopeCameraRef, 0.f);
+				bIsInScopeView = true;
+				bArmed = false;        
+			}
+		}
+		else
+		{
+			if (Dist >= ExitDist)
+			{
+				TempPC->SetViewTargetWithBlend(mVRPlayerPawn, 0.f);
+				bIsInScopeView = false;
+			}
+		}
+
+		if (!bArmed && !bIsInScopeView && Dist >= ReArmDist)
+		{
+			bArmed = true;
 		}
 	}
 }
@@ -363,6 +420,26 @@ void AAKeyPad::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& Han
 void AAKeyPad::OnDropped()
 {
 	TempMCRef = nullptr;
+}
+
+void AAKeyPad::EquipmentRegistrable(AActor* InActor)
+{
+	Super::EquipmentRegistrable(InActor);
+}
+
+void AAKeyPad::HandleKeyPadMove(uint8 InMoveFlag)
+{
+	if (InMoveFlag)
+	{
+		if (ActorBaseMesh->GetRelativeLocation().Z <= 66.0f)
+		{
+			KeyPadMoveTimelineComp->Reverse();
+		}
+		else if (ActorBaseMesh->GetRelativeLocation().Z >= 164.0f)
+		{
+			KeyPadMoveTimelineComp->PlayFromStart();
+		}
+	}
 }
 
 void AAKeyPad::OnKeyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -392,10 +469,28 @@ void AAKeyPad::OnCameraOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor*
 {
 	if (OtherComp && OtherComp->ComponentHasTag(FName("VRPawn")) && !bIsScopeFlag)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Camera Overlap Begin"));
 		mVRPlayerPawn = Cast<ACVRPawn>(OtherActor);
-		MaxPeekDist = FVector::Dist2D(TargetPos, mVRPlayerPawn->GetHMDSMComp()->GetComponentLocation());
 		TargetPos = CL_PerisScope->GetComponentLocation();
+		UE_LOG(LogTemp, Log, TEXT("TargetPos : %s"), *TargetPos.ToString());
 		bIsScopeFlag = true;
+
+		if (!IsValid(ScopeCameraRef))
+		{
+			FVector HMDWorld = GetHMDWorldLocation();
+			MaxPeekDist = FVector::Dist2D(TargetPos, HMDWorld);
+
+			for (TScriptInterface<IIEquipmentInitInterface> Equip : EquipmentWorldSubSystem->GetEquipmentArr())
+			{
+				IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
+				ScopeCameraRef = Cast<AAScopeCamera>(IEquipPtr);
+				if (ScopeCameraRef)
+					break;
+				else
+					continue;
+			}
+			checkf(ScopeCameraRef, TEXT("ScopeCamera Not Valid"));
+		}
 	}
 }
 
@@ -405,7 +500,6 @@ void AAKeyPad::OnCameraOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		bIsScopeFlag = false;
 		mVRPlayerPawn->HandleMaskOpacity(0.0f);
-		mVRPlayerPawn = nullptr;
 	}
 }
 
@@ -431,7 +525,7 @@ void AAKeyPad::ClearOutputArrays()
 void AAKeyPad::CheckOverlapColToInt(TObjectPtr<class UBoxComponent> InBoxCol)
 {
 	int32 KeyIndex = CL_Keys.IndexOfByKey(Cast<UBoxComponent>(InBoxCol));
-	GetWorld()->GetTimerManager().SetTimer(
+	GetWorld()->GetTimerManager().SetTimer( // KeyPad Not Input 5 Seconds After Clear Timer
 		ArrayClearTimer,
 		this,
 		&AAKeyPad::ClearOutputArrays,
@@ -441,10 +535,10 @@ void AAKeyPad::CheckOverlapColToInt(TObjectPtr<class UBoxComponent> InBoxCol)
 
 	if (FinalOutputTextLength > CurrTextLength)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Key pressed Index : %d"), KeyIndex);
+		//UE_LOG(LogTemp, Log, TEXT("Key pressed Index : %d"), KeyIndex);
 		if (CheckOverlapColToText(KeyIndex))
 		{
-			EquipmentWorldSubSystem->NotifyInputValuePassingByKeyPadBroadCast(false, KeyIndex); // Debug Input Key Number Print
+			EquipmentWorldSubSystem->NotifyInputValuePassingByKeyPadBroadCast(false, KeyIndex + 1);
 			TR_ScoreBoard_Text[CurrTextLength - 1]->SetText(FinalOutputTextArrays[CurrTextLength - 1]);
 		}
 	}
@@ -468,7 +562,7 @@ bool AAKeyPad::CheckOverlapColToText(uint32 InBoxNum)
 	}
 	else if (InBoxNum == 9) // Pickle Key
 	{
-		FinalOutputIntArrays.Add(InBoxNum);
+		FinalOutputIntArrays.Add(0);
 		FinalOutputTextArrays.Add(FText::FromString(FString::Printf(TEXT("%d"), 0)));
 		CurrTextLength++;
 		TempResult = true;
@@ -476,7 +570,7 @@ bool AAKeyPad::CheckOverlapColToText(uint32 InBoxNum)
 	}
 	else
 	{
-		FinalOutputIntArrays.Add(InBoxNum);
+		FinalOutputIntArrays.Add(InBoxNum + 1);
 		FinalOutputTextArrays.Add(FText::FromString(FString::Printf(TEXT("%u"), InBoxNum + 1)));
 		CurrTextLength++;
 		TempResult = true;
@@ -498,4 +592,30 @@ void AAKeyPad::HandleKeyPadReceiveByEmergencyButton()
 
 	GetWorld()->GetTimerManager().PauseTimer(ArrayClearTimer);
 	GetWorld()->GetTimerManager().ClearTimer(ArrayClearTimer);
+}
+
+FVector AAKeyPad::GetHMDWorldLocation() const
+{
+	if (!mVRPlayerPawn) 
+		return FVector::ZeroVector;
+	FVector HMDPos = FVector::ZeroVector;
+	FRotator HMDRot = FRotator::ZeroRotator;
+	UHeadMountedDisplayFunctionLibrary::GetOrientationAndPosition(HMDRot, HMDPos);
+	return mVRPlayerPawn->GetActorTransform().TransformPosition(HMDPos);
+}
+
+void AAKeyPad::KeyPadMovePlayEvent(float Value)
+{
+	FVector TempBaseMeshVector = ActorBaseMesh->GetRelativeLocation();
+
+	ActorBaseMesh->SetRelativeLocation(FVector(TempBaseMeshVector.X, TempBaseMeshVector.Y, Value * 100.0f));
+}
+
+void AAKeyPad::KeyPadMoveFinishedEvent()
+{
+	EquipmentWorldSubSystem->NotifyToggleSwitchOperationBroadCast(0);
+	if (ActorBaseMesh->GetRelativeLocation().Z <= 66.0f)
+	{
+		CL_PerisScope->SetGenerateOverlapEvents(true);
+	}
 }

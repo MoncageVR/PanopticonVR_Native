@@ -9,6 +9,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/DataTable.h"
 #include "NavFilters/RecastFilter_UseDefaultArea.h"
+#include "Components/SphereComponent.h"
 
 APrisonerController::APrisonerController()
 {
@@ -38,15 +39,30 @@ APrisonerController::APrisonerController()
 
 void APrisonerController::HandleNextTask()
 {
-	if (Debug_Length <= Debug_CurrStateIndex)
+	if (!Debug_Upper_State.IsValidIndex(Debug_CurrStateIndex) || !Debug_Lower_State.IsValidIndex(Debug_CurrStateIndex))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Next Task Not Valid"));
+		if (BlackboardComp)
+		{
+			this->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
+			this->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
+			this->GetBBComp()->SetValueAsBool(TEXT("bIsPatrolBlocked"), true);
+		}
+		UE_LOG(LogTemp, Log, TEXT("%d Prisoner is Next Task Not Valid"), GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 		return;
 	}
-	BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), Debug_Upper_State[Debug_CurrStateIndex]);
-	BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), Debug_Lower_State[Debug_CurrStateIndex]);
-	//UE_LOG(LogTemp, Log, TEXT("Debug_CurrStateIndex Plus Call"));
-	Debug_CurrStateIndex++;
+	else
+	{
+		BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), Debug_Upper_State[Debug_CurrStateIndex]);
+		BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), Debug_Lower_State[Debug_CurrStateIndex]);
+		//UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"),GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);
+		Debug_CurrStateIndex++;
+		//UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"), GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);
+		if (FOnPrisonerLowerStateChangedSignature.IsBound())
+		{
+			FOnPrisonerLowerStateChangedSignature.Broadcast(this, this->GetCurrLowerState());
+		}
+	}
+
 }
 
 void APrisonerController::OnPossess(APawn* InPawn)
@@ -79,7 +95,7 @@ void APrisonerController::OnPossess(APawn* InPawn)
 	//Debug_Lower_State.Add(13); // Escape
 
 	Debug_Length = Debug_Upper_State.Num();
-	Debug_CurrStateIndex = -1;
+	Debug_CurrStateIndex = 0;
 
 	APrisonerCharacter* TempPrisonerCha = Cast<APrisonerCharacter>(this->GetCharacter());
 	UAnimInstance* TempAnimInst = nullptr;
@@ -97,11 +113,6 @@ void APrisonerController::OnPossess(APawn* InPawn)
 	if (BlackboardAsset)
 	{
 		UseBlackboard(BlackboardAsset, BlackboardComp);
-	}
-
-	if (BehaviorTreeAsset)
-	{
-		//RunBehaviorTree(BehaviorTreeAsset);
 	}
 }
 
@@ -189,4 +200,93 @@ void APrisonerController::InitializeStatesFromLogicDT()
 
 	}
 
+}
+
+void APrisonerController::HandleFlameTransitionColNTimer(uint8 InHandleFlag)
+{
+	if (InHandleFlag)
+	{
+		this->AttachSphereCollision();
+
+		if (UWorld* MyWorld = GetWorld())
+		{
+			MyWorld->GetTimerManager().SetTimer(
+				FLameTransitionTimer,
+				this,
+				&APrisonerController::ActuallyFlameTransition,
+				10.0f,
+				true
+			);
+		}
+	}
+	else
+	{
+		if (IsValid(CL_FlameTransition))
+		{
+			CL_FlameTransition->OnComponentBeginOverlap.RemoveDynamic(this, &APrisonerController::FlameCLOverlapBegin);
+			CL_FlameTransition->DestroyComponent();
+			CL_FlameTransition = nullptr;
+		}
+		if (UWorld* MyWorld = GetWorld())
+		{
+			MyWorld->GetTimerManager().PauseTimer(FLameTransitionTimer);
+			MyWorld->GetTimerManager().ClearTimer(FLameTransitionTimer);
+		}
+	}
+}
+
+void APrisonerController::HandleRunBT()
+{
+	if (BehaviorTreeAsset)
+	{
+		RunBehaviorTree(BehaviorTreeAsset);
+	}
+}
+
+void APrisonerController::FlameCLOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp && OtherComp->ComponentHasTag(FName("PrisonerCharacter")))
+	{
+		APrisonerCharacter* OverlapOtherCha = Cast<APrisonerCharacter>(OtherActor);
+		checkf(OverlapOtherCha, TEXT("Overlap Prisoner Not Valid!"));
+		AAIController* OtherAICon = Cast<AAIController>(OverlapOtherCha->GetController());
+		checkf(OtherAICon, TEXT("Prisoner AI Controller Not Valid"));
+		APrisonerController* OtherPrisonerCon = Cast<APrisonerController>(OtherAICon);
+		checkf(OtherPrisonerCon, TEXT("Prsioenr Controller Not Valid"));
+
+		if (OtherPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState")) == 0 && OtherPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState")) == 0)
+		{
+			//UE_LOG(LogTemp, Log, TEXT("Default State Prisoenr Overlap Success!"));
+			TArray<uint8> GivenUpperState = { 4 };
+			TArray<uint8> GivenLowerState = { 15 };
+
+			OtherPrisonerCon->State_based_ExecutionTasks_GiventoSomeone(GivenUpperState, GivenLowerState);
+
+			CL_FlameTransition->SetGenerateOverlapEvents(false);
+			CL_FlameTransition->OnComponentBeginOverlap.RemoveDynamic(this, &APrisonerController::FlameCLOverlapBegin);
+		}
+	}
+}
+
+void APrisonerController::AttachSphereCollision()
+{
+	if (!IsValid(CL_FlameTransition))
+	{
+		//UE_LOG(LogTemp, Log, TEXT("FlameTransition Collision Attach Success!"));
+		APrisonerCharacter* TempCha = Cast<APrisonerCharacter>(this->GetCharacter());
+		CL_FlameTransition = Cast<USphereComponent>(TempCha->AddComponentByClass(USphereComponent::StaticClass(), false, FTransform::Identity, false));
+
+		CL_FlameTransition->SetSphereRadius(900.0f, true);
+		CL_FlameTransition->SetHiddenInGame(false);// Debug
+		CL_FlameTransition->SetCollisionProfileName(FName("OverlapAll"));
+		CL_FlameTransition->SetGenerateOverlapEvents(true);
+	}
+}
+
+void APrisonerController::ActuallyFlameTransition()
+{
+	//UE_LOG(LogTemp, Log, TEXT("Called every 10 seconds, Flame state transition!"));
+	CL_FlameTransition->OnComponentBeginOverlap.AddDynamic(this, &APrisonerController::FlameCLOverlapBegin);
+	CL_FlameTransition->SetGenerateOverlapEvents(true);
+	return;
 }

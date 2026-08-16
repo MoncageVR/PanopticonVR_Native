@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/Spawned_Actors/APaper.h"
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
@@ -28,6 +25,7 @@ AAPaper::AAPaper()
 		CLA4->SetupAttachment(ActorBaseMesh);
 		CLA4->SetBoxExtent(FVector(6.0f, 8.5f, 0.5f));
 		CLA4->ComponentTags.Add(FName("Paper"));
+		CLA4->ComponentTags.Add(FName("Trash"));
 		CLA4->SetHiddenInGame(false); // Debug
 	}
 
@@ -76,8 +74,6 @@ void AAPaper::BeginPlay()
 	Super::BeginPlay();
 
 	ActorBaseMesh->SetSimulatePhysics(false);
-	/*ActorBaseMesh->SetCollisionProfileName(FName("NoCollision"));
-	CLA4->SetCollisionProfileName(FName("NoCollision"));*/
 }
 
 void AAPaper::Tick(float DeltaTimes) 

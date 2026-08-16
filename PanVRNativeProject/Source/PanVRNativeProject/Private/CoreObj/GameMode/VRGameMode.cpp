@@ -32,27 +32,22 @@ void AVRGameMode::StartPlay()
 {
 	Super::StartPlay();
 
-	/*UVREquipmentWorldSubsystem* TempVREquipmentWorldSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
-	check(TempVREquipmentWorldSubSystem);*/
-	//TempVREquipmentWorldSubSystem->ClearEquipmentArrs();
-
 	MyVRGameInstance = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
 	if (MyVRGameInstance)
 	{
-		UPrisonerManagerSubsystem* TempPrisonerManagerPtr = MyVRGameInstance->GetPrisonerManager();
+		UPrisonerMgrSubSyPtr = MyVRGameInstance->GetPrisonerManager();
+		UMapObjMgrSubSyPtr = MyVRGameInstance->GetMapObjManager();
+		VREquipWorldSubSyPtr = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
+		check(UPrisonerMgrSubSyPtr);
+		check(UMapObjMgrSubSyPtr);
+		check(VREquipWorldSubSyPtr);
 
-		UMapObjManagerSubsystem* TempMapObjManangerPtr = MyVRGameInstance->GetMapObjManager();
+		UPrisonerMgrSubSyPtr->CreateAllPrisoner();
+		//UPrisonerMgrSubSyPtr->Create_Paranormal_Phenomenon();
 
-		if (ensure(TempPrisonerManagerPtr))
-		{
-			TempPrisonerManagerPtr->CreateAllPrisoner();
-			TempPrisonerManagerPtr->Create_Paranormal_Phenomenon();
-		}
+		//UMapObjMgrSubSyPtr->CreateAllGratings();
 
-		if (ensure(TempMapObjManangerPtr))
-		{
-			TempMapObjManangerPtr->CreateAllGratings();
-		}
+		VREquipWorldSubSyPtr->FGameStartSignature.AddDynamic(this, &AVRGameMode::HandleGMReceiveByGTW);
 	}
 
 	MyVRPawn = Cast<ACVRPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
@@ -74,5 +69,41 @@ void AVRGameMode::GameOverCheckEvent()
 	else
 	{
 		return;
+	}
+}
+
+void AVRGameMode::HandleListOfFloatNTelePrisoners(uint8 InHandleFlag, int32 InUniqueNum)
+{
+	if (InHandleFlag)
+		ListOfPrisonersWithFloatingORTeleportStatus.AddUnique(InUniqueNum);
+	else
+		ListOfPrisonersWithFloatingORTeleportStatus.RemoveSingleSwap(InUniqueNum);
+}
+
+void AVRGameMode::HandleListOfFlamePrisoners(uint8 InHandleFlag, int32 InFlameUniqueNum)
+{
+	UE_LOG(LogTemp, Log, TEXT("InHandleFlag : %d"), InHandleFlag);
+	if (InHandleFlag)
+	{
+		if (InHandleFlag >= 2)
+			ListOfPrisonersWithFlameStatus.Empty();
+		else
+			ListOfPrisonersWithFlameStatus.AddUnique(InFlameUniqueNum);
+	}
+	else
+		ListOfPrisonersWithFlameStatus.RemoveSingleSwap(InFlameUniqueNum);
+}
+
+void AVRGameMode::HandleGMReceiveByGTW(bool bIsGameStartFlag)
+{
+	if (bIsGameStartFlag)
+	{
+		UE_LOG(LogTemp, Log, TEXT("VRGameMode Start  By GTWLever"));
+
+		for (APrisonerController* Controller : UPrisonerMgrSubSyPtr->GetAllPrisonerControllerArr())
+		{
+			Controller->HandleRunBT();
+		}
+
 	}
 }

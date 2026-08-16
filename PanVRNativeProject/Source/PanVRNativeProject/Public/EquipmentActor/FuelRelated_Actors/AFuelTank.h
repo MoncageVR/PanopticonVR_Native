@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -32,7 +30,7 @@ public:
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
 #pragma region Getter
-	FORCEINLINE AAFuelRod* GetCurrEquipFuelRod() const { return EquipFuelRod; }
+	FORCEINLINE TObjectPtr<class AAFuelRod> GetCurrEquipFuelRod() const { return EquipFuelRod; }
 #pragma endregion
 
 #pragma region Components
@@ -120,7 +118,8 @@ private:
 	uint32 bIsOpen = 0;
 	uint32 bIsAttachObjExist = 0;
 
-	class AAFuelRod* EquipFuelRod;
+	UPROPERTY()
+	TObjectPtr<class AAFuelRod> EquipFuelRod;
 
 	USoundBase* SFXFuelTankMove;
 	USoundBase* SFXFuelRodIn;

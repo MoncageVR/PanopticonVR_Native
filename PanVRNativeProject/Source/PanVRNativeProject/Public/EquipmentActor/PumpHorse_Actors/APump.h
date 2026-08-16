@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,7 +17,6 @@ public:
 	AAPump();
 
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTimes) override;
 
 	// Actor On Grabbed
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
@@ -40,10 +37,18 @@ protected:
 private:
 	FVector DefaultHandlePos;
 	uint8 bIsDeLoreanOperationFlag;
+	uint8 bIsPumpOperationFlag;
+	uint32 PumpOperationNum;
+
 	class UMotionControllerComponent* MCRef;
 
 	FTimerHandle PumpOperateTimer;
+	FTimerHandle PumpHorseOperateTimer;
 
 private:
 	void UpdatePumpUpNDown();
+	void CheckOperatingPump();
+	void SetHanldeDefaultPosNRot();
+
+	void HandlePumpOperateByBin(float InOperTime);
 };

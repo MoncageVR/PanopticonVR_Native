@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/Spawned_Actors/ASodaBullet.h"
 #include "Components/BoxComponent.h"
 #include "CoreCommon/Component/UGrabComp.h"
@@ -64,16 +61,7 @@ void AASodaBullet::SetActorPhysics(bool PhysicsFlag)
 void AASodaBullet::BeginPlay()
 {
 	Super::BeginPlay();
-
-
-
 }
-
-void AASodaBullet::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 
 void AASodaBullet::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {

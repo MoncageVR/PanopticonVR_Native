@@ -27,6 +27,7 @@ public:
 #pragma endregion
 
 public:
+	// T(1) : Collision Enabled , F(0) : Collision Disabled
 	void HandleCollisionEnabled(uint8 bIsColActivated);
 
 public:

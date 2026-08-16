@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Floating.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "Kismet/GameplayStatics.h"
@@ -22,14 +19,27 @@ EBTNodeResult::Type UUAITask_Floating::ExecuteTask(UBehaviorTreeComponent& Owner
 	PrisonerCharacterObj->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
 
 	this->ActuallyMoveToTargetVec();
+	MyVRGameMode->HandleListOfFloatNTelePrisoners(1, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 
 	return EBTNodeResult::InProgress;
 
 }
 
+EBTNodeResult::Type UUAITask_Floating::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	UE_LOG(LogTemp, Log, TEXT("Floating State Abort By Someone"));
+	if (UWorld* World = GetWorld())
+	{
+		World->GetLatentActionManager().RemoveActionsForObject(this);
+	}
+
+	return EBTNodeResult::Failed;
+}
+
 void UUAITask_Floating::OnFloatingFinishedFunc()
 {
 	UE_LOG(LogTemp, Log, TEXT("Floating Arrived!"));
+	MyVRGameMode->HandleListOfFloatNTelePrisoners(0, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 	PrisonerControllerObj->OnTaskFinished.Broadcast();
 }
 

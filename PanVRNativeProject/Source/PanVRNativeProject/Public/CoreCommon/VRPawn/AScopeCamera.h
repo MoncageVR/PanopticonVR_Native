@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -18,13 +16,21 @@ public:
 	AAScopeCamera();
 
 	virtual void BeginPlay() override;
+	// IIEquipmentInitInterface In Natural Virtual Function Overriding , For Use Delegate System 
+	virtual void EquipmentRegistrable(AActor* InActor) override;
 
 protected:
 
-	/*UPROPERTY(VisibleAnywhere)
-	TObjectPtr<class UCameraComponent>*/
+private:
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> SC_MainRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UCameraComponent> SceneCaptureCameraBody;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SM_HMD;
 
 private:
 
-	
 };

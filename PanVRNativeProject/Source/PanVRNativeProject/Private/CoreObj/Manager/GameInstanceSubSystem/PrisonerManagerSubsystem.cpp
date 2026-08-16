@@ -189,6 +189,8 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		TempPrisonerCon->GetBBComp()->SetValueAsVector(TEXT("TeleportTargetVec"), FVector(1300.0f, 0.0f, 321.504486f)); // Set Individual Teleport Target Position
 		TempPrisonerCon->GetBBComp()->SetValueAsVector(TEXT("CeilingEscapeTargetVec"), FVector(2100.f, 0.f, 2100.f));
 		TempPrisonerCon->GetBBComp()->SetValueAsVector(TEXT("TopEscapeTargetVec"), FVector(0.f, 0.f, 3700.f));
+		TempPrisonerCon->GetBBComp()->SetValueAsBool(TEXT("bIsPatrolBlocked"), false);
+
 		TempPrisonerCon->SetMyLogicDT(DTGroupArrs[i]);
 
 		this->ClassifyUniqueNumByRotOfEachZone(i, TempPrisonerCha->GetActorRotation().Yaw);
@@ -208,7 +210,7 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		}
 
 		// Debug!
-		if (i == 16)
+		if (i == 0)
 		{
 			TempPrisonerCon->SetMyLogicDT(DTGroupA);
 
@@ -223,25 +225,8 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 
 			uint8 TempBPLowerValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState"));
 			EPrisonerLowerStateType TempCPPLowerValue = EPrisonerLowerStateType::Radioactivity;
-
-			/*if (TempBPUpperValue == static_cast<uint8>(TempCPPUpperValue))
-			{
-				UE_LOG(LogTemp, Log, TEXT("%d Prisoner Upper State Enum Match!"),i);
-			}
-
-			if (TempBPLowerValue == static_cast<uint8>(TempCPPLowerValue))
-			{
-				UE_LOG(LogTemp, Log, TEXT("%d Prisoner Lower State Enum Match!"), i);
-			}*/
-
-			// Move(2) - Run(5)
-			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 2);
-			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 5);
-
-			//// Dangerous(4) - Escape(13)
-			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 4);
-			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 13);
 		}
+		// Debug
 	}
 
 	AlphaZonePrisonerUniqueNumArrs.Sort();
@@ -263,8 +248,8 @@ void UPrisonerManagerSubsystem::Create_Paranormal_Phenomenon()
 		UE_LOG(LogTemp, Log, TEXT("Random Choice : %d"), RandomChoice);
 
 		// Debug 0 Number Prisoner Fixed Call
-		//AllPrisonerControllerArrs[0]->HandlePlayPrisonerLogic(0);
-		AllPrisonerControllerArrs[16]->HandlePlayPrisonerLogic(16);
+		AllPrisonerControllerArrs[0]->HandlePlayPrisonerLogic(0);
+		//AllPrisonerControllerArrs[16]->HandlePlayPrisonerLogic(16);
 
 		//if (PrisonerPossibleNumbers[RandomChoice] != -1)
 		//{

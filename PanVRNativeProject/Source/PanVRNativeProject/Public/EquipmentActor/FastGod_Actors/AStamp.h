@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -26,25 +24,25 @@ public:
 
 protected:
 #pragma region Components
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> STMainRoot;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class USplineComponent> STMoveRail;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CLPaperTarget;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> STHandleRoot;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SMStampHandle;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SMStampHandleHead;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CLStamp;
 #pragma endregion
 
@@ -81,11 +79,15 @@ protected:
 
 private:
 	FTimerHandle StampMoveTimer;
-	class UMotionControllerComponent* TempMCRef = nullptr;
 
-	class AAPaper* AttachingPaper = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UMotionControllerComponent> TempMCRef = nullptr;
 
-	USoundBase* SFXStampMove;
+	UPROPERTY()
+	TObjectPtr<class AAPaper> AttachingPaper = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXStampMove;
 
 private:
 	// InFlag 1 = OnGrabbed , InFlag 0 = OnDropped

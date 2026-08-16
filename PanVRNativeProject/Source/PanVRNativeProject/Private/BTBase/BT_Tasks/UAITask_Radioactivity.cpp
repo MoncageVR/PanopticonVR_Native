@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Radioactivity.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
@@ -24,6 +21,8 @@ EBTNodeResult::Type UUAITask_Radioactivity::ExecuteTask(UBehaviorTreeComponent& 
 {
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed) return EBTNodeResult::Failed;
 	UE_LOG(LogTemp, Log, TEXT("UAI_Task Radioactivity Execute!!"));
+
+	RadioactivityCheckTime = 40.0f;
 
 	UVREquipmentWorldSubsystem* TempVREquipmentSubSystem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	if (!ensure(TempVREquipmentSubSystem)) return EBTNodeResult::Failed;
@@ -54,22 +53,29 @@ void UUAITask_Radioactivity::ExplosureAndGameover()
 	if (!ensure(FuelTankObj)) return;
 	if (IsValid(FuelTankObj))
 	{
-		UE_LOG(LogTemp, Log, TEXT("AttachFlag : %d"), FuelTankObj->GetCurrEquipFuelRod()->GetFRIsAttaching());
-		UE_LOG(LogTemp, Log, TEXT("LowGaugeFlag : %d"), FuelTankObj->GetCurrEquipFuelRod()->GetWasLowGaugeFlag());
-
-		if (FuelTankObj->GetCurrEquipFuelRod()->GetFRIsAttaching() && !FuelTankObj->GetCurrEquipFuelRod()->GetWasLowGaugeFlag())
+		if (IsValid(FuelTankObj->GetCurrEquipFuelRod()))
 		{
-			UE_LOG(LogTemp, Log, TEXT("Radioactivity Subdue!"));
-			PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
-			PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
+			UE_LOG(LogTemp, Log, TEXT("AttachFlag : %d"), FuelTankObj->GetCurrEquipFuelRod()->GetFRIsAttaching());
+			UE_LOG(LogTemp, Log, TEXT("LowGaugeFlag : %d"), FuelTankObj->GetCurrEquipFuelRod()->GetWasLowGaugeFlag());
 
-			// 0 = UpperState : Idle , 1 = LowerState : Default
-			PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1);
+			if (FuelTankObj->GetCurrEquipFuelRod()->GetFRIsAttaching() && !FuelTankObj->GetCurrEquipFuelRod()->GetWasLowGaugeFlag())
+			{
+				UE_LOG(LogTemp, Log, TEXT("Radioactivity Subdue!"));
+				PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
+				PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
 
+				// 0 = UpperState : Idle , 1 = LowerState : Default
+				PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Fuel Rod Attaching, But LowGauge! Radioactivity Subdue Failed, Explosure Play~~"));
+				MyAnimInst->Montage_Play(ExplodeMontage);
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("Radioactivity Failed, Explosure Play~~"));
+			UE_LOG(LogTemp, Log, TEXT("FuelRod Not Attaching! Radioactivity Subdue Failed, Explosure Play~~"));
 			MyAnimInst->Montage_Play(ExplodeMontage);
 		}
 	}

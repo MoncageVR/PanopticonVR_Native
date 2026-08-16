@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Golf.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
@@ -25,6 +22,8 @@ EBTNodeResult::Type UUAITask_Golf::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed) return EBTNodeResult::Failed;
 	//UE_LOG(LogTemp, Log, TEXT("UAI_Task Golf Execute!!"));
 
+	GolfSwingCount = 0;
+
 	if (!IsValid(MyGolfClubObj))
 	{
 		SetStateEntryTransform();
@@ -39,6 +38,24 @@ EBTNodeResult::Type UUAITask_Golf::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 	}
 
 	return EBTNodeResult::InProgress;
+}
+
+EBTNodeResult::Type UUAITask_Golf::AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
+{
+	if (UWorld* mWorld = GetWorld())
+	{
+		mWorld->GetTimerManager().PauseTimer(GolfBallMakeTimer);
+		mWorld->GetTimerManager().ClearTimer(GolfBallMakeTimer);
+
+		mWorld->GetTimerManager().PauseTimer(GolfStateNextForWaitTimer);
+		mWorld->GetTimerManager().ClearTimer(GolfStateNextForWaitTimer);
+
+		MyGolfClubObj->Destroy();
+		// UpperState : Idle(0) | LowerState : Default(0)
+		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
+	}
+
+	return Super::AbortTask(OwnerComp, NodeMemory);
 }
 
 void UUAITask_Golf::GolfBallFly()

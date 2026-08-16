@@ -14,7 +14,7 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 		return EBTNodeResult::Failed;
 	}
 
-	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+	/*UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
 	if (NavSys)
 	{
 		FVector PawnLoc = PrisonerCharacterObj->GetActorLocation();
@@ -34,7 +34,7 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[RUN] NavSys is NULL!"));
-	}
+	}*/
 
 	// UpperState : Move(2) | LowerState : Run(4)
 	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
@@ -60,6 +60,8 @@ EBTNodeResult::Type UUAITask_Run::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 
 const bool UUAITask_Run::HasReachedTargetPos(const FVector InChaVec, const FVector InTargetVec)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Cha Vec : %s"), *InChaVec.ToString());
+	UE_LOG(LogTemp, Warning, TEXT("Cha Vec : %s"), *InTargetVec.ToString());
 	bool XReturnValue = false;
 	bool YReturnValue = false;
 	if (FMath::IsNearlyEqual(InChaVec.X, InTargetVec.X, 5.0f))
@@ -67,6 +69,6 @@ const bool UUAITask_Run::HasReachedTargetPos(const FVector InChaVec, const FVect
 
 	if (FMath::IsNearlyEqual(InChaVec.Y, InTargetVec.Y, 5.0f))
 		YReturnValue = true;
-
+	UE_LOG(LogTemp, Error, TEXT("Run Move To Escape Taget Pos Reached!"))
 	return (XReturnValue && YReturnValue);
 }

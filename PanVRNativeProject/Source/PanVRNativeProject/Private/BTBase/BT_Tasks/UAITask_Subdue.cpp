@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Subdue.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
@@ -59,4 +56,6 @@ void UUAITask_Subdue::RegenerationFromRagdoll()
 
 	PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
 	PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
+	// 0 = UpperState : Idle , 1 = LowerState : Default
+	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1);
 }

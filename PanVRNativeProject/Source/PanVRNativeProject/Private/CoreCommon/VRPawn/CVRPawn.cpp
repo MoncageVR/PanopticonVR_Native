@@ -17,6 +17,7 @@
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "MainActor/TowerBuilding.h"
+#include "Components/WidgetComponent.h"
 
 ACVRPawn::ACVRPawn()
 {
@@ -175,8 +176,8 @@ ACVRPawn::ACVRPawn()
 		SM_MaskPlane->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		SM_MaskPlane->SetCastShadow(false);
 
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Plane(TEXT("/Game/VRContent/Modeling/13_Keypad/Scale20.Scale20"));
-		static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Scope(TEXT("/Game/VRContent/Material/SRS_Stage_Scope_Inst.SRS_Stage_Scope_Inst"));
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Plane(TEXT("/Game/VRContent/Modeling/13_Keypad/Periscope_SM_UI.Periscope_SM_UI"));
+		static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Scope(TEXT("/Game/VRContent/Material/SRS_Stage_Scope_Mat_Inst.SRS_Stage_Scope_Mat_Inst"));
 		if (ModelingFinder_Plane.Succeeded() && MatFinder_Scope.Succeeded())
 		{
 			SM_MaskPlane->SetStaticMesh(ModelingFinder_Plane.Object);
@@ -184,19 +185,16 @@ ACVRPawn::ACVRPawn()
 		}
 	}
 
-	SM_MaskPlane_Hole = CreateDefaultSubobject<UStaticMeshComponent>("SM_Plane_Hole");
-	if (SM_MaskPlane_Hole)
+	HUDWidgetComp = CreateDefaultSubobject<UWidgetComponent>("VRPawnHUDWidget");
+	if (HUDWidgetComp)
 	{
-		SM_MaskPlane_Hole->SetupAttachment(SM_MaskPlane);
-		SM_MaskPlane_Hole->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SM_MaskPlane_Hole->SetCastShadow(false);
-		SM_MaskPlane_Hole->SetRelativeLocation(FVector(0.f, 0.f, 0.1f));
-		SM_MaskPlane_Hole->SetRelativeScale3D(FVector(0.5f, 1.0f, 1.0f));
-		SM_MaskPlane_Hole->SetVisibility(false);
-
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Hole(TEXT("/Game/VRContent/Modeling/13_Keypad/Keypad_Scope_Hole.Keypad_Scope_Hole"));
-		if (ModelingFinder_Hole.Succeeded())
-			SM_MaskPlane_Hole->SetStaticMesh(ModelingFinder_Hole.Object);
+		HUDWidgetComp->SetupAttachment(Root);
+		HUDWidgetComp->SetRelativeLocation(FVector(290.f, 0.f, -25.f));
+		HUDWidgetComp->SetRelativeRotation(FRotator(0.f, 180.f, 0.f));
+		HUDWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+		HUDWidgetComp->SetWidgetClass(HUDFinder_VRPawnHUD.Class);
+		HUDWidgetComp->SetDrawSize(FVector2D(500.0f, 500.0f));
+		HUDWidgetComp->SetTwoSided(true);
 	}
 
 	this->GetCharacterMovement()->GravityScale = 0.0f;
@@ -211,12 +209,15 @@ void ACVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*MaskMID = SM_MaskPlane->CreateDynamicMaterialInstance(0, MaskMI);
-	if (MaskMID)
+	MaskMID_0Index = SM_MaskPlane->CreateDynamicMaterialInstance(0, MaskMI);
+	MaskMID_1Index = SM_MaskPlane->CreateDynamicMaterialInstance(1, MaskMI);
+
+	if (MaskMID_0Index && MaskMID_1Index)
 	{
-		MaskMID->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
-	}*/
-	SM_MaskPlane->SetVisibility(true);
+		MaskMID_0Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
+		MaskMID_1Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
+	}
+	SM_MaskPlane->SetVisibility(false);
 
 	this->SpawnHands();
 	if (GEngine && GEngine->XRSystem.IsValid())
@@ -224,7 +225,7 @@ void ACVRPawn::BeginPlay()
 		IHeadMountedDisplay* HMDDevice = GEngine->XRSystem->GetHMDDevice();
 		if (HMDDevice)
 		{
-			// Is Head Mounted Display Enabled Value Tr		ue;
+			// Is Head Mounted Display Enabled Value True;
 			if (HMDDevice->IsHMDEnabled())
 			{
 				UHeadMountedDisplayFunctionLibrary::SetTrackingOrigin(EHMDTrackingOrigin::Eye);
@@ -250,16 +251,12 @@ void ACVRPawn::BeginPlay()
 	{
 		TempEquipmentWorldSubSytem->FEBMoveOrderSignature.AddDynamic(this, &ACVRPawn::HandleMovePlayerToFloor);
 		TempEquipmentWorldSubSytem->FLobbyGameStartSignature.BindUObject(this, &ACVRPawn::GameStartInLobbyEvent);
+		TempEquipmentWorldSubSytem->FGameStartSignature.AddDynamic(this, &ACVRPawn::HandleVRPawnReceivceByGTW);
 	}
 
-	if (VRPawnHUDWidgetClass)
+	if (HUDWidgetComp)
 	{
-		APlayerController* mPC = Cast<APlayerController>(GetController());
-		HUDWidgetInstance = CreateWidget<UVRPawnHUD>(mPC, VRPawnHUDWidgetClass);
-		if (HUDWidgetInstance)
-		{
-			HUDWidgetInstance->AddToViewport();
-		}
+		HUDWidgetInstance = Cast<UVRPawnHUD>(HUDWidgetComp->GetUserWidgetObject());
 	}
 
 	AGameModeBase* CurrGM = UGameplayStatics::GetGameMode(GetWorld());
@@ -267,7 +264,6 @@ void ACVRPawn::BeginPlay()
 
 	if (Cast<AVRLobbyGameMode>(CurrGM))
 	{
-		
 		mVRLobbyGMRef = Cast<AVRLobbyGameMode>(CurrGM);
 		check(mVRLobbyGMRef);
 
@@ -338,6 +334,18 @@ void ACVRPawn::GameStartInLobbyEvent()
 	TL_VRPawnUpMoveInLobby->PlayFromStart();
 }
 
+void ACVRPawn::HandleVRPawnReceivceByGTW(bool InFlag)
+{
+	if (InFlag)
+	{
+		UE_LOG(LogTemp, Log, TEXT("VRPawn HUD Timer Start By GTWLever"));
+		if (IsValid(HUDWidgetInstance))
+		{
+			UKismetSystemLibrary::K2_UnPauseTimer(HUDWidgetInstance, TEXT("UpdateTimerWidget"));
+		}
+	}
+}
+
 void ACVRPawn::Tick(float DeltaTimes)
 {
 	Super::Tick(DeltaTimes);
@@ -392,6 +400,7 @@ void ACVRPawn::VRPawnMoveUpTLFunc(float Value)
 
 void ACVRPawn::VRPawnMoveUpTLEndFunc()
 {
+	//UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End"));
 	return;
 }
 
@@ -499,8 +508,9 @@ void ACVRPawn::HandleDownMovePlayer()
 void ACVRPawn::HandleMaskOpacity(float OpacityValue)
 {
 	SM_MaskPlane->SetVisibility(true);
-	if (MaskMID)
+	if (MaskMID_0Index && MaskMID_1Index)
 	{
-		MaskMID->SetScalarParameterValue(FName("MaskOpacity"), OpacityValue);
+		MaskMID_0Index->SetScalarParameterValue(FName("MaskOpacity"), OpacityValue * 2.0f);
+		MaskMID_1Index->SetScalarParameterValue(FName("MaskOpacity"), OpacityValue);
 	}
 }

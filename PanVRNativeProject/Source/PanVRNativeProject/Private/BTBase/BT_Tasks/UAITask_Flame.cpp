@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Flame.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
@@ -12,6 +9,7 @@ UUAITask_Flame::UUAITask_Flame()
 {
 	NodeName = TEXT("BTTask_Flame");
 	bCreateNodeInstance = true;
+	bNotifyTaskFinished = true;
 
 	BaseCoordinateHeightArrs.Empty();
 	BaseCoordinateHeightArrs.Reserve(4);
@@ -41,68 +39,22 @@ EBTNodeResult::Type UUAITask_Flame::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	}
 	else
 	{
-		InitBeforeFlameRun();
+		this->InitBeforeFlameRun();
+		// 
+		MyVRGameMode->HandleListOfFlamePrisoners(1, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 		// UpperState : Dangerous(4) | LowerState : Flame(15)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 15);
 
-		if (AttachSphereCollision())
-		{
-			MapObjManagerSubSystemInst->HandleFlyingTheGrating(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum")));
+		MapObjManagerSubSystemInst->HandleFlyingTheGrating(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum"))); // Flying Grating
 
-			ActuallyMoveFlameRun();
+		PrisonerControllerObj->HandleFlameTransitionColNTimer(1);
 
-			GetWorld()->GetTimerManager().SetTimer(
-				FlameTransitionTimer,
-				this,
-				&UUAITask_Flame::ActuallyFlameTransition,
-				10.0f,
-				true
-			);
-		}
+		ActuallyMoveFlameRun();
 
 		return EBTNodeResult::Succeeded;
 	}
 
 	return EBTNodeResult::Succeeded;
-}
-
-bool UUAITask_Flame::AttachSphereCollision()
-{
-
-	if (!IsValid(FlameTransitionCL))
-	{
-		FlameTransitionCL = Cast<USphereComponent>(PrisonerCharacterObj->AddComponentByClass(USphereComponent::StaticClass(), false, FTransform::Identity, false));
-	}
-
-	FlameTransitionCL->SetSphereRadius(900.0f, true);
-	FlameTransitionCL->SetHiddenInGame(false); // Debug
-	FlameTransitionCL->SetGenerateOverlapEvents(true);
-
-	return FlameTransitionCL->GetGenerateOverlapEvents();
-}
-
-void UUAITask_Flame::FlameCLOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherComp->ComponentHasTag(TEXT("PrisonerCharacter")))
-	{
-		APrisonerCharacter* OtherPrisonerCha = Cast<APrisonerCharacter>(OtherActor);
-		checkf(OtherPrisonerCha, TEXT("PrisonerCha Not Valid"));
-		AAIController* OtherAiController = Cast<AAIController>(OtherPrisonerCha->GetController());
-		checkf(OtherAiController, TEXT("PrisonerCha AI Controller Not Valid"));
-		APrisonerController* OtherPrisonerCon = Cast<APrisonerController>(OtherAiController);
-		checkf(OtherPrisonerCon, TEXT("PrisonerCha Controller Not Valid"));
-
-		if (OtherPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState")) == 0 && OtherPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState")) == 0)
-		{
-			TArray<uint8> GivenUpperState = { 4 };
-			TArray<uint8> GivenLowerState = { 15 };
-
-			OtherPrisonerCon->State_based_ExecutionTasks_GiventoSomeone(GivenUpperState, GivenLowerState);
-
-			FlameTransitionCL->SetGenerateOverlapEvents(false);
-			FlameTransitionCL->OnComponentBeginOverlap.RemoveDynamic(this, &UUAITask_Flame::FlameCLOverlapBegin);
-		}
-	}
 }
 
 void UUAITask_Flame::ActuallyMoveFlameRun()
@@ -115,11 +67,12 @@ void UUAITask_Flame::ActuallyMoveFlameRun()
 	}
 	else // Flame Run 3 Time Finish Logic Parts
 	{
+		MyVRGameMode->HandleListOfFlamePrisoners(0, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
+
+		PrisonerControllerObj->HandleFlameTransitionColNTimer(0);
+
 		// UpperState : Idle(0) | LowerState : Default(0)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
-		FlameTransitionCL->OnComponentBeginOverlap.RemoveDynamic(this, &UUAITask_Flame::FlameCLOverlapBegin);
-		GetWorld()->GetTimerManager().PauseTimer(FlameTransitionTimer);
-		GetWorld()->GetTimerManager().ClearTimer(FlameTransitionTimer);
 		PrisonerControllerObj->HandleNextTask();
 	}
 }
@@ -183,12 +136,4 @@ bool UUAITask_Flame::HasReachedFlameTargetVec(FVector InChaVec, FVector InTarget
 		YReturnValue = true;
 
 	return (XReturnValue && YReturnValue);
-}
-
-void UUAITask_Flame::ActuallyFlameTransition()
-{
-	//UE_LOG(LogTemp, Log, TEXT("Called every 10 seconds, Flame state transition!"));
-	FlameTransitionCL->OnComponentBeginOverlap.AddDynamic(this, &UUAITask_Flame::FlameCLOverlapBegin);
-	FlameTransitionCL->SetGenerateOverlapEvents(true);
-	return;
 }

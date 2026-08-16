@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/PumpHorse_Actors/APump.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "CoreCommon/Component/UGrabComp.h"
@@ -78,12 +75,7 @@ void AAPump::BeginPlay()
 	this->EquipmentRegistrable(this);
 
 	DefaultHandlePos = SMPumpHandle->GetRelativeLocation();
-	bIsDeLoreanOperationFlag = 1; // Debug
-}
-
-void AAPump::Tick(float DeltaTimes)
-{
-	Super::Tick(DeltaTimes);
+	EquipmentWorldSubSystem->FBinToPumpSignature.BindUObject(this, &AAPump::HandlePumpOperateByBin);
 }
 
 void AAPump::EquipmentRegistrable(AActor* InActor)
@@ -97,16 +89,30 @@ void AAPump::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandG
 	{
 		MCRef = &InMCRef;
 
-		GetWorldTimerManager().SetTimer(
-			PumpOperateTimer,
-			this,
-			&AAPump::UpdatePumpUpNDown,
-			0.01f,
-			true
-		);
+		if (UWorld* MyWorld = GetWorld())
+		{
+			MyWorld->GetTimerManager().SetTimer(
+				PumpOperateTimer,
+				this,
+				&AAPump::UpdatePumpUpNDown,
+				0.01f,
+				true
+			);
+
+			MyWorld->GetTimerManager().SetTimer(
+				PumpHorseOperateTimer,
+				this,
+				&AAPump::CheckOperatingPump,
+				0.01f,
+				true
+			);
+		}
+
+
 	}
 	else
 	{
+		SetHanldeDefaultPosNRot();
 		MCRef = nullptr;
 		if (GetWorldTimerManager().IsTimerActive(PumpOperateTimer))
 		{
@@ -146,8 +152,57 @@ void AAPump::UpdatePumpUpNDown()
 	);
 }
 
+void AAPump::CheckOperatingPump()
+{
+	float TempOperatePump = FMath::GetMappedRangeValueClamped(
+		FVector2D(14.4f, 23.3f),
+		FVector2D(100.0f, 0.0f),
+		FMath::Clamp(SMPumpHandle->GetRelativeLocation().Z, 14.4f, 23.3f)
+	);
+
+	if (bIsPumpOperationFlag)
+	{
+		if (TempOperatePump >= 99.0f)
+		{
+			PumpOperationNum++;
+			EquipmentWorldSubSystem->NotifyPumpHorseOneStepBroadCast();
+
+			bIsPumpOperationFlag = 0;
+		}
+	}
+	else
+	{
+		if (TempOperatePump <= 1.0f)
+		{
+			bIsPumpOperationFlag = 1;
+		}
+	}
+}
+
+void AAPump::SetHanldeDefaultPosNRot()
+{
+	SMPumpHandle->SetRelativeLocation(DefaultHandlePos, false, nullptr, ETeleportType::TeleportPhysics);
+	SMPumpHandleBellow->SetRelativeScale3D(FVector::OneVector);
+}
+
+void AAPump::HandlePumpOperateByBin(float InOperTime)
+{
+	if (FMath::IsNearlyEqual(InOperTime, 0.0f))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Pump Operation End!!"));
+		this->OnDropped();
+		bIsDeLoreanOperationFlag = false;
+	}
+	else if (FMath::IsNearlyEqual(InOperTime, 10.0f))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Pump Operation Start!!"));
+		bIsDeLoreanOperationFlag = true;
+	}
+}
+
 void AAPump::OnDropped()
 {
+	SetHanldeDefaultPosNRot();
 	MCRef = nullptr;
 	if (GetWorldTimerManager().IsTimerActive(PumpOperateTimer))
 	{

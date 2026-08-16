@@ -141,7 +141,10 @@ void AASodaFreezer::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector
 			// (SodaBullet -> MC)
 			NewSodaBullet->OnGrabbed(InMCRef, HandGrabPos, InGrabbingHand); // SodaBullet On Grabbed Function Call
 			// SodaBullet Attached MC, After Setting SodaBullet Relative Location And Rotation
-			NewSodaBullet->SetActorRelativeLocation(FVector(-5.0f, -5.0f, 2.0f));
+			if (InMCRef.ComponentHasTag(FName("LeftMC")))
+				NewSodaBullet->SetActorRelativeLocation(FVector(0.0f, 3.0f, 0.0f));
+			else
+				NewSodaBullet->SetActorRelativeLocation(FVector(0.0f, -3.0f, 0.0f));
 			NewSodaBullet->SetActorRelativeRotation(FRotator(-110.0f, 0.0f, 0.0f));
 			mSoundPlayer->PlaySoundEffect(this, SFXCanPickUp, CL_MainFreezer->GetComponentLocation());
 

@@ -1,6 +1,3 @@
-
-
-
 #include "EquipmentActor/Spawned_Actors/ALP.h"
 #include "Components/BoxComponent.h"
 #include "Debug/FDebugLib.h"
@@ -37,6 +34,7 @@ AALP::AALP()
 	}
 
 	CLLP->ComponentTags.Add(FName("LP"));
+	CLLP->ComponentTags.Add(FName("Trash"));
 
 	//CLLP->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 

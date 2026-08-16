@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -19,7 +17,6 @@ public:
 	AAToilet();
 
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTimes) override;
 
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
 	virtual void OnDropped() override;
@@ -99,7 +96,8 @@ private:
 	USoundBase* SFXGrabHeavy;
 	USoundBase* SFXOperateFlush;
 
-
+	UPROPERTY()
+	TObjectPtr<class AAElevatorButton> TempElevatorObj;
 
 private:
 	void AdjustOvenDoorGC(uint32 TempHandDir);

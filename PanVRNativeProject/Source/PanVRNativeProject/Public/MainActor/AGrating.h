@@ -89,10 +89,13 @@ private:
 	uint8 bIsAlreadyFlying;
 
 	UPROPERTY()
-	UCurveFloat* UpTheGratingFloatCurve;
+	TObjectPtr<UCurveFloat> UpTheGratingFloatCurve;
 
 	UPROPERTY()
-	UCurveFloat* DownTheGratingFloatCurve;
+	TObjectPtr<UCurveFloat> DownTheGratingFloatCurve;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_DoorOpen;
 
 private:
 	void GratingOpenStart(); // Grating Up Call Function In Use Timeline PlayFromStart

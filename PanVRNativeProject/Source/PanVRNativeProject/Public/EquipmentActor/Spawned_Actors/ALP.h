@@ -17,6 +17,7 @@ class PANVRNATIVEPROJECT_API AALP : public AVRGrabActorBase, public IIGrabInterf
 public:
 	AALP();
 
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeletaTime) override;
 
 	// Actor On Grabbed
@@ -34,12 +35,7 @@ public:
 	void SetIsAttaching(uint32 TempbIsAttaching);
 
 	void SetMeshCollisionEnabled(uint32 CollisionEnabled);
-
 #pragma endregion
-
-
-protected:
-	virtual void BeginPlay() override;
 
 protected:
 

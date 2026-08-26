@@ -1,5 +1,6 @@
 #include "MainActor/JailBuilding.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/GameMode/VRGameMode.h"
 #include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
 #include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "Components/BoxComponent.h"
@@ -9,62 +10,60 @@
 
 AJailBuilding::AJailBuilding()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
+	// Setting Main Root SceneComponent
 	JailMainRoot = CreateDefaultSubobject<USceneComponent>("MainSceneComp");
 	if (JailMainRoot)
 	{
 		SetRootComponent(JailMainRoot);
 		JailMainRoot->Mobility = EComponentMobility::Static;
 	}
-
+	// Setting 1st Floor Root SceneComponent
 	FirstFloorRoot = CreateDefaultSubobject<USceneComponent>("1stFloorSceneComp");
 	if (FirstFloorRoot)
 	{
 		FirstFloorRoot->SetupAttachment(JailMainRoot);
 		FirstFloorRoot->Mobility = EComponentMobility::Movable;
 	}
-
+	// Setting 2nd Floor Root SceneComponent
 	SecondFloorRoot = CreateDefaultSubobject<USceneComponent>("2ndFloorSceneComp");
 	if (SecondFloorRoot)
 	{
 		SecondFloorRoot->SetupAttachment(JailMainRoot);
 		SecondFloorRoot->Mobility = EComponentMobility::Movable;
 	}
-
+	// Setting 3rd Floor Root SceneComponent
 	ThirdFloorRoot = CreateDefaultSubobject<USceneComponent>("3rdFloorSceneComp");
 	if (ThirdFloorRoot)
 	{
 		ThirdFloorRoot->SetupAttachment(JailMainRoot);
 		ThirdFloorRoot->Mobility = EComponentMobility::Movable;
 	}
-
+	// Setting Moveable Root SceneComponent
 	MoveableBuildingsRoot = CreateDefaultSubobject<USceneComponent>("MoveableSceneComp");
 	if (MoveableBuildingsRoot)
 	{
 		MoveableBuildingsRoot->SetupAttachment(JailMainRoot);
 		MoveableBuildingsRoot->Mobility = EComponentMobility::Movable;
 	}
-
+	// Setting Static Root SceneComponent
 	StaticBuildingsRoot = CreateDefaultSubobject<USceneComponent>("StaticSceneComp");
 	if (StaticBuildingsRoot)
 	{
 		StaticBuildingsRoot->SetupAttachment(JailMainRoot);
 		StaticBuildingsRoot->Mobility = EComponentMobility::Static;
 	}
-
+	// Setting Modeling - ActorBaseMesh StaticMesh Component
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_JailBody(TEXT("/Game/VRContent/Modeling/16_Prison(Building_Jail)/SM_Jail_Frame.SM_Jail_Frame"));
 	if (ActorBaseMesh)
 	{
 		ActorBaseMesh->Mobility = EComponentMobility::Static;
+		ActorBaseMesh->SetCollisionProfileName(FName(TEXT("BlockAll")));
 		ActorBaseMesh->SetupAttachment(StaticBuildingsRoot);
 		ActorBaseMesh->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-		if (ModelingFinder_JailBody.Succeeded())
-		{
-			ActorBaseMesh->SetStaticMesh(ModelingFinder_JailBody.Object);
-		}
+		if (ModelingFinder_JailBody.Succeeded()) { ActorBaseMesh->SetStaticMesh(ModelingFinder_JailBody.Object); }
 	}
-
+	// Setting Modeling - JailExitDoor StaticMesh Component
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_JailExitDoor(TEXT("/Game/VRContent/Modeling/16_Prison(Building_Jail)/SM_ExitDoor.SM_ExitDoor"));
 	JailExitDoor = CreateDefaultSubobject<UStaticMeshComponent>("JailExitDoor_SMComp");
 	if (JailExitDoor)
@@ -73,12 +72,9 @@ AJailBuilding::AJailBuilding()
 		JailExitDoor->SetupAttachment(MoveableBuildingsRoot);
 		JailExitDoor->SetRelativeLocation(FVector(0.0f, -245.0f, 666.5f));
 		JailExitDoor->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-		if (ModelingFinder_JailExitDoor.Succeeded())
-		{
-			JailExitDoor->SetStaticMesh(ModelingFinder_JailExitDoor.Object);
-		}
+		if (ModelingFinder_JailExitDoor.Succeeded()) { JailExitDoor->SetStaticMesh(ModelingFinder_JailExitDoor.Object); }
 	}
-
+	// Setting Modeling - JailHatch StaticMesh Component
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_JailHatch(TEXT("/Game/VRContent/Modeling/16_Prison(Building_Jail)/SM_Roof_Hatch.SM_Roof_Hatch"));
 	JailHatch = CreateDefaultSubobject<UStaticMeshComponent>("JailHatch_SMComp");
 	if (JailHatch)
@@ -87,12 +83,9 @@ AJailBuilding::AJailBuilding()
 		JailHatch->SetupAttachment(MoveableBuildingsRoot);
 		JailHatch->SetRelativeLocation(FVector(0.0f, 0.0f, 3850.0f));
 		JailHatch->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-		if (ModelingFinder_JailHatch.Succeeded())
-		{
-			JailHatch->SetStaticMesh(ModelingFinder_JailHatch.Object);
-		}
+		if (ModelingFinder_JailHatch.Succeeded()) { JailHatch->SetStaticMesh(ModelingFinder_JailHatch.Object); }
 	}
-
+	// Setting Modeling - JailRoof StaticMesh Component
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_JailRoof(TEXT("/Game/VRContent/Modeling/16_Prison(Building_Jail)/SM_Roof.SM_Roof"));
 	JailRoof = CreateDefaultSubobject<UStaticMeshComponent>("JailRoof_SMComp");
 	if (JailRoof)
@@ -100,12 +93,9 @@ AJailBuilding::AJailBuilding()
 		JailRoof->SetMobility(EComponentMobility::Static);
 		JailRoof->SetupAttachment(StaticBuildingsRoot);
 		JailRoof->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-		if (ModelingFinder_JailRoof.Succeeded())
-		{
-			JailRoof->SetStaticMesh(ModelingFinder_JailRoof.Object);
-		}
+		if (ModelingFinder_JailRoof.Succeeded()) { JailRoof->SetStaticMesh(ModelingFinder_JailRoof.Object); }
 	}
-
+	// Setting Modeling - Jail 1F, 2F, 3F WeaponDoor StaticMesh Component
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_JailWeaponDoor(TEXT("/Game/VRContent/Modeling/16_Prison(Building_Jail)/SM_WeaponDoor.SM_WeaponDoor"));
 	Jail1FWeaponDoor = CreateDefaultSubobject<UStaticMeshComponent>("Jail1FWeaponDoor_SMComp");
 	Jail2FWeaponDoor = CreateDefaultSubobject<UStaticMeshComponent>("Jail2FWeaponDoor_SMComp");
@@ -136,7 +126,7 @@ AJailBuilding::AJailBuilding()
 			Jail3FWeaponDoor->SetStaticMesh(ModelingFinder_JailWeaponDoor.Object);
 		}
 	}
-
+	// Setting Collision - Feature : Subdue For TopEscape Status Prisoner
 	CLSubdueHatch = CreateDefaultSubobject<UBoxComponent>("CL_TopEscapeSubdue");
 	if (CLSubdueHatch)
 	{
@@ -144,71 +134,54 @@ AJailBuilding::AJailBuilding()
 		CLSubdueHatch->SetRelativeLocation(FVector(0.0f, 0.0f, -125.0f));
 		CLSubdueHatch->SetBoxExtent(FVector(200.0f, 200.0f, 200.0f));
 		CLSubdueHatch->SetGenerateOverlapEvents(false);
-
 		CLSubdueHatch->SetHiddenInGame(false); // Debug
 	}
-
+	// Setting AffectNavigation - 1F,2F,3F WeaponDoor , ExitDoor
 	Jail1FWeaponDoor->SetCanEverAffectNavigation(false);
 	Jail2FWeaponDoor->SetCanEverAffectNavigation(false);
 	Jail3FWeaponDoor->SetCanEverAffectNavigation(false);
 	JailExitDoor->SetCanEverAffectNavigation(false);
 
+	// Setting Material - Hatch - ExitDoor , Hatch , Roof
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Hatch(TEXT("/Game/VRContent/Material/SRS_STAGE_hatch.SRS_STAGE_hatch"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Wall(TEXT("/Game/VRContent/Material/SRS_STAGE_WALL.SRS_STAGE_WALL"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Main(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));
-
 	if (MatFinder_Hatch.Succeeded())
 	{
 		JailExitDoor->SetMaterial(0, MatFinder_Hatch.Object);
 		JailHatch->SetMaterial(0, MatFinder_Hatch.Object);
 		JailRoof->SetMaterial(0, MatFinder_Hatch.Object);
 	}
-
+	// Setting Material - Wall - ActorBaseMesh
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Wall(TEXT("/Game/VRContent/Material/SRS_STAGE_WALL.SRS_STAGE_WALL"));
 	if (MatFinder_Wall.Succeeded())
 	{
 		ActorBaseMesh->SetMaterial(0, MatFinder_Wall.Object);
 	}
-
+	// Setting Material - Main - 1F,2F,3F WeaponDoor
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Main(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));
 	if (MatFinder_Main.Succeeded())
 	{
 		Jail1FWeaponDoor->SetMaterial(0, MatFinder_Main.Object);
 		Jail2FWeaponDoor->SetMaterial(0, MatFinder_Main.Object);
 		Jail3FWeaponDoor->SetMaterial(0, MatFinder_Main.Object);
 	}
-
-	/*static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Hatch(TEXT("/Game/VRContent/Material/SRS_STAGE_hatch.SRS_STAGE_hatch"));
-	if (MaterialFinder_Hatch.Succeeded())
-	{
-		JailExitDoor->SetMaterial(0, MaterialFinder_Hatch.Object);
-		JailHatch->SetMaterial(0, MaterialFinder_Hatch.Object);
-		JailRoof->SetMaterial(0, MaterialFinder_Hatch.Object);
-	}
-
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Wall(TEXT("/Game/VRContent/Material/SRS_STAGE_WALL.SRS_STAGE_WALL"));
-	if (MaterialFinder_Wall.Succeeded())
-	{
-		ActorBaseMesh->SetMaterial(0, MaterialFinder_Wall.Object);
-	}
-
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Main(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));
-	if (MaterialFinder_Main.Succeeded())
-	{
-		Jail1FWeaponDoor->SetMaterial(0, MaterialFinder_Main.Object);
-		Jail2FWeaponDoor->SetMaterial(0, MaterialFinder_Main.Object);
-		Jail3FWeaponDoor->SetMaterial(0, MaterialFinder_Main.Object);
-	}*/
-
+	// Setting CurveFloat - WeaponDoor UpAndDown For Glove
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_Glove(TEXT("/Game/VRContent/Blueprints/TimelineCurve/Glove_MoveCurve.Glove_MoveCurve"));
 	if (CurveFinder_Glove.Succeeded())
+	{
 		MoveTheWeaponDoorFloatCurve = CurveFinder_Glove.Object;
-
+	}
+	// Setting CurveFloat - ExitDoor SideWard
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_ExitDoor(TEXT("/Game/VRContent/Blueprints/TimelineCurve/ExitDoorSide_Curve.ExitDoorSide_Curve"));
 	if (CurveFinder_ExitDoor.Succeeded())
+	{
 		MoveTheExitDoorFloatCurve = CurveFinder_ExitDoor.Object;
-
+	}
+	// Setting CurveFloat - Hatch SideWard
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> CurveFinder_Hatch(TEXT("/Game/VRContent/Blueprints/TimelineCurve/JailHatchSide_Curve.JailHatchSide_Curve"));
 	if (CurveFinder_Hatch.Succeeded())
+	{
 		MoveTheHatchFloatCurve = CurveFinder_Hatch.Object;
+	}
 
 	UpwardMoveTimelineComp = CreateDefaultSubobject<UTimelineComponent>("UpwardMoveTLComp");
 	UpwardMoveTimelineComp->SetLooping(false);
@@ -226,24 +199,28 @@ AJailBuilding::AJailBuilding()
 	HatchSideWardsMoveTLComp->SetLooping(false);
 	HatchSideWardsMoveTLComp->SetTimelineLength(4.01f);
 
+	// Setting Sound - Glove Move Sound
 	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_GloveNJail(TEXT("/Game/VRContent/Sound/Wavs/Glove/sfx_glove.sfx_glove"));
 	if (SoundFinder_GloveNJail.Succeeded())
 	{
 		GloveNJailDoorOperationSFX = SoundFinder_GloveNJail.Object;
 	}
-
+	// Setting Spline - Using SpiderMan Prisoner Move Route
 	mSpiderManMoveRoute = CreateDefaultSubobject<USplineComponent>("JailSplineComp");
 	if (mSpiderManMoveRoute)
 	{
 		mSpiderManMoveRoute->SetupAttachment(JailMainRoot);
 		mSpiderManMoveRoute->SetRelativeLocation(FVector(0.0f, 0.0f, -134.2f));
 		mSpiderManMoveRoute->SetRelativeRotation(FRotator(0.0f, 0.0f, 0.0f));
-
 		for (int i = 0; i < 5; i++)
 		{
 			mSpiderManMoveRoute->AddSplineLocalPoint(FVector(0.0f, 0.0f, 0.0f));
 		}
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_EscapeLoose(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Escape/sfx_escape_loose.sfx_escape_loose"));
+	if (SFXFinder_EscapeLoose.Succeeded())
+		SFX_ExitDoor = SFXFinder_EscapeLoose.Object;
 }
 
 void AJailBuilding::BeginPlay()
@@ -263,26 +240,24 @@ void AJailBuilding::BeginPlay()
 	}
 	InitRefDoorNVector();
 
-	if (MoveTheWeaponDoorFloatCurve)
+	if (MoveTheWeaponDoorFloatCurve && UpwardMoveTimelineComp && DownwardMoveTimelineComp)
 	{
 		FOnTimelineFloat UpwardProgressFunc;
-		UpwardProgressFunc.BindUFunction(this, FName("UpwardMoveTheDoorPlayEvent"));
-		UpwardMoveTimelineComp->AddInterpFloat(MoveTheWeaponDoorFloatCurve, UpwardProgressFunc);
-
 		FOnTimelineEvent UpwardFinishedEvent;
+		UpwardProgressFunc.BindUFunction(this, FName("UpwardMoveTheDoorPlayEvent"));
 		UpwardFinishedEvent.BindUFunction(this, FName("UpwardMoveTheDoorFinishedEvent"));
+		UpwardMoveTimelineComp->AddInterpFloat(MoveTheWeaponDoorFloatCurve, UpwardProgressFunc);
 		UpwardMoveTimelineComp->SetTimelineFinishedFunc(UpwardFinishedEvent);
 
 		FOnTimelineFloat DownwardProgressFunc;
-		DownwardProgressFunc.BindUFunction(this, FName("DownwardMoveTheDoorPlayEvent"));
-		DownwardMoveTimelineComp->AddInterpFloat(MoveTheWeaponDoorFloatCurve, DownwardProgressFunc);
-
 		FOnTimelineEvent DownwardFinishedEvent;
+		DownwardProgressFunc.BindUFunction(this, FName("DownwardMoveTheDoorPlayEvent"));
 		DownwardFinishedEvent.BindUFunction(this, FName("DownwardMoveTheDoorFinishedEvent"));
+		DownwardMoveTimelineComp->AddInterpFloat(MoveTheWeaponDoorFloatCurve, DownwardProgressFunc);
 		DownwardMoveTimelineComp->SetTimelineFinishedFunc(DownwardFinishedEvent);
 	}
 
-	if (MoveTheExitDoorFloatCurve)
+	if (MoveTheExitDoorFloatCurve && SideWardsMoveTimelineComp)
 	{
 		FOnTimelineFloat SidewardProgressFunc;
 		FOnTimelineEvent SidewardFinishedEvent;
@@ -294,7 +269,7 @@ void AJailBuilding::BeginPlay()
 		SideWardsMoveTimelineComp->SetTimelineFinishedFunc(SidewardFinishedEvent);
 	}
 
-	if (MoveTheHatchFloatCurve)
+	if (MoveTheHatchFloatCurve && HatchSideWardsMoveTLComp)
 	{
 		FOnTimelineFloat HatchSidewardProgressFunc;
 		FOnTimelineEvent HatchSidewardFinishedEvent;
@@ -308,6 +283,7 @@ void AJailBuilding::BeginPlay()
 
 	this->Init_JailSplineAllPointValue();
 	HatchDefaultTransform = this->JailHatch->GetRelativeTransform();
+	MyVRGM = nullptr;
 }
 
 void AJailBuilding::EquipmentRegistrable(AActor* InActor)
@@ -315,14 +291,20 @@ void AJailBuilding::EquipmentRegistrable(AActor* InActor)
 	Super::EquipmentRegistrable(InActor);
 }
 
-void AJailBuilding::Tick(float DeltaTime)
+void AJailBuilding::HandleExitDoor() 
 {
-	Super::Tick(DeltaTime);
-
+	// Pre-allocate to Call Game Over Event When the Exit Door is Fully closed
+	MyVRGM = Cast<AVRGameMode>(GetWorld()->GetAuthGameMode());
+	check(MyVRGM);
+	MoveTheExitDoorSideward(); 
 }
-
-void AJailBuilding::HandleExitDoor() { MoveTheExitDoorSideward(); }
-void AJailBuilding::HandleHatchDoor() { MoveTheHatchSideward(); }
+void AJailBuilding::HandleHatchDoor() 
+{ 
+	// Pre-allocate to Call Game Over Event When the Hatch is Fully closed
+	MyVRGM = Cast<AVRGameMode>(GetWorld()->GetAuthGameMode());
+	check(MyVRGM);
+	MoveTheHatchSideward(); 
+}
 
 void AJailBuilding::InitRefDoorNVector()
 {
@@ -338,19 +320,35 @@ void AJailBuilding::InitRefDoorNVector()
 	TargetUpVecArrs.Add(Jail2FWeaponDoor->GetRelativeLocation() + FVector(0.f, 0.f, 290.f));
 	TargetUpVecArrs.Add(Jail3FWeaponDoor->GetRelativeLocation() + FVector(0.f, 0.f, 290.f));
 }
-
+// Weapon Door UpWard Move Function
 void AJailBuilding::MoveTheDoorUpward()
 {
 	UpwardMoveTimelineComp->PlayFromStart();
-	mSoundPlayer->PlaySoundEffect(this, GloveNJailDoorOperationSFX, Jail1FWeaponDoor->GetComponentLocation());
+	HVRSoundPlayer::PlaySoundEffect(this, GloveNJailDoorOperationSFX, Jail1FWeaponDoor->GetComponentLocation()); // Glove Play Sound
 }
-
+// Weapon Door DownWard Move Function
 void AJailBuilding::MoveTheDoorDownward() { DownwardMoveTimelineComp->PlayFromStart(); }
-void AJailBuilding::MoveTheExitDoorSideward() { SideWardsMoveTimelineComp->PlayFromStart(); }
+// ExitDoor SideWard Move Function
+void AJailBuilding::MoveTheExitDoorSideward() 
+{
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_ExitDoor, this->GetRootComponent()->GetComponentLocation());
+	if (!SideWardsMoveTimelineComp->IsPlaying())
+	{
+		SideWardsMoveTimelineComp->PlayFromStart();
+	}
+	else
+		return;
+}
+// Hatch SideWard Move Function
 void AJailBuilding::MoveTheHatchSideward() 
 {
 	this->JailHatch->SetRelativeTransform(HatchDefaultTransform, false, nullptr, ETeleportType::TeleportPhysics);
-	HatchSideWardsMoveTLComp->PlayFromStart(); 
+	if (!HatchSideWardsMoveTLComp->IsPlaying())
+	{
+		HatchSideWardsMoveTLComp->PlayFromStart();
+	}
+	else
+		return;
 }
 
 // SpiderMan State To Follow Spline Component Point Value Init
@@ -392,17 +390,13 @@ void AJailBuilding::Init_JailSplineAllPointValue()
 
 void AJailBuilding::HandleJailReceiveByEB(FName InTag, int32 InFloor)
 {
-	if (InTag == FName("EB")) 
-	{
-		CurrFloorNum = InFloor;
-	}
+	if (InTag == FName("EB")) { CurrFloorNum = InFloor; }
 }
 
 void AJailBuilding::OverlapHatchBoxBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherComp->ComponentHasTag(FName(TEXT("PrisonerCharacter"))))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Overlap PrisonerCharacter"));
 		APrisonerCharacter* OverlapPrisonerCha = Cast<APrisonerCharacter>(OtherActor);
 		checkf(OverlapPrisonerCha, TEXT("In Jail, Overlap Prisoner Not Valid!"));
 		APrisonerController* OverlapPrisonerCon = Cast<APrisonerController>(OverlapPrisonerCha->GetController());
@@ -410,8 +404,6 @@ void AJailBuilding::OverlapHatchBoxBegin(UPrimitiveComponent* OverlappedComp, AA
 		
 		if (OverlapPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState")) == 4 && OverlapPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState")) == 11)
 		{
-			UE_LOG(LogTemp, Log, TEXT("TopEscape PrisonerCha Overlap Success!"));
-
 			TArray<uint8> GivenUpperStates = { 1 };
 			TArray<uint8> GivenLowerStates = { 1 };
 
@@ -457,7 +449,6 @@ void AJailBuilding::UpwardMoveTheDoorFinishedEvent()
 {
 	if (IsValid(EquipmentWorldSubSystem))
 	{
-		UE_LOG(LogTemp, Log, TEXT("2. Glove is Operated By the JailBuilding"));
 		EquipmentWorldSubSystem->NotifyPunchStartBroadCast();
 		// Jail ¡æ Glove : BroadCast Function
 	}
@@ -465,7 +456,6 @@ void AJailBuilding::UpwardMoveTheDoorFinishedEvent()
 
 void AJailBuilding::DownwardMoveTheDoorFinishedEvent()
 {
-	//UE_LOG(LogTemp, Log, TEXT("Finish"));
 	EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(true);
 	return;
 }
@@ -475,14 +465,18 @@ void AJailBuilding::SidewardMoveTheExitDoorPlayEvent(float Value)
 	JailExitDoor->SetRelativeLocation(FVector(
 		0.0f,
 		Value * -100.0f,
-		0.0f
+		666.5f
 	));
 }
 
 void AJailBuilding::SidewardMoveTheExitDoorFinishedEvent()
 {
-	// GameOver Logic(In GameMode?) Execute Parts!
-	UE_LOG(LogTemp, Log, TEXT("GameOver Logic Execute!"));
+	// GameOver Logic Execute Parts!
+	if (MyVRGM)
+	{
+		MyVRGM->SetIsGameOverFlag(true);
+		MyVRGM->GameOverCheckEvent();
+	}
 	return;
 }
 
@@ -495,14 +489,19 @@ void AJailBuilding::SidewardMoveTheHatchPlayEvent(float Value)
 
 void AJailBuilding::SidewardMoveTheHatchFinishedEvent()
 {
-	UE_LOG(LogTemp, Log, TEXT("Hatch Move Finished!"));
-	// Game Over Check Logic Execute Parts!
+	// GameOver Logic Execute Parts!
+	UE_LOG(LogTemp, Log, TEXT("Hatch Move Finished And GameOver Logic Execute!"));
+	if (MyVRGM)
+	{
+		MyVRGM->SetIsGameOverFlag(true);
+		MyVRGM->GameOverCheckEvent();
+	}
 }
 
 // Jail Building is Operated By Glove
 void AJailBuilding::HandleJailReceiveByGlove()
 {
-	UE_LOG(LogTemp, Log, TEXT("4. Jail Building is Operated By Glove"));
+	//UE_LOG(LogTemp, Log, TEXT("4. Jail Building is Operated By Glove"));
 	MoveTheDoorDownward();
 }
 
@@ -511,7 +510,7 @@ void AJailBuilding::HandleJailReceiveByABButton(FName InTargetName)
 {
 	if (InTargetName == TEXT("Glove"))
 	{
-		UE_LOG(LogTemp, Log, TEXT("1. Jail Door Open is Operated By the AB Button"));
+		//UE_LOG(LogTemp, Log, TEXT("1. Jail Door Open is Operated By the AB Button"));
 		EquipmentWorldSubSystem->NotifyEBOperationControlBroadCast(false);
 		MoveTheDoorUpward(); // Jail Glove Door Open Function
 	}

@@ -125,7 +125,7 @@ void AAFuelRod::GaugeOperatingTimeline(float Value)
 		ActorBaseMesh->SetVectorParameterValueOnMaterials(FName("GaugeColor"), FVector(1.f, 0.f, 0.f));
 		if (!bWasLowGauge)
 		{
-			mSoundPlayer->PlaySoundEffect(this, SFXFuelRodLowGauge, FRCLStick->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, SFXFuelRodLowGauge, FRCLStick->GetComponentLocation());
 		}
 	}
 	else
@@ -138,6 +138,7 @@ void AAFuelRod::GaugeOperatingTimeline(float Value)
 
 void AAFuelRod::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 	GC->SetPrimitiveCompPhysics(false);
 	GetWorldTimerManager().PauseTimer(DestroySelfTimer);
 }

@@ -111,7 +111,7 @@ void AAFax::FaxButtonColOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	{
 		if (AttachingPaper->GetIsFaxAttaching())
 		{
-			mSoundPlayer->PlaySoundEffect(this, SFXShredSuccess, ActorBaseMesh->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, SFXShredSuccess, ActorBaseMesh->GetComponentLocation());
 			GetWorldTimerManager().SetTimer(
 				FaxOperationTimer,
 				this,
@@ -128,7 +128,7 @@ void AAFax::FaxButtonColOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 
 	if (OtherComp->ComponentHasTag(FName("HandIndex")) && !AttachingPaper)
 	{
-		mSoundPlayer->PlaySoundEffect(this, SFXShredFail, ActorBaseMesh->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFXShredFail, ActorBaseMesh->GetComponentLocation());
 	}
 }
 

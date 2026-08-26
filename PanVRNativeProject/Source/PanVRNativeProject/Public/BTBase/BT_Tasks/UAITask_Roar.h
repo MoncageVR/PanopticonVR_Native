@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -27,6 +25,7 @@ protected:
 	void OnRoarMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
-
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Roar;
 	
 };

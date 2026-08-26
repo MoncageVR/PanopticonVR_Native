@@ -220,7 +220,7 @@ void AASodaGun::LoadCheckColOverlapBegin(UPrimitiveComponent* OverlappedComp, AA
 				EquipSodaBullet->SetActorRelativeLocation(FVector(0.f, 0.f, 0.f));
 				EquipSodaBullet->SetActorRelativeRotation(FRotator(0.f, 0.f, 90.f));
 
-				mSoundPlayer->PlaySoundEffect(this, SFXReloadCan, CL_SodaCanLoadBox->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXReloadCan, CL_SodaCanLoadBox->GetComponentLocation());
 
 				AttachingSodaBullet = 1;
 				bIsLoading = 1;
@@ -249,7 +249,7 @@ void AASodaGun::OnShootFunc()
 {
 	if (IsValid(EquipSodaBullet) && AttachingSodaBullet == 1)
 	{
-		mSoundPlayer->PlaySoundEffect(this, SFXShoot, MuzzleStandardLocation->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFXShoot, MuzzleStandardLocation->GetComponentLocation());
 		MuzzleStandardLocation->GetComponentTransform();
 
 		if (UWorld* MyWorld = GetWorld())

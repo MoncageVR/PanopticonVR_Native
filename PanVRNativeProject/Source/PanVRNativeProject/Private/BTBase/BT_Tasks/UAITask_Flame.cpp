@@ -22,6 +22,10 @@ UUAITask_Flame::UUAITask_Flame()
 	BaseCoordinate1stRadius.Reserve(2);
 	BaseCoordinate1stRadius.Add(300.0f);
 	BaseCoordinate1stRadius.Add(1050.0f);
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Flame(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Flame/sfx_flame.sfx_flame"));
+	if (SFXFinder_Flame.Succeeded())
+		SFX_Flame = SFXFinder_Flame.Object;
 }
 
 EBTNodeResult::Type UUAITask_Flame::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -48,7 +52,7 @@ EBTNodeResult::Type UUAITask_Flame::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 		MapObjManagerSubSystemInst->HandleFlyingTheGrating(PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum"))); // Flying Grating
 
 		PrisonerControllerObj->HandleFlameTransitionColNTimer(1);
-
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_Flame);
 		ActuallyMoveFlameRun();
 
 		return EBTNodeResult::Succeeded;

@@ -10,9 +10,11 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CoreCommon/UMG/VRPawnHUD.h"
+#include "CoreCommon/UMG/VRDialogueHUD.h"
 #include "CoreObj/Manager/VRGameInstance.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/VRGameInstanceSubsystem.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
 #include "CoreObj/GameMode/VRGameMode.h"
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -147,9 +149,11 @@ ACVRPawn::ACVRPawn()
 
 	static ConstructorHelpers::FClassFinder<UVRPawnHUD> HUDFinder_VRPawnHUD(TEXT("/Game/VRContent/Blueprints/UserWidget/BPVRPawnHUD.BPVRPawnHUD_C"));
 	if (HUDFinder_VRPawnHUD.Succeeded())
-	{
 		VRPawnHUDWidgetClass = HUDFinder_VRPawnHUD.Class;
-	}
+
+	static ConstructorHelpers::FClassFinder<UVRDialogueHUD> HUDFinder_VRDialogueHUD(TEXT("/Game/VRContent/Blueprints/UserWidget/BPVRDialogueHUD.BPVRDialogueHUD_C"));
+	if (HUDFinder_VRDialogueHUD.Succeeded())
+		VRDialogueHUDWidgetClass = HUDFinder_VRDialogueHUD.Class;
 
 	HMD = CreateDefaultSubobject<UStaticMeshComponent>("SM_HMD");
 	if (HMD)
@@ -197,6 +201,25 @@ ACVRPawn::ACVRPawn()
 		HUDWidgetComp->SetTwoSided(true);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_PassThrough(TEXT("/Engine/EngineMaterials/Widget3DPassThrough_Inst.Widget3DPassThrough_Inst"));
+
+	VRDialogueHUDWidgetComp = CreateDefaultSubobject<UWidgetComponent>("VRDialogueHUDWidgetComp");
+	if (VRDialogueHUDWidgetComp)
+	{
+		VRDialogueHUDWidgetComp->SetupAttachment(Camera);
+		VRDialogueHUDWidgetComp->SetRelativeLocation(FVector(328.6f, 0.f, -17.0f));
+		VRDialogueHUDWidgetComp->SetRelativeRotation(FRotator(0.f, -180.f, 0.f));
+		VRDialogueHUDWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+		VRDialogueHUDWidgetComp->SetWidgetClass(HUDFinder_VRDialogueHUD.Class);
+		VRDialogueHUDWidgetComp->SetDrawSize(FVector2D(1000.0f, 1000.0f));
+		VRDialogueHUDWidgetComp->SetTwoSided(true);
+		VRDialogueHUDWidgetComp->TranslucencySortPriority = 9999;
+		if (MatFinder_PassThrough.Succeeded())
+		{
+			VRDialogueHUDWidgetComp->SetMaterial(0, MatFinder_PassThrough.Object);
+		}
+	}
+
 	this->GetCharacterMovement()->GravityScale = 0.0f;
 	this->SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -209,15 +232,23 @@ void ACVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	MaskMID_0Index = SM_MaskPlane->CreateDynamicMaterialInstance(0, MaskMI);
-	MaskMID_1Index = SM_MaskPlane->CreateDynamicMaterialInstance(1, MaskMI);
-
-	if (MaskMID_0Index && MaskMID_1Index)
+	if (!MaskMID_0Index && !MaskMID_1Index)
 	{
-		MaskMID_0Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
-		MaskMID_1Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
+		MaskMID_0Index = SM_MaskPlane->CreateDynamicMaterialInstance(0, MaskMI);
+		MaskMID_1Index = SM_MaskPlane->CreateDynamicMaterialInstance(1, MaskMI);
+
+		if (MaskMID_0Index && MaskMID_1Index)
+		{
+			MaskMID_0Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
+			MaskMID_1Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
+		}
+		SM_MaskPlane->SetVisibility(false);
+		UE_LOG(LogTemp, Warning, TEXT("Mask Related Setting Success!!"));
 	}
-	SM_MaskPlane->SetVisibility(false);
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Mask Related Setting Already!"));
+	}
 
 	this->SpawnHands();
 	if (GEngine && GEngine->XRSystem.IsValid())
@@ -247,16 +278,15 @@ void ACVRPawn::BeginPlay()
 
 	UVREquipmentWorldSubsystem* TempEquipmentWorldSubSytem = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	check(TempEquipmentWorldSubSytem);
-	if (TempEquipmentWorldSubSytem)
-	{
-		TempEquipmentWorldSubSytem->FEBMoveOrderSignature.AddDynamic(this, &ACVRPawn::HandleMovePlayerToFloor);
-		TempEquipmentWorldSubSytem->FLobbyGameStartSignature.BindUObject(this, &ACVRPawn::GameStartInLobbyEvent);
-		TempEquipmentWorldSubSytem->FGameStartSignature.AddDynamic(this, &ACVRPawn::HandleVRPawnReceivceByGTW);
-	}
 
 	if (HUDWidgetComp)
 	{
 		HUDWidgetInstance = Cast<UVRPawnHUD>(HUDWidgetComp->GetUserWidgetObject());
+	}
+
+	if (VRDialogueHUDWidgetComp)
+	{
+		VRDialogueHUDWidgetInstance = Cast<UVRDialogueHUD>(VRDialogueHUDWidgetComp->GetUserWidgetObject());
 	}
 
 	AGameModeBase* CurrGM = UGameplayStatics::GetGameMode(GetWorld());
@@ -267,7 +297,12 @@ void ACVRPawn::BeginPlay()
 		mVRLobbyGMRef = Cast<AVRLobbyGameMode>(CurrGM);
 		check(mVRLobbyGMRef);
 
-		UE_LOG(LogTemp, Log, TEXT("Current GameMode : VRLobbyGameMode!"));
+		FOnTimelineFloat LobbyUpMoveChangeValue;
+		FOnTimelineEvent LobbyUpMoveFinishedEvent;
+		LobbyUpMoveChangeValue.BindUFunction(this, FName("VRPawnUpMoveInLobbyTLFunc"));
+		LobbyUpMoveFinishedEvent.BindUFunction(this, FName("VRPawnUpMoveInLobbyTLEndFunc"));
+		TL_VRPawnUpMoveInLobby->AddInterpFloat(VRPawnLobbyUpMoveCurve, LobbyUpMoveChangeValue);
+		TL_VRPawnUpMoveInLobby->SetTimelineFinishedFunc(LobbyUpMoveFinishedEvent);
 
 		FOnTimelineFloat LobbyDownMoveChangeValue;
 		FOnTimelineEvent LobbyDownMoveFinishedEvent;
@@ -276,20 +311,13 @@ void ACVRPawn::BeginPlay()
 		TL_VRPawnDownMoveInLobby->AddInterpFloat(VRPawnLobbyDownMoveCurve, LobbyDownMoveChangeValue);
 		TL_VRPawnDownMoveInLobby->SetTimelineFinishedFunc(LobbyDownMoveFinishedEvent);
 
-		FOnTimelineFloat LobbyUpMoveChangeValue;
-		FOnTimelineEvent LobbyUpMoveFinishedEvent;
-		LobbyUpMoveChangeValue.BindUFunction(this, FName("VRPawnUpMoveInLobbyTLFunc"));
-		LobbyUpMoveFinishedEvent.BindUFunction(this, FName("VRPawnUpMoveInLobbyTLEndFunc"));
-		TL_VRPawnUpMoveInLobby->AddInterpFloat(VRPawnLobbyUpMoveCurve, LobbyUpMoveChangeValue);
-		TL_VRPawnUpMoveInLobby->SetTimelineFinishedFunc(LobbyUpMoveFinishedEvent);
-
 		TL_VRPawnDownMoveInLobby->PlayFromStart();
 		HideTowerHeadMesh(true);
+
+		TempEquipmentWorldSubSytem->FLobbyGameStartSignature.BindUObject(this, &ACVRPawn::GameStartInLobbyEvent);
 	}
 	else if (Cast<AVRGameMode>(CurrGM))
 	{
-		UE_LOG(LogTemp, Log, TEXT("Current GameMode : VRGameMode!"));
-
 		FOnTimelineFloat UpMoveChangeValue;
 		FOnTimelineEvent UpMoveFinishedEvent;
 		UpMoveChangeValue.BindUFunction(this, FName("VRPawnMoveUpTLFunc"));
@@ -309,7 +337,27 @@ void ACVRPawn::BeginPlay()
 			VRPawnUpMovementTimeline->PlayFromStart();
 			HideTowerHeadMesh(false);
 		}
+
+		TempEquipmentWorldSubSytem->FEBMoveOrderSignature.AddDynamic(this, &ACVRPawn::HandleMovePlayerToFloor);
+		TempEquipmentWorldSubSytem->FGameStartSignature.AddDynamic(this, &ACVRPawn::HandleVRPawnReceivceByGTW);
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(
+		DebuggingTimer,
+		this,
+		&ACVRPawn::Debuggigng,
+		3.0f,
+		false
+	);
+}
+
+void ACVRPawn::Debuggigng()
+{
+	UVRDialogueManagerSubsystem* TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
+
+	FText TempText = FText::FromString(TEXT("Ugh... I must have dozed off for a moment."));
+
+	TempDialogueMgr->StartDialogue();
 }
 
 void ACVRPawn::InitFloorData()
@@ -393,53 +441,52 @@ void ACVRPawn::SpawnHands()
 	}
 }
 
+// VRPawn Move Up Function In MainMap
 void ACVRPawn::VRPawnMoveUpTLFunc(float Value)
 {
 	this->RootComponent->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
 }
-
+// VRPawn Move Up End Function In MainMap
 void ACVRPawn::VRPawnMoveUpTLEndFunc()
 {
-	//UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End"));
+	//UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End In MainMap"));
 	return;
 }
-
+// VRPawn Move Down Function In MainMap
 void ACVRPawn::VRPawnMoveDownTLFunc(float Value)
 {
 	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
-	//UE_LOG(LogTemp, Log, TEXT("%f"), Value);
 }
-
+// VRPawn Move Down End Function In MainMap
 void ACVRPawn::VRPawnMoveDownTLEndFunc()
 {
-	UE_LOG(LogTemp, Log, TEXT("LobbyMap Open!"));
+	// UE_LOG(LogTemp, Log, TEXT("LobbyMap Open!"));
+	UGameplayStatics::OpenLevel(GetWorld(), FName("LobbyMap"));
 	return;
-	//UE_LOG(LogTemp, Log, TEXT("DownMove End"));
 }
+// VRPawn Move Up Function In LobbyMap
+void ACVRPawn::VRPawnUpMoveInLobbyTLFunc(float Value)
+{
+	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
+}
+// VRPawn Move Up End Function In LobbyMap
+void ACVRPawn::VRPawnUpMoveInLobbyTLEndFunc()
+{
+	UE_LOG(LogTemp, Log, TEXT("MainMap Open!"));
 
+	mVRLobbyGMRef->HandleOpenMainMap();
+}
+// VRPawn Move Down Function In LobbyMap
 void ACVRPawn::VRPawnDownMoveInLobbyTLFunc(float Value)
 {
 	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
 }
-
+// VRPawn Move Down End Function In LobbyMap
 void ACVRPawn::VRPawnDownMoveInLobbyTLEndFunc()
 {
 	UE_LOG(LogTemp, Log, TEXT("LobbyMap Arrived!"));
 
 	mVRLobbyGMRef->CheckGameResult();
-}
-
-void ACVRPawn::VRPawnUpMoveInLobbyTLFunc(float Value)
-{
-	this->GetRootComponent()->SetWorldLocation(FVector(0.f, 0.f, (Value * 1000.0f)));
-}
-
-void ACVRPawn::VRPawnUpMoveInLobbyTLEndFunc()
-{
-	UE_LOG(LogTemp, Log, TEXT("MainMap Open!"));
-	
-
-	mVRLobbyGMRef->HandleOpenMainMap();
 }
 
 void ACVRPawn::PlayerMovingUpAndDownInStage(uint8 InDir)

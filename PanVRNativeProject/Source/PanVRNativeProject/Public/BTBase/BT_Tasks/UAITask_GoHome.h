@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -21,7 +19,8 @@ protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
-
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_GoHomeWalk;
 
 private:
 	bool HasReachedGoHomeTargetVec(const FVector InChaVec, const FVector InGoHomeTargetVec);

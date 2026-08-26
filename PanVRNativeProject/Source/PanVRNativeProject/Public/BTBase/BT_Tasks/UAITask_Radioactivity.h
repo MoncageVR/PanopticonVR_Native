@@ -22,10 +22,17 @@ protected:
 	void OnExplodeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
-	class AAFuelTank* FuelTankObj;
+	UPROPERTY()
+	TObjectPtr<class AAFuelTank> FuelTankObj;
+
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> ExplodeMontage;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Explode;
+
 	FTimerHandle CheckExplosionForGameOverTimer;
 	float RadioactivityCheckTime;
-	UAnimMontage* ExplodeMontage;
 
 private:
 	void ExplosureAndGameover();

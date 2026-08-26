@@ -119,13 +119,10 @@ void AAPunchPrinter::CLPPOverlapBegin(UPrimitiveComponent* OverlappedComp, AActo
 			}
 			else
 			{
-				mSoundPlayer->PlaySoundEffect(this, SFXPrinterMove, PPSandbag->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXPrinterMove, PPSandbag->GetComponentLocation());
 				PPMovementTimeline->PlayFromStart();
 				CLPPSandbag->SetGenerateOverlapEvents(false);
 				NewSpawnPaper->GetRootComponent()->SetRelativeLocation(NewSpawnPaper->GetRootComponent()->GetRelativeLocation() + FVector(0.f, 1.5f, 0.f));
-
-				// Move the paper to the target position at once : Debugging
-				//NewSpawnPaper->GetRootComponent()->SetRelativeLocation(FVector(0.f, 10.5f, -13.3f));
 			}
 		}
 		else

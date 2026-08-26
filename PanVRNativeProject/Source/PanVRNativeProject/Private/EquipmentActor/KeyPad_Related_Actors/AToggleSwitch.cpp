@@ -81,7 +81,7 @@ void AAToggleSwitch::HandleToggleSwitch(uint8 InMoveFlag)
 {
 	if (InMoveFlag) // Back Move(Switch On)
 	{
-		mSoundPlayer->PlaySoundEffect(this, SFX_SwitchOn, ActorBaseMesh->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_SwitchOn, ActorBaseMesh->GetComponentLocation());
 		SM_Switch->SetRelativeRotation(FRotator(0.f, 0.f, -35.f));
 		CL_Switch->SetGenerateOverlapEvents(false);
 		CL_Switch->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -89,7 +89,7 @@ void AAToggleSwitch::HandleToggleSwitch(uint8 InMoveFlag)
 	}
 	else // Front Move(Switch Off)
 	{
-		mSoundPlayer->PlaySoundEffect(this, SFX_SwitchOff, ActorBaseMesh->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_SwitchOff, ActorBaseMesh->GetComponentLocation());
 		SM_Switch->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 		CL_Switch->SetGenerateOverlapEvents(true);
 		CL_Switch->SetCollisionEnabled(ECollisionEnabled::QueryOnly);

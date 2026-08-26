@@ -48,6 +48,7 @@ private:
 	uint32 bIsHitting = 0;
 	FTimerHandle ReturnTimer;
 
+	UPROPERTY()
 	int32 FinalRoomNum = 0;
 
 	UPROPERTY(VisibleAnywhere)

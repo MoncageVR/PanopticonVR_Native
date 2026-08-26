@@ -54,30 +54,43 @@ protected:
 	);
 
 private:
-	AActor* DefaultParentActor;
-	FTransform DefaultTransform;
-	class AASodaBullet* EquipSodaBullet;
-	USoundBase* SFXReloadCan;
-	USoundBase* SFXShoot;
+	UPROPERTY()
+	TObjectPtr<AActor> DefaultParentActor;
+	UPROPERTY()
+	TObjectPtr<class AASodaBullet> EquipSodaBullet;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXReloadCan;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXShoot;
 
+	FTransform DefaultTransform;
 	uint32 AttachingSodaBullet = 0;
 	uint32 bIsLoading = 0; // SodaBullet Load Check Flag
 
 #pragma region InputRelated
-	APlayerController* mPlayerCon; // VRPawn Controller = FirstPlayerController
-	ULocalPlayer* mLocalPlayer; // VRPawn = FirstPlayer
-	class UEnhancedInputLocalPlayerSubsystem* InputSubSystem;
-	class UEnhancedInputComponent* EIComp;
+	UPROPERTY()
+	TObjectPtr<APlayerController> mPlayerCon; // VRPawn Controller = FirstPlayerController
+	
+	UPROPERTY()
+	TObjectPtr<ULocalPlayer> mLocalPlayer; // VRPawn = FirstPlayer
+	UPROPERTY()
+	TObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSubSystem;
+	UPROPERTY()
+	TObjectPtr<class UEnhancedInputComponent> EIComp;
 
 	// IMC(InputMappingContext) Variables
-	class UInputMappingContext* IMCRight;
-	class UInputMappingContext* IMCLeft;
+	UPROPERTY()
+	TObjectPtr<class UInputMappingContext> IMCRight;
+	UPROPERTY()
+	TObjectPtr<class UInputMappingContext> IMCLeft;
 
 	// IA(InputAction) Variables
-	class UInputAction* IARightShoot;
-	class UInputAction* IALeftShoot;
+	UPROPERTY()
+	TObjectPtr<class UInputAction> IARightShoot;
+	UPROPERTY()
+	TObjectPtr<class UInputAction> IALeftShoot;
 #pragma endregion
-
+	UPROPERTY()
 	TSubclassOf<AActor> SodaGunBulletSmoke;
 
 private:

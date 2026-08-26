@@ -1,4 +1,6 @@
 #include "MainActor/AGameResultScreen.h"
+#include "CoreObj/GameMode/VRLobbyGameMode.h"
+#include "CoreObj/Manager/VRGameInstance.h"
 
 AAGameResultScreen::AAGameResultScreen()
 {
@@ -43,6 +45,11 @@ AAGameResultScreen::AAGameResultScreen()
 void AAGameResultScreen::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AVRLobbyGameMode* TempVRLGM = Cast<AVRLobbyGameMode>(GetWorld()->GetAuthGameMode());
+	check(TempVRLGM);
+
+	TempVRLGM->FGameResultPrintSignature.BindUObject(this, &AAGameResultScreen::GameResultDisplay);
 }
 
 void AAGameResultScreen::GameResultDisplay(bool bIsResult)
@@ -82,6 +89,10 @@ void AAGameResultScreen::RotationSelf()
 
 void AAGameResultScreen::PauseRotationSelf()
 {
+	UVRGameInstance* TempVRGI = Cast<UVRGameInstance>(GetGameInstance());
+	check(TempVRGI);
+	TempVRGI->ClearAllFlag();
+
 	GetWorld()->GetTimerManager().PauseTimer(RotateSelfTimer);
 	GetWorld()->GetTimerManager().ClearTimer(RotateSelfTimer);
 	SM_Success->SetVisibility(false);

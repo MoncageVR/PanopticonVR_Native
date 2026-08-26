@@ -25,10 +25,16 @@ protected:
 	UFUNCTION()
 	void OnDoorPickingMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void OnMontageNotify(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
+
 private:
 	UAnimMontage* DoorPickingMontage;
 	FVector MontagePlayVec;
 	FRotator MontagePlayRot;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_DoorPicking;
 
 private:
 	void CalMontagePlayTransform(float InSpawnYaw);

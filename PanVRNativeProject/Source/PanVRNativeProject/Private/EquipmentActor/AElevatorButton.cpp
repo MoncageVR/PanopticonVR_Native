@@ -252,7 +252,7 @@ void AAElevatorButton::EBBOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 		{
 			bIsOverlapping = 1;
 
-			mSoundPlayer->PlaySoundEffect(this, ButtonPressSFX, ActorBaseMesh->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, ButtonPressSFX, ActorBaseMesh->GetComponentLocation());
 
 			for (TScriptInterface<IIEquipmentInitInterface> Equip : EquipmentWorldSubSystem->GetEquipmentArr())
 			{
@@ -380,7 +380,9 @@ void AAElevatorButton::OnGrabbed(UMotionControllerComponent& InMCRef, const FVec
 	{
 		InGrabbingHand->GetCLCapsuleIndex()->SetGenerateOverlapEvents(false);
 	}
-	mSoundPlayer->PlaySoundEffect(this, PullSFX, ActorBaseMesh->GetComponentLocation());
+
+	HVRSoundPlayer::PlaySoundEffect(this, PullSFX, ActorBaseMesh->GetComponentLocation());
+	//mSoundPlayer->PlaySoundEffect(this, PullSFX, ActorBaseMesh->GetComponentLocation());
 
 	GetWorldTimerManager().SetTimer(
 		EBMoveTimer,

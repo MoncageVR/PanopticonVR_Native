@@ -17,7 +17,7 @@ public:
 	virtual void BeginPlay() override;
 	// IIEquipmentInitInterface In Natural Virtual Function Overriding , For Use Delegate System 
 	virtual void EquipmentRegistrable(AActor* InActor) override;
-
+	UFUNCTION()
 	void HandleSplinePointValue(int32 InFloorNum);
 
 public:
@@ -31,28 +31,25 @@ public:
 #pragma endregion
 
 protected:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<USceneComponent> MainRoot;
 
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UStaticMeshComponent> TowerMainBody;
-
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> MainDesk;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> SubDesk;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<UStaticMeshComponent> Barricade;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<class UBoxComponent> CLSubdueForToilet;
 
 	UPROPERTY()
 	TObjectPtr<class UAudioComponent> TBAudioPlayer;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY()
 	TObjectPtr<class USplineComponent> mTowerRaidMoveRoute;
 
 protected:
@@ -90,5 +87,6 @@ private:
 	void Init_TowerSplineDefaultPointValue();
 	void SetSplinePointValueByCurrFloorNum(int32 InTempFloorNum);
 	// T(1) : Subdue On / F(0) : Subdue Off
+	UFUNCTION()
 	void HandleRaidSubdueReceiveByToilet(uint8 bIsSubdueFlag);
 };

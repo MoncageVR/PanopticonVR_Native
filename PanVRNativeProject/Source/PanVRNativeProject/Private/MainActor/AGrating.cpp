@@ -35,6 +35,7 @@ AAGrating::AAGrating()
 	}
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_CageBelow(TEXT("/Game/VRContent/Modeling/16_Prison(Building_Jail)/SM_CageBelow.SM_CageBelow"));
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_CageBelow(TEXT("/Game/VRContent/Modeling/16_Prison_Building_Jail_/Final_CageBelow.Final_CageBelow"));
 	if (SMFinder_CageBelow.Succeeded())
 		ActorBaseMesh->SetStaticMesh(SMFinder_CageBelow.Object);
 	if (ActorBaseMesh)
@@ -68,6 +69,10 @@ AAGrating::AAGrating()
 	bIsGratingNotInPlace = 0;
 	bIsAlreadyFlying = 0;
 	bIsGratingOpen = 0;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_DoorOpen(TEXT("/Game/VRContent/Sound/Wavs/Grating/sfx_dooropen.sfx_dooropen"));
+	if (SFXFinder_DoorOpen.Succeeded())
+		SFX_DoorOpen = SFXFinder_DoorOpen.Object;
 
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
@@ -112,6 +117,9 @@ void AAGrating::BeginPlay()
 
 void AAGrating::GratingOpen()
 {
+	CollisionComp->SetCollisionProfileName(FName("NoCollision"));
+	ActorBaseMesh->SetCollisionProfileName(FName("NoCollision"));
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_DoorOpen, this->GetRootComponent()->GetComponentLocation());
 	GratingOpenStart();
 }
 

@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AACarPanel::AACarPanel()
@@ -202,6 +203,39 @@ AACarPanel::AACarPanel()
 		KeyHoleBody->SetMaterial(0, MaterialFinder_Main.Object);
 	}
 
+	// Setting Sound Asset
+	// 1. Wiper Sound
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Wiper(TEXT("/Game/VRContent/Sound/Wavs/CarTypePanel/sfx_carpanel_wiper.sfx_carpanel_wiper"));
+	if (SFXFinder_Wiper.Succeeded())
+		SFXWiper = SFXFinder_Wiper.Object;
+
+	// 2. KeyIn(KeyHole To Attach) Sound And Audio Component
+	static ConstructorHelpers::FObjectFinder<USoundBase> CueFinder_KeyIn(TEXT("/Game/VRContent/Sound/Ques/CarTypePanel/sfx_carpanel_keyin_Cue.sfx_carpanel_keyin_Cue"));
+	APKeyHole = CreateDefaultSubobject<UAudioComponent>("KeyHoleAPComp");
+	if (APKeyHole && CueFinder_KeyIn.Succeeded())
+	{
+		KeyInCue = CueFinder_KeyIn.Object;
+		APKeyHole->SetupAttachment(CarMainRoot);
+		APKeyHole->SetAutoActivate(false);
+		APKeyHole->bAllowSpatialization = false;
+	}
+
+	// 3. CarPaenl Active Sound
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Active(TEXT("/Game/VRContent/Sound/Wavs/CarTypePanel/sfx_carpanel_active.sfx_carpanel_active"));
+	if (SFXFinder_Active.Succeeded())
+		SFXCarPaenlActive = SFXFinder_Active.Object;
+
+	// 4. Main Handle Active Sound And Audio Component
+	static ConstructorHelpers::FObjectFinder<USoundBase> CueFinder_Handle(TEXT("/Game/VRContent/Sound/Ques/CarTypePanel/sfx_carpanel_handle_Cue.sfx_carpanel_handle_Cue"));
+	APMainHandle = CreateDefaultSubobject<UAudioComponent>("APComp");
+	if (APMainHandle && CueFinder_Handle.Succeeded())
+	{
+		MainHandleCues = CueFinder_Handle.Object;
+		APMainHandle->SetupAttachment(CarMainRoot);
+		APMainHandle->SetAutoActivate(false);
+		APMainHandle->bAllowSpatialization = false;
+	}
+
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
@@ -218,6 +252,19 @@ AACarPanel::AACarPanel()
 void AACarPanel::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (APMainHandle && MainHandleCues)
+	{
+		APMainHandle->Stop();
+		APMainHandle->SetSound(MainHandleCues);
+	}
+
+	if (APKeyHole && KeyInCue)
+	{
+		APKeyHole->Stop();
+		APKeyHole->SetSound(KeyInCue);
+		APKeyHole->OnAudioFinished.AddDynamic(this, &AACarPanel::ActuallyActiveSoundPlay);
+	}
 
 	FOnTimelineFloat Progress;
 	Progress.BindUFunction(this, FName("KeyHoleOperatingTimeline"));
@@ -295,7 +342,7 @@ void AACarPanel::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& H
 				GC->SetRelativeLocation(MHGCLeftGrabbedPos);
 				GC->SetRelativeRotation(FRotator(0.0f, 75.0f, 90.0f));
 			}
-
+			HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
 			if (!bIsCoolDown)
 			{
 				UE_LOG(LogTemp, Log, TEXT("Main Handle Operation Part!"));
@@ -332,6 +379,7 @@ void AACarPanel::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& H
 				SubHandleGC->SetRelativeLocation(SHGCLeftGrabbedPos);
 				SubHandleGC->SetRelativeRotation(FRotator(-90.0f, 0.0f, 180.0f));
 			}
+			HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 			GetWorldTimerManager().SetTimer(
 				SubHandleOperateTimer,
 				this,
@@ -383,6 +431,7 @@ void AACarPanel::OnDropped()
 {
 	if (GC->MCRef)
 	{
+		APMainHandle->Stop();
 		bIsHandingMainHandle = false;
 		GetWorldTimerManager().PauseTimer(MainHandleOperateTimer);
 		GC->SetRelativeLocation(AtFirstMainHandleGCVec);
@@ -427,8 +476,7 @@ void AACarPanel::SubHandleOperating()
 
 	if (CarSubHandle->GetRelativeRotation().Pitch <= -50.0f && !GetWorld()->GetTimerManager().IsTimerActive(EraseGolfEffectBySubHandleOperateTimer))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Sub Handle Erase GolfEffect!"));
-
+		HVRSoundPlayer::PlaySoundEffect(this, SFXWiper, CarSubHandle->GetComponentLocation());
 		GetWorld()->GetTimerManager().SetTimer(
 			EraseGolfEffectBySubHandleOperateTimer,
 			this,
@@ -441,6 +489,9 @@ void AACarPanel::SubHandleOperating()
 
 void AACarPanel::MainHandleOperating()
 {
+	if (!APMainHandle->IsPlaying())
+		APMainHandle->Play();
+
 	FRotator TempRot = UKismetMathLibrary::FindLookAtRotation(ActorBaseMesh->GetComponentLocation(), GC->MCRef->GetComponentLocation());
 	double Tempdouble = ActorBaseMesh->GetRightVector().Dot(TempRot.RotateVector(FVector(1.0f, 0.0f, 0.0f)));
 	ActorBaseMesh->AddLocalRotation(FRotator(0.0f, UKismetMathLibrary::NormalizeAxis(Tempdouble) * 15.0f, 0.0f));
@@ -452,8 +503,8 @@ void AACarPanel::OverlapBeginByCarKey(UPrimitiveComponent* OverlappedComp, AActo
 	{
 		if (OtherComp->ComponentHasTag(FName("CarKey")))
 		{
-			bIsTurnOnCar = true;
-			//bIsTurnOnCar = FMath::RandBool();
+			APKeyHole->Play();
+			bIsTurnOnCar = FMath::RandBool();
 
 			AACarKey* ActuallyOverlapCarKey = Cast<AACarKey>(OtherActor);
 			if (ActuallyOverlapCarKey)
@@ -504,6 +555,13 @@ void AACarPanel::OverlapEndByCarkey(UPrimitiveComponent* OverlappedComp, AActor*
 void AACarPanel::CallByTimerFuncEraseGolfEffect()
 {
 	MapObjManagerRef->HandleEraseGolfEffect();
+}
+
+void AACarPanel::ActuallyActiveSoundPlay()
+{
+	//UE_LOG(LogTemp, Log, TEXT("KeyIn Sound Play Finished!"));
+	APKeyHole->Stop();
+	HVRSoundPlayer::PlaySoundEffect(this, SFXCarPaenlActive, ActorBaseMesh->GetComponentLocation());
 }
 
 // 

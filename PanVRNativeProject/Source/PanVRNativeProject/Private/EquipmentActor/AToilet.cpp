@@ -181,7 +181,7 @@ void AAToilet::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& Han
 			{
 				AdjustLeverGC(0);
 			}
-			mSoundPlayer->PlaySoundEffect(this, SFXGrabHeavy, TLever->GetComponentLocation()); // Play Grab Heavy Object Sound
+			HVRSoundPlayer::PlaySoundEffect(this, SFXGrabHeavy, TLever->GetComponentLocation()); // Play Grab Heavy Object Sound
 			GetWorldTimerManager().SetTimer(
 				LeverMovementTimer,
 				this,
@@ -333,7 +333,7 @@ void AAToilet::UpdateLeverRotation()
 	if (TLever->GetRelativeRotation().Pitch <= -69.0f)
 	{
 		bIsLeverCoolDown = 1;
-		mSoundPlayer->PlaySoundEffect(this, SFXOperateFlush, TRubberDuck->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFXOperateFlush, TRubberDuck->GetComponentLocation());
 		WaterFlushing();
 	}
 }

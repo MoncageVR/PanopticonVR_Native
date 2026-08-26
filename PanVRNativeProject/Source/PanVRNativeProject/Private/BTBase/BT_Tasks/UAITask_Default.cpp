@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_Default.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 
@@ -8,6 +5,10 @@ UUAITask_Default::UUAITask_Default()
 {
 	NodeName = TEXT("BTTask_Default");
 	bCreateNodeInstance = true;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_DefaultWalk(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Run/sfx_Defaultwalk.sfx_Defaultwalk"));
+	if (SFXFinder_DefaultWalk.Succeeded())
+		SFX_DefaultWalk = SFXFinder_DefaultWalk.Object;
 }
 
 EBTNodeResult::Type UUAITask_Default::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -21,9 +22,13 @@ EBTNodeResult::Type UUAITask_Default::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	if (PrisonerSpawnPosition.HasNodeRef())
 	{
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_DefaultWalk);
 		PatrolTargetPosition = PrisonerSpawnPosition.Location;
 		PrisonerControllerObj->GetBBComp()->SetValueAsVector(TEXT("PatrolTargetVec"), PatrolTargetPosition);
-		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));
+
+		float TempSpeed = (PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed")) - 1.0f);
+
+		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = TempSpeed;
 		return EBTNodeResult::Succeeded;
 	}
 	else

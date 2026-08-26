@@ -56,6 +56,8 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CL_TapeTarget;
 
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UTimelineComponent> TL_TapeMove;
 
 protected:
 	UFUNCTION()
@@ -76,6 +78,30 @@ protected:
 		int32 OtherBodyIndex
 	);
 
+	UFUNCTION()
+	void TapePathOverlapBegin(
+		class UPrimitiveComponent* OverlappedComp,
+		class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
+
+	UFUNCTION()
+	void TapePathOverlapEnd(
+		class UPrimitiveComponent* OverlappedComp,
+		class AActor* OtherActor,
+		class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
+
+	UFUNCTION()
+	void TapeMovePlayEvent(float Value);
+
+	UFUNCTION()
+	void TapeMoveFinishedEvent();
+
 private:
 	
 	
@@ -83,9 +109,19 @@ private:
 	FRotator AtFirstHandleRot;
 	bool bIsHanding;
 	FTimerHandle StartLeverMoveTimer;
+	uint8 bIsTapeMoveingFlag;
 
 	UPROPERTY()
 	UMotionControllerComponent* TempMCRef;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> CF_TapeMoveIn;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class AATape> NewTape;
+
+	UPROPERTY()
+	TObjectPtr<class ULevelSequence> LQ_Roller; // LevelSequence Variable To Play
 
 private:
 	void AdjustVecNRot(UMotionControllerComponent* InMC);
@@ -93,4 +129,10 @@ private:
 	void UpdateStartLever();
 
 	void LeverOnGameStartEvent();
+
+	UFUNCTION()
+	void StartLQInLobbyRoom(); // Lobby Romm In Level Sequence Start Function
+
+	UFUNCTION()
+	void OnLobbyRoomLQDone(); // LobbyRoom In Level Sequence End After CallBack Receive Function
 };

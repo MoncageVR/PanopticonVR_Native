@@ -20,11 +20,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Create_Paranormal_Phenomenon();
 
+	void HandleClearVarsForGameStart();
+
 public:
 #pragma region Getter
 	FORCEINLINE TArray<FRotator> GetFinalAllSpawnRoations() const { return FinalAllSpawnRotations; }
 	FORCEINLINE TArray<FVector> GetFinalAllSpawnPositions() const { return FinalAllSpawnPositions; }
 	FORCEINLINE TArray<FVector> GetFinalAllReSpawnPositions() const { return FinalAllReSpawnPositions; }
+	FORCEINLINE TArray<int32> GetPrisonerPossibleNumArrs() const { return PrisonerPossibleNumbers; }
 	FORCEINLINE int32 GetPrisonerTotalNum() const { return InGamePrisonerTotalNum; }
 	FORCEINLINE float GetPrisonerSpeed() const { return PrisonerRunSpeed; }
 	FORCEINLINE TMap<uint8, uint8> GetOppositeUniqueNumMaps() const { return OppositeUniqueNumMaps; }
@@ -39,7 +42,7 @@ public:
 
 #pragma endregion
 #pragma region Setter
-
+	FORCEINLINE void SetPrisonerPossibleNumArrByIndex(int32 InIndex) { PrisonerPossibleNumbers[InIndex] = InIndex; }
 #pragma endregion
 
 protected:
@@ -73,7 +76,7 @@ private:
 	float PhenomenonOccurProbability = 0.0f;
 	int32 RandomChoice;
 
-	FVector EscapeTargetPosition = FVector(-2000.0f, 0.0f, 287.0f);
+	FVector EscapeTargetPosition = FVector(-2000.0f, 0.0f, 230.0f);
 	TArray<FRotator> BaseSpawnRotations; // 123FSpawnRot
 	TArray<FVector> BaseSpawnPositions; // 123FSpawnVec
 

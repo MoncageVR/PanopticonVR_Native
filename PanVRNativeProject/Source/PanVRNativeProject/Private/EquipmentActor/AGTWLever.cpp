@@ -1,5 +1,6 @@
 #include "EquipmentActor/AGTWLever.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/AudioComponent.h"
 #include "CoreCommon/Component/UGrabComp.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 
@@ -54,6 +55,22 @@ AAGTWLever::AAGTWLever()
 		SM_Handle->SetMaterial(0, MaterialFinder_Main.Object);
 	}
 
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Complete(TEXT("/Game/VRContent/Sound/Wavs/GTWLever/sfx_startlever_complete.sfx_startlever_complete"));
+	if (SFXFinder_Complete.Succeeded())
+	{
+		SFXGTWComplete = SFXFinder_Complete.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Pulling(TEXT("/Game/VRContent/Sound/Ques/GTWLever/sfx_startlever_pulling_Cue.sfx_startlever_pulling_Cue"));
+	GTWSoundPlayer = CreateDefaultSubobject<UAudioComponent>("GTWLeverAudioComp");
+	if (GTWSoundPlayer && SFXFinder_Pulling.Succeeded())
+	{
+		SFXQueGTWPulling = SFXFinder_Pulling.Object;
+		GTWSoundPlayer->SetupAttachment(ActorBaseMesh);
+		GTWSoundPlayer->SetAutoActivate(false);
+		GTWSoundPlayer->bAllowSpatialization = false;
+	}
+
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
@@ -72,6 +89,22 @@ void AAGTWLever::BeginPlay()
 	Super::BeginPlay();
 
 	EquipmentRegistrable(this);
+
+	if (GTWSoundPlayer && SFXQueGTWPulling)
+	{
+		GTWSoundPlayer->Stop();
+		GTWSoundPlayer->SetSound(SFXQueGTWPulling);
+	}
+
+	// Debug
+	/*GetWorldTimerManager().SetTimer(
+		CountGameStartTimer,
+		this,
+		&AAGTWLever::CountForGameStart,
+		3.0f,
+		false
+	);*/
+	// Debug
 }
 
 void AAGTWLever::EquipmentRegistrable(AActor* InActor)
@@ -114,6 +147,7 @@ void AAGTWLever::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& H
 
 	if (bIsHanding)
 	{
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 		GetWorldTimerManager().SetTimer(
 			LeverOperateTimer,
 			this,
@@ -132,14 +166,21 @@ void AAGTWLever::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& H
 
 void AAGTWLever::OnDropped()
 {
+	GTWSoundPlayer->Stop();
 	GetWorldTimerManager().PauseTimer(LeverOperateTimer);
 	OperatingMCRef = nullptr;
 
 	if (CheckGTWLeverOpationAngle())
 	{
+		if (!bIsGameStarting)
+		{
+			HVRSoundPlayer::PlaySoundEffect(this, SFXGTWComplete, this->GetRootComponent()->GetComponentLocation());
+		}
 		UE_LOG(LogTemp, Log, TEXT("GTWLever Operate Success!"));
 		SM_Handle->SetRelativeRotation(FRotator(0.0f, 180.0f, 89.0f));
 		HandleCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		bIsGameStarting = true;
 
 		GetWorldTimerManager().SetTimer(
 			CountGameStartTimer,
@@ -148,7 +189,6 @@ void AAGTWLever::OnDropped()
 			5.0f,
 			false
 		);
-
 	}
 	else
 	{
@@ -159,6 +199,11 @@ void AAGTWLever::OnDropped()
 // Execution Function In Lever Movement Timer
 void AAGTWLever::OperateLever()
 {
+	if (!GTWSoundPlayer->IsPlaying())
+	{
+		GTWSoundPlayer->Play();
+	}
+
 	FTransform Between_MCAndStandard_MakeRelativeTransform = OperatingMCRef->GetComponentTransform().GetRelativeTransform(LeverMovementStandard->GetRelativeTransform());
 
 	FVector LeverMovementDirection = LeverMovementStandard->GetRelativeLocation() + Between_MCAndStandard_MakeRelativeTransform.GetLocation();

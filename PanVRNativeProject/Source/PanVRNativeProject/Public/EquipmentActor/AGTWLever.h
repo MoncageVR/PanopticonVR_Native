@@ -16,7 +16,8 @@ class PANVRNATIVEPROJECT_API AAGTWLever : public AVRGrabActorBase, public IIGrab
 
 public:
 	AAGTWLever();
-
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	// Actor On Grabbed
 	virtual void OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand) override;
 	virtual void OnDropped() override;
@@ -24,8 +25,6 @@ public:
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
 protected:
-	virtual void BeginPlay() override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<class USceneComponent> HandleRoot;
 
@@ -38,6 +37,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
 	TObjectPtr<class UCapsuleComponent> HandleCapsule;
 
+protected:
 	UFUNCTION()
 	void OperateLever(); // Execution Function In Lever Movement Timer
 
@@ -51,21 +51,6 @@ protected:
 	UFUNCTION()
 	void CountForGameStart();
 
-public:
-	virtual void Tick(float DeltaTime) override;
-
-private:
-	// Temp Motion Controller Component
-	class UMotionControllerComponent* OperatingMCRef;
-
-	// Lever Operation Related Timer
-	FTimerHandle LeverOperateTimer;
-
-	// Lever Operation After 5 Second Related Timer
-	FTimerHandle CountGameStartTimer;
-	
-
-protected:
 	UFUNCTION()
 	void OverlapCapsuleBegin(
 		class UPrimitiveComponent* OverlappedComp,
@@ -84,6 +69,27 @@ protected:
 		int32 OtherBodyIndex
 	);
 
+private:
+	// Temp Motion Controller Component
+	UPROPERTY()
+	TObjectPtr<class UMotionControllerComponent> OperatingMCRef;
+
+	// Lever Operation Related Timer
+	FTimerHandle LeverOperateTimer;
+	// Lever Operation After 5 Second Related Timer
+	FTimerHandle CountGameStartTimer;
+
 	// Capsule Collision In Handing Check Flag Variable
 	bool bIsHanding = false;
+	// Check For SFXGTW Complete Sound 
+	bool bIsGameStarting = false;
+
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> GTWSoundPlayer;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXGTWComplete;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXQueGTWPulling;
 };

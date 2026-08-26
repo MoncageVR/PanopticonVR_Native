@@ -39,9 +39,13 @@ protected:
 	void AdjustGrabTransform();
 
 private:
-	UMotionControllerComponent* TempMCRef;
-	USoundBase* SCSfxLighterCues;
-	AActor* DefaultParentActor;
+	UPROPERTY()
+	TObjectPtr<UMotionControllerComponent> TempMCRef;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SCSfxLighterCues;
+	UPROPERTY()
+	TObjectPtr<AActor> DefaultParentActor;
+
 	FTransform DefaultTransform;
 
 private:

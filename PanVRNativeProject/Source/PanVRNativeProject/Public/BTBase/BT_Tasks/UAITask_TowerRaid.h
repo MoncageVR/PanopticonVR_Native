@@ -31,6 +31,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<class ATowerBuilding> TowerBuildingObj;
 
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_TowerRaiding;
+
 	float TimeOfSplineRoute;
 	float DistanceOfSplineRoute;
 	float SpeedOfSplineRoute;

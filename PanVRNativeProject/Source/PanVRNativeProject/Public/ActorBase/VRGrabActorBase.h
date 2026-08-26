@@ -22,13 +22,17 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UUGrabComp> GC;
 
-	HVRSoundPlayer* mSoundPlayer;
+	//HVRSoundPlayer* mSoundPlayer;
 
-public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
 protected:
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_HeavyGrab;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_LightGrab;
 
 private:
 

@@ -18,7 +18,13 @@ public:
 	virtual void StartPlay() override;
 	virtual void InitGameState() override;
 
+	UFUNCTION()
 	void GameOverCheckEvent();
+
+	UFUNCTION(BlueprintCallable)
+	void GameSuccessCheckEvent();
+
+	void ClearGameResultFlag();
 
 	// T : Add Prisoner , F : Remove Prisoner - Prisoner State Is Only Teleport And Floating
 	void HandleListOfFloatNTelePrisoners(uint8 InHandleFlag, int32 InUniqueNum);
@@ -28,10 +34,13 @@ public:
 
 #pragma region Setter
 	FORCEINLINE void SetIsGameOverFlag(bool bInFlag) { bIsGameOverFlag = bInFlag; }
+	UFUNCTION(BlueprintCallable)
+	void SetIsGameSuccessFlag(bool bResultFlag) { bIsGameSuccessFlag = bResultFlag; }
 #pragma endregion
 
 #pragma region Getter
 	FORCEINLINE bool GetIsGameOverFlag() const { return bIsGameOverFlag; }
+	FORCEINLINE bool GetIsGameSuccessFlag() const { return bIsGameSuccessFlag; }
 	FORCEINLINE TArray<int32> GetListFloatNTelePrisoner() const { return ListOfPrisonersWithFloatingORTeleportStatus; }
 	FORCEINLINE TArray<int32> GetListFlamePrisoners() const { return ListOfPrisonersWithFlameStatus; }
 #pragma endregion
@@ -50,6 +59,7 @@ private:
 	FTimerHandle Debug_Delay_Timer;
 
 	bool bIsGameOverFlag;
+	bool bIsGameSuccessFlag;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<int32> ListOfPrisonersWithFloatingORTeleportStatus;

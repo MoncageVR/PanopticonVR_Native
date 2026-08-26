@@ -166,7 +166,9 @@ void AAABButton::OverlapABoxBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
 		{
 			ButtonMovement(ButtonA, FVector(0.0f, 0.0f, -2.0f));
-			mSoundPlayer->PlaySoundEffect(this, AButtonSFX, ButtonA->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, AButtonSFX, ButtonA->GetComponentLocation());
+
+			//mSoundPlayer->PlaySoundEffect(this, AButtonSFX, ButtonA->GetComponentLocation());
 			AnswerSaveList.Add(1);
 		}
 	}
@@ -212,7 +214,8 @@ void AAABButton::OverlapBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 		if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
 		{
 			ButtonMovement(ButtonB, FVector(0.0f, 0.0f, -2.0f));
-			mSoundPlayer->PlaySoundEffect(this, BButtonSFX, ButtonB->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, BButtonSFX, ButtonA->GetComponentLocation());
+			//mSoundPlayer->PlaySoundEffect(this, BButtonSFX, ButtonB->GetComponentLocation());
 			AnswerSaveList.Add(0);
 		}
 	}

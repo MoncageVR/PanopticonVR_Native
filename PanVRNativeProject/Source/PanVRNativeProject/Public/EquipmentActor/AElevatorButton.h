@@ -115,9 +115,12 @@ protected:
 
 private:
 	// Motion Controller Reference Variable
-	class UMotionControllerComponent* TempMCRef = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UMotionControllerComponent> TempMCRef = nullptr;
+
 	// AVRHand Reference Variable
-	class AVRHand* TempHand = nullptr;
+	UPROPERTY()
+	TObjectPtr<class AVRHand> TempHand = nullptr;
 
 	// EB Box Collision is Overlapping Check Flag Variable
 	uint32 bIsOverlapping = 0;
@@ -133,10 +136,14 @@ private:
 	int32 PressedFloorNum = 0;
 
 	// Pull And Button Press Related Sound Variable
-	USoundBase* PullSFX;
-	USoundBase* ButtonPressSFX;
+	UPROPERTY()
+	TObjectPtr<USoundBase> PullSFX;
 
-	class ATowerBuilding* TowerBuildingRef;
+	UPROPERTY()
+	TObjectPtr<USoundBase> ButtonPressSFX;
+
+	UPROPERTY()
+	TObjectPtr<class ATowerBuilding> TowerBuildingRef;
 
 private:
 	// After overlap End, to give a delay of 1 second.

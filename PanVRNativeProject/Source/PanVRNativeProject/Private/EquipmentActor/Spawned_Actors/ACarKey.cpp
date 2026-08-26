@@ -21,6 +21,12 @@ AACarKey::AACarKey()
 	if (MatFinder_Main.Succeeded())
 		ActorBaseMesh->SetMaterial(0, MatFinder_Main.Object);
 
+	// Setting Sound Asset
+	// 1. Key Grab Sound
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_KeyGrab(TEXT("/Game/VRContent/Sound/Wavs/CarTypePanel/sfx_carpanel_keygrab.sfx_carpanel_keygrab"));
+	if (SFXFinder_KeyGrab.Succeeded())
+		SFXKeyGrab = SFXFinder_KeyGrab.Object;
+
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
@@ -37,10 +43,13 @@ AACarKey::AACarKey()
 void AACarKey::BeginPlay()
 {
 	Super::BeginPlay();
+
+	HVRSoundPlayer::PlaySoundEffect(this, SFXKeyGrab, ActorBaseMesh->GetComponentLocation());
 }
 
 void AACarKey::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {
+	HVRSoundPlayer::PlaySoundEffect(this, SFXKeyGrab, ActorBaseMesh->GetComponentLocation());
 	GC->SetPrimitiveCompPhysics(false);
 	GetWorldTimerManager().PauseTimer(DestroySelfTimer);
 	return;

@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -26,4 +24,7 @@ protected:
 private:
 	FVector SpawnPosition;
 	FVector PatrolTargetPosition;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_DefaultWalk;
 };

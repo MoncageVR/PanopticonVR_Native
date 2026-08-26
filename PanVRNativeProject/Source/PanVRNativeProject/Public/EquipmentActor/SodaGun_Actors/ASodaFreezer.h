@@ -48,9 +48,12 @@ public:
 
 private:
 	// Freezer In Spawn SodaBullet Pointing Variable
+	UPROPERTY()
 	TObjectPtr<class AASodaBullet> NewSodaBullet = nullptr;
 
-	USoundBase* SFXDoor;
-	USoundBase* SFXCanPickUp;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXDoor;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXCanPickUp;
 
 };

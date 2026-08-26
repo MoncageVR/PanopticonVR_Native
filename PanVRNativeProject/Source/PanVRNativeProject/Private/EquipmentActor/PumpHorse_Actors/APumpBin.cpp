@@ -52,6 +52,7 @@ AAPumpBin::AAPumpBin()
 		CLRemover->OnComponentBeginOverlap.AddDynamic(this, &AAPumpBin::OverlapTrashBoxBegin);
 	}
 
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_TrashNumFont(TEXT("/Game/VRContent/Font/MI_Panopticon_Font.MI_Panopticon_Font"));
 	TRTrashNum = CreateDefaultSubobject<UTextRenderComponent>("TRComp");
 	if (TRTrashNum)
 	{
@@ -63,6 +64,8 @@ AAPumpBin::AAPumpBin()
 		TRTrashNum->SetWorldSize(10.f);
 		TRTrashNum->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 		TRTrashNum->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
+		if (MatFinder_TrashNumFont.Succeeded())
+			TRTrashNum->SetMaterial(0, MatFinder_TrashNumFont.Object);
 	}
 
 	if (MaterialFinder_Main.Succeeded())
@@ -88,8 +91,8 @@ void AAPumpBin::BeginPlay()
 {
 	Super::BeginPlay();
 	this->EquipmentRegistrable(this);
-	// RemoveTrashNum = 0;
-	RemoveTrashNum = 4; // Debug
+	RemoveTrashNum = 0;
+	// RemoveTrashNum = 4; // Debug
 
 	TRTrashNum->SetText(FText::FromString(FString::FromInt(RemoveTrashNum)));
 }
@@ -135,6 +138,7 @@ void AAPumpBin::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& Ha
 	TempMC = &InMCRef;
 	if (RemoveTrashNum >= 4)
 	{
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 		if (UWorld* mWorld = GetWorld())
 		{
 			mWorld->GetTimerManager().SetTimer(

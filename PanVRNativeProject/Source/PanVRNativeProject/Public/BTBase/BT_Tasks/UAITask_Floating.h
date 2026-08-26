@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -28,6 +26,9 @@ private:
 	FVector FloatingTargetVec;
 	FLatentActionInfo FloatingStateLatentInfo;
 	float FloatingExecutionTime;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Floating;
 
 private:
 	void ActuallyMoveToTargetVec();

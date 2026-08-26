@@ -10,6 +10,7 @@
 #include "Engine/DataTable.h"
 #include "NavFilters/RecastFilter_UseDefaultArea.h"
 #include "Components/SphereComponent.h"
+#include "Components/AudioComponent.h"
 
 APrisonerController::APrisonerController()
 {
@@ -39,14 +40,22 @@ APrisonerController::APrisonerController()
 
 void APrisonerController::HandleNextTask()
 {
+	if (MyPrisonerCha->GetAudioPlayer()->IsPlaying())
+	{
+		MyPrisonerCha->GetAudioPlayer()->Stop();
+	}
+
 	if (!Debug_Upper_State.IsValidIndex(Debug_CurrStateIndex) || !Debug_Lower_State.IsValidIndex(Debug_CurrStateIndex))
 	{
-		if (BlackboardComp)
-		{
-			this->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
-			this->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
-			this->GetBBComp()->SetValueAsBool(TEXT("bIsPatrolBlocked"), true);
-		}
+		Debug_CurrStateIndex = 0;
+		this->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
+		this->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
+		this->GetBBComp()->SetValueAsBool(TEXT("bIsPatrolBlocked"), true);
+		int32 TempUniqueNum = this->GetBBComp()->GetValueAsInt(FName("UniqueNum"));
+		//UPrisonerMgrSubSytemPtr->GetPrisonerPossibleNumArrs()[TempUniqueNum] = TempUniqueNum;
+
+		UPrisonerMgrSubSytemPtr->SetPrisonerPossibleNumArrByIndex(TempUniqueNum);
+
 		UE_LOG(LogTemp, Log, TEXT("%d Prisoner is Next Task Not Valid"), GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 		return;
 	}
@@ -54,9 +63,9 @@ void APrisonerController::HandleNextTask()
 	{
 		BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), Debug_Upper_State[Debug_CurrStateIndex]);
 		BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), Debug_Lower_State[Debug_CurrStateIndex]);
-		//UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"),GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);
 		Debug_CurrStateIndex++;
-		//UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"), GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);
+		/*UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"),GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);
+		UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"), GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);*/
 		if (FOnPrisonerLowerStateChangedSignature.IsBound())
 		{
 			FOnPrisonerLowerStateChangedSignature.Broadcast(this, this->GetCurrLowerState());
@@ -72,48 +81,32 @@ void APrisonerController::OnPossess(APawn* InPawn)
 	Debug_Upper_State.Empty();
 	Debug_Lower_State.Empty();
 
-	Debug_Upper_State.Add(0);   // Idle
-	//Debug_Upper_State.Add(1);   // Stop
-	//Debug_Upper_State.Add(2);  // Move
-	//Debug_Upper_State.Add(2);   // Move
-	//Debug_Upper_State.Add(2);   // Move 
-	//Debug_Upper_State.Add(4);   // Dangerous
-	//Debug_Upper_State.Add(4); // Dangerous
-	//Debug_Upper_State.Add(3); // Interact
-	//Debug_Upper_State.Add(2); // Move
-	//Debug_Upper_State.Add(4); // Dangerous
-
-	Debug_Lower_State.Add(0);   // Default
-	//Debug_Lower_State.Add(1);   // Subdue
-	//Debug_Lower_State.Add(6); // Floating
-	//Debug_Lower_State.Add(3);   // GoHome
-	//Debug_Lower_State.Add(7);    // SpiderMan
-	//Debug_Lower_State.Add(12);   // TopEscape
-	//Debug_Lower_State.Add(14); // TowerRaid
-	//Debug_Lower_State.Add(10); // AssistNeighbor
-	//Debug_Lower_State.Add(5);  // Run
-	//Debug_Lower_State.Add(13); // Escape
+	Debug_Upper_State.Add(0);
+	Debug_Lower_State.Add(0);
 
 	Debug_Length = Debug_Upper_State.Num();
 	Debug_CurrStateIndex = 0;
 
-	APrisonerCharacter* TempPrisonerCha = Cast<APrisonerCharacter>(this->GetCharacter());
+	MyPrisonerCha = Cast<APrisonerCharacter>(this->GetCharacter());
 	UAnimInstance* TempAnimInst = nullptr;
-	if (TempPrisonerCha)
+	if (MyPrisonerCha)
 	{
-		TempAnimInst = TempPrisonerCha->GetMesh()->GetAnimInstance();
+		TempAnimInst = MyPrisonerCha->GetMesh()->GetAnimInstance();
 		if (TempAnimInst)
 		{
 			mPrisonerAnimInstancePtr = Cast<UPrisonerAnimInstance>(TempAnimInst);
 		}
 	}
 
-	if (!ensure(TempPrisonerCha) && !ensure(TempAnimInst) && !ensure(mPrisonerAnimInstancePtr)) return;
+	if (!ensure(MyPrisonerCha) && !ensure(TempAnimInst) && !ensure(mPrisonerAnimInstancePtr)) return;
 
 	if (BlackboardAsset)
 	{
 		UseBlackboard(BlackboardAsset, BlackboardComp);
 	}
+
+	UPrisonerMgrSubSytemPtr = Cast<UPrisonerManagerSubsystem>(GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>());
+	check(UPrisonerMgrSubSytemPtr);
 }
 
 void APrisonerController::Tick(float DeltaTimes)
@@ -144,11 +137,7 @@ void APrisonerController::State_based_ExecutionTasks_GiventoSomeone(TArray<uint8
 
 void APrisonerController::HandlePlayPrisonerLogic(int32 InRanNum)
 {
-	// UE_LOG(LogTemp, Log, TEXT("Create Paranormal Phenomenon Random Num : %d"), InRanNum);
-
-	UPrisonerManagerSubsystem* TempPrisonerManagerRef = GetWorld()->GetGameInstance()->GetSubsystem<UPrisonerManagerSubsystem>();
-
-	TempPrisonerManagerRef->GetAllPrisonerControllerArr()[InRanNum]->HandleNextTask();
+	UPrisonerMgrSubSytemPtr->GetAllPrisonerControllerArr()[InRanNum]->HandleNextTask();
 	return;
 }
 
@@ -171,35 +160,39 @@ void APrisonerController::InitializeStatesFromLogicDT()
 	}*/
 
 	TArray<FName> TempRowNames = mLogicDT->GetRowNames();
-
-	int32 RowRandomChoice =11;//FMath::RandRange(0, TempRowNames.Num() - 1);
-
-	//UE_LOG(LogTemp, Log, TEXT("Row Rand Choice Number : %d"), RowRandomChoice);
-
-	FPrisonerInfoRow* MyRow = mLogicDT->FindRow<FPrisonerInfoRow>(TempRowNames[RowRandomChoice], TEXT(""));
-	UEnum* UpperEnum = StaticEnum<EPrisonerUpperStateType>();
-	UEnum* LowerEnum = StaticEnum<EPrisonerLowerStateType>();
-
-	//UE_LOG(LogTemp, Log, TEXT("4. Row Print!!!!"));
-	for (int32 y = 0; y < MyRow->ActionUpperState.Num(); y++)
+	if (!TempRowNames.IsEmpty())
 	{
-		EPrisonerUpperStateType TempUpperStates = MyRow->ActionUpperState[y];
-		EPrisonerLowerStateType TempLowerStates = MyRow->ActionLowerState[y];
+		// Number that Allows you to Select a Row Within DataTable(Starting form 0)
+		int32 RowRandomChoice = 5;//= FMath::RandRange(0, TempRowNames.Num() - 1);
 
-		// Enum String Print Debugging
-		FString UpperStr = UpperEnum->GetNameStringByValue((int64)TempUpperStates);
-		FString LowerStr = LowerEnum->GetNameStringByValue((int64)TempLowerStates);
+		FPrisonerInfoRow* MyRow = mLogicDT->FindRow<FPrisonerInfoRow>(TempRowNames[RowRandomChoice], TEXT(""));
+		UEnum* UpperEnum = StaticEnum<EPrisonerUpperStateType>();
+		UEnum* LowerEnum = StaticEnum<EPrisonerLowerStateType>();
 
-		UE_LOG(LogTemp, Log, TEXT("Upper : %s(%d) | Lower : %s(%d)"), *UpperStr, (uint8)TempUpperStates, *LowerStr, (uint8)TempLowerStates);
+		//UE_LOG(LogTemp, Log, TEXT("4. Row Print!!!!"));
+		for (int32 y = 0; y < MyRow->ActionUpperState.Num(); y++)
+		{
+			EPrisonerUpperStateType TempUpperStates = MyRow->ActionUpperState[y];
+			EPrisonerLowerStateType TempLowerStates = MyRow->ActionLowerState[y];
 
-		Debug_Upper_State.Add((uint8)TempUpperStates);
-		Debug_Lower_State.Add((uint8)TempLowerStates);
-		Debug_Length = MyRow->ActionUpperState.Num();
+			// Enum String Print Debugging
+			FString UpperStr = UpperEnum->GetNameStringByValue((int64)TempUpperStates);
+			FString LowerStr = LowerEnum->GetNameStringByValue((int64)TempLowerStates);
 
-		//UE_LOG(LogTemp, Log, TEXT("Index : %s = Upper : %s | Lower : %s"), *TempRowNames[RowRandomChoice].ToString(), *UpperStr, *LowerStr);
+			//UE_LOG(LogTemp, Log, TEXT("Upper : %s(%d) | Lower : %s(%d)"), *UpperStr, (uint8)TempUpperStates, *LowerStr, (uint8)TempLowerStates);
 
+			Debug_Upper_State.Add((uint8)TempUpperStates);
+			Debug_Lower_State.Add((uint8)TempLowerStates);
+			Debug_Length = MyRow->ActionUpperState.Num();
+
+			//UE_LOG(LogTemp, Log, TEXT("Index : %s = Upper : %s | Lower : %s"), *TempRowNames[RowRandomChoice].ToString(), *UpperStr, *LowerStr);
+
+		}
 	}
-
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("TempRowNames Array is Empty!"));
+	}
 }
 
 void APrisonerController::HandleFlameTransitionColNTimer(uint8 InHandleFlag)

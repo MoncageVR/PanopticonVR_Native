@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -21,6 +19,9 @@ class PANVRNATIVEPROJECT_API UVRGameInstance : public UGameInstance
 
 public:
 	virtual void Init() override;
+	
+	UFUNCTION()
+	void ClearAllFlag();
 
 public:
 #pragma region Getter
@@ -30,6 +31,12 @@ public:
 	FORCEINLINE bool GetIsGameResultSuccess() const { return bIsGameResultSuccess; }
 	FORCEINLINE bool GetIsGameResultFail() const { return bIsGameResultFail; }
 	FORCEINLINE bool GetIsFirstLobbyEntryFlag() const { return bIsFirstLobbyEntryFlag; }
+#pragma endregion
+
+#pragma region Setter
+	FORCEINLINE void SetIsGameResultSuccess(bool bInSuccessFlag) { bIsGameResultSuccess = bInSuccessFlag; }
+	FORCEINLINE void SetIsGameResultFail(bool bInFailFlag) { bIsGameResultFail = bInFailFlag; }
+	FORCEINLINE void SetIsFirstLobbyEntryFlag(bool bIsFirstEntry) { bIsFirstLobbyEntryFlag = bIsFirstEntry; }
 #pragma endregion
 
 private:

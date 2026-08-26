@@ -11,6 +11,10 @@ UUAITask_Roar::UUAITask_Roar()
 	{
 		RoarMontage = MonFinder_Roar.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Shouting(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Roar/sfx_shouting.sfx_shouting"));
+	if (SFXFinder_Shouting.Succeeded())
+		SFX_Roar = SFXFinder_Shouting.Object;
 }
 
 EBTNodeResult::Type UUAITask_Roar::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -20,6 +24,7 @@ EBTNodeResult::Type UUAITask_Roar::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
 	if (MyAnimInst)
 	{
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_Roar);
 		MyAnimInst->Montage_Play(RoarMontage);
 		MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Roar::OnRoarMontageEnded);
 		MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_Roar::OnRoarMontageEnded);

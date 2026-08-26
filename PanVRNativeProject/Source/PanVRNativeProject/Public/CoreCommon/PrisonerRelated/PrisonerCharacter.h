@@ -23,11 +23,14 @@ public:
 	void SetPrisonerAppearanceByDT(bool bIsHairVisible, bool bIsBeardVisible, bool bIsMoustacheVisible);
 	void HandleSetPrisonerNewSkin();
 
+	void HandlePlayAPSound(USoundBase* InSound);
+	void HandlePauseAPSound();
+
 #pragma region Getter
 	FORCEINLINE FVector GetMeshDefaultPos() const { return MeshDefaultRelativePos; }
 	FORCEINLINE FRotator GetMeshDefaultRot() const { return MeshDefaultRelativeRot; }
+	FORCEINLINE TObjectPtr<class UAudioComponent> GetAudioPlayer() const { return PrisonerAudioPlayer; }
 #pragma endregion
-
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
@@ -37,7 +40,10 @@ protected:
 	class UPhysicalMaterial* PrisonerPhysMat;
 
 	UPROPERTY()
-	TObjectPtr <UMaterialInstance> SecondTypePrisonerMat;
+	TObjectPtr<UMaterialInstance> SecondTypePrisonerMat;
+
+	UPROPERTY()
+	TObjectPtr<class UAudioComponent> PrisonerAudioPlayer;
 
 private:
 	FVector MeshDefaultRelativePos;

@@ -20,7 +20,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 
-	class HVRSoundPlayer* mSoundPlayer;
+	//class HVRSoundPlayer* mSoundPlayer;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Mesh")
@@ -41,5 +41,5 @@ class HVRSoundPlayer
 public:
 	HVRSoundPlayer() = default;
 
-	void PlaySoundEffect(UObject* PlayEquipment, USoundBase* Sound, FVector TempPlayPos);
+	static void PlaySoundEffect(UObject* PlayEquipment, USoundBase* Sound, FVector TempPlayPos);
 };

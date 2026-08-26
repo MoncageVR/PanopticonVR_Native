@@ -81,6 +81,11 @@ void UMapObjManagerSubsystem::CreateAllGratings()
 {
 	AAGrating* TempGrating = nullptr;
 
+	/*if (UWorld* MyWorld = GetWorld())
+	{
+		TempGrating = MyWorld->SpawnActor<AAGrating>(AAGrating::StaticClass(), FinalAllGratingSpawnPositions[0], FinalAllGratingSpawnRotations[0]);
+	}*/
+
 	for (int32 i = 0; i < PrisonerManagerSubSystemRef->GetPrisonerTotalNum(); i++)
 	{
 		TempGrating = GetWorld()->SpawnActor<AAGrating>(AAGrating::StaticClass(), this->FinalAllGratingSpawnPositions[i], this->FinalAllGratingSpawnRotations[i]);
@@ -91,15 +96,11 @@ void UMapObjManagerSubsystem::CreateAllGratings()
 
 void UMapObjManagerSubsystem::ControlExitDoorFunction()
 {
-	UVRGameInstance* TempVRGameInst = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
-	UVREquipmentWorldSubsystem* TempVREquipInst = nullptr;
-	if (!ensure(TempVRGameInst)) return;
-	else TempVREquipInst = TempVRGameInst->GetVREquipmentManager();
+	UVREquipmentWorldSubsystem* TempVREquipMgrWolrdSubSyPtr = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
+	check(TempVREquipMgrWolrdSubSyPtr);
 
-	if (!ensure(TempVREquipInst)) return;
 	AJailBuilding* TempJailBuilding = nullptr;
-
-	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipInst->GetEquipmentArr())
+	for (TScriptInterface<IIEquipmentInitInterface> Equip : TempVREquipMgrWolrdSubSyPtr->GetEquipmentArr())
 	{
 		IIEquipmentInitInterface* IEquipPtr = Equip.GetInterface();
 		TempJailBuilding = Cast<AJailBuilding>(IEquipPtr);

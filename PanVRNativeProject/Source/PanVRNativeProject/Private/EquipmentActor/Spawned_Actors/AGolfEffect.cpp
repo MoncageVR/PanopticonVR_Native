@@ -32,6 +32,11 @@ AAGolfEffect::AAGolfEffect()
 	{
 		ActorBaseMesh->SetMaterial(0, MatFinder_GolfEffect.Object);
 	}
+
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Hit(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Golf/sfx_golf_hit.sfx_golf_hit"));
+	if (SFXFinder_Hit.Succeeded())
+		SFX_GolfEffect = SFXFinder_Hit.Object;
 }
 
 void AAGolfEffect::BeginPlay()
@@ -40,6 +45,7 @@ void AAGolfEffect::BeginPlay()
 
 	MapObjManagerSubSystemRef = GetWorld()->GetGameInstance()->GetSubsystem<UMapObjManagerSubsystem>();
 	check(MapObjManagerSubSystemRef);
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_GolfEffect, this->GetRootComponent()->GetComponentLocation());
 }
 
 bool AAGolfEffect::MakeGolfEggEffect()

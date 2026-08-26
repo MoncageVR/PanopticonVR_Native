@@ -1,6 +1,3 @@
-
-
-
 #include "CoreObj/Manager/VRGameInstance.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/VRGameInstanceSubsystem.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
@@ -22,4 +19,8 @@ void UVRGameInstance::Init()
 	P_VREquipmentManager = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();//GetSubsystem<UVREquipmentWorldSubsystem>();
 }
 
-
+void UVRGameInstance::ClearAllFlag()
+{
+	bIsGameResultSuccess = false;
+	bIsGameResultFail = false;
+}

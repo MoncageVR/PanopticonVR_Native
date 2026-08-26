@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,5 +22,9 @@ protected:
 	void OnTeleportMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
-	UAnimMontage* TeleportingMontage;
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> TeleportingMontage;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Teleport;
 };

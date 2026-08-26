@@ -124,6 +124,7 @@ void AAStamp::Tick(float DeltaTimes)
 
 void AAStamp::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, AVRHand* InGrabbingHand)
 {
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 	AdjustGCPosNRot(1);
 
 	TempMCRef = &InMCRef;
@@ -219,7 +220,7 @@ void AAStamp::CLStampOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* O
 	{
 		if (!AttachingPaper->GetIsStamping())
 		{
-			mSoundPlayer->PlaySoundEffect(this, SFXStampMove, ActorBaseMesh->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, SFXStampMove, ActorBaseMesh->GetComponentLocation());
 			AttachingPaper->StampOn();
 		}
 	}

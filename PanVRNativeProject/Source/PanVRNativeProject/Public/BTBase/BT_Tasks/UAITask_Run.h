@@ -21,7 +21,8 @@ protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
-
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Walking;
 private:
 	const bool HasReachedTargetPos(const FVector InChaVec, const FVector InTargetVec);
 

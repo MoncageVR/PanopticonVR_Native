@@ -15,6 +15,10 @@ UUAITask_Radioactivity::UUAITask_Radioactivity()
 	{
 		ExplodeMontage = AMFinder_Explode.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Explode(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Radioactivity/sfx_explode.sfx_explode"));
+	if (SFXFinder_Explode.Succeeded())
+		SFX_Explode = SFXFinder_Explode.Object;
 }
 
 EBTNodeResult::Type UUAITask_Radioactivity::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -69,12 +73,14 @@ void UUAITask_Radioactivity::ExplosureAndGameover()
 			}
 			else
 			{
+				PrisonerCharacterObj->HandlePlayAPSound(SFX_Explode);
 				UE_LOG(LogTemp, Log, TEXT("Fuel Rod Attaching, But LowGauge! Radioactivity Subdue Failed, Explosure Play~~"));
 				MyAnimInst->Montage_Play(ExplodeMontage);
 			}
 		}
 		else
 		{
+			PrisonerCharacterObj->HandlePlayAPSound(SFX_Explode);
 			UE_LOG(LogTemp, Log, TEXT("FuelRod Not Attaching! Radioactivity Subdue Failed, Explosure Play~~"));
 			MyAnimInst->Montage_Play(ExplodeMontage);
 		}

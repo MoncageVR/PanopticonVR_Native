@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -8,6 +6,7 @@
 #include "Components/TimelineComponent.h"
 #include "ACarPanel.generated.h"
 
+class UAudioComponent;
 
 /*
 ACraPanel Object Hierarchy
@@ -202,6 +201,7 @@ private:
 	FTimerHandle DelayTimer; // CarKey Operate After Delay Timer Handler
 	FTimerHandle MainHandleOperateTimer; // Main Handle Rotate Operation Timer Handler
 	FTimerHandle EraseGolfEffectBySubHandleOperateTimer; // Sub Handle Operate After Erase GolfEffect Timer Handler
+	FTimerHandle ActiveSoundPlayTimer;
 #pragma endregion
 
 #pragma region MainHandleVar
@@ -210,9 +210,31 @@ private:
 	bool bIsHandingMainHandle = false;
 #pragma endregion
 
+#pragma region Sounds
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXWiper;
+
+	UPROPERTY()
+	TObjectPtr<class UAudioComponent> APKeyHole;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> KeyInCue;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXCarPaenlActive;
+
+	UPROPERTY()
+	TObjectPtr<class UAudioComponent> APMainHandle;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> MainHandleCues;
+#pragma endregion
 	UPROPERTY()
 	TObjectPtr<class UMapObjManagerSubsystem> MapObjManagerRef;
 
 private:
 	void CallByTimerFuncEraseGolfEffect();
+
+	UFUNCTION()
+	void ActuallyActiveSoundPlay();
 };

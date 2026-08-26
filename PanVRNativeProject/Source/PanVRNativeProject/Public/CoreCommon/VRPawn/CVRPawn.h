@@ -26,7 +26,9 @@ public:
 	void HandleMovePlayerToFloor(FName InTag, int32 InTargetFloor); // Function Call By ElevatorButton
 
 	UFUNCTION()
-	void HandleDownMovePlayer(); // Call GameOver 
+	void HandleDownMovePlayer(); // Call GameOver In MainMap
+	UFUNCTION()
+	void GameStartInLobbyEvent(); // Call GameStart In Lobby
 
 	void HandleMaskOpacity(float OpacityValue);
 
@@ -117,7 +119,7 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> VRPawnLobbyUpMoveCurve;
-
+#pragma region VRPawnTimeHUD
 	UPROPERTY()
 	TSubclassOf<class UVRPawnHUD> VRPawnHUDWidgetClass;
 
@@ -126,11 +128,21 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UWidgetComponent> HUDWidgetComp;
+#pragma endregion
+
+#pragma region DialogueHUD
+	UPROPERTY()
+	TSubclassOf<class UVRDialogueHUD> VRDialogueHUDWidgetClass;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<class UWidgetComponent> VRDialogueHUDWidgetComp;
+
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueHUD> VRDialogueHUDWidgetInstance;
+#pragma endregion
 
 	UPROPERTY()
 	TObjectPtr<class AVRLobbyGameMode> mVRLobbyGMRef;
-
-
 
 	int32 CurrFloorNum;
 	int32 PressedFloorNum;
@@ -141,11 +153,16 @@ private:
 
 	void HideTowerHeadMesh(bool bIsHideFlag);
 
-	void GameStartInLobbyEvent();
-
 	UFUNCTION()
 	void HandleVRPawnReceivceByGTW(bool InFlag);
 
 	UFUNCTION()
 	void SpawnHands();
+
+private:
+	FTimerHandle DebuggingTimer;
+
+	void Debuggigng();
+
+
 };

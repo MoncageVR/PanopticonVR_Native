@@ -146,7 +146,8 @@ void AASodaFreezer::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector
 			else
 				NewSodaBullet->SetActorRelativeLocation(FVector(0.0f, -3.0f, 0.0f));
 			NewSodaBullet->SetActorRelativeRotation(FRotator(-110.0f, 0.0f, 0.0f));
-			mSoundPlayer->PlaySoundEffect(this, SFXCanPickUp, CL_MainFreezer->GetComponentLocation());
+
+			HVRSoundPlayer::PlaySoundEffect(this, SFXCanPickUp, CL_MainFreezer->GetComponentLocation());
 
 			break;
 		default:
@@ -163,12 +164,12 @@ void AASodaFreezer::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector
 			if (UpwardFreezerDoorMesh->GetRelativeRotation().Yaw < 0)
 			{
 				UpwardFreezerDoorMesh->SetRelativeRotation(FRotator(0.0f, CurrentYaw, 0.0f));
-				mSoundPlayer->PlaySoundEffect(this, SFXDoor, UpwardFreezerDoorMesh->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXDoor, UpwardFreezerDoorMesh->GetComponentLocation());
 			}
 			else
 			{
 				UpwardFreezerDoorMesh->SetRelativeRotation(FRotator(0.0f, TargetYaw, 0.0f));
-				mSoundPlayer->PlaySoundEffect(this, SFXDoor, UpwardFreezerDoorMesh->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXDoor, UpwardFreezerDoorMesh->GetComponentLocation());
 			}
 			break;
 		default:
@@ -185,12 +186,12 @@ void AASodaFreezer::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector
 			if (DownwardFreezerDoorMesh->GetRelativeRotation().Yaw < 0)
 			{
 				DownwardFreezerDoorMesh->SetRelativeRotation(FRotator(0.0f, CurrentYaw, 0.0f));
-				mSoundPlayer->PlaySoundEffect(this, SFXDoor, DownwardFreezerDoorMesh->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXDoor, DownwardFreezerDoorMesh->GetComponentLocation());
 			}
 			else
 			{
 				DownwardFreezerDoorMesh->SetRelativeRotation(FRotator(0.0f, TargetYaw, 0.0f));
-				mSoundPlayer->PlaySoundEffect(this, SFXDoor, DownwardFreezerDoorMesh->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXDoor, DownwardFreezerDoorMesh->GetComponentLocation());
 			}
 			break;
 		default:

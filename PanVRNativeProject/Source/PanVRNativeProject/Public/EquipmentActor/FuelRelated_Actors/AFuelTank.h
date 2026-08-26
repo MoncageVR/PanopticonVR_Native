@@ -102,9 +102,6 @@ protected:
 	UFUNCTION()
 	void MoveOperateFuelTank();
 
-	/*UFUNCTION()
-	void PlaySoundTest();*/
-
 private:
 	FTimerHandle FuelTankMoveTimer;
 
@@ -113,7 +110,8 @@ private:
 	// Capsule Collision In Handing Check Flag Variable
 	bool bIsHanding = false;
 
-	class UMotionControllerComponent* TempMCRef = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UMotionControllerComponent> TempMCRef = nullptr;
 
 	uint32 bIsOpen = 0;
 	uint32 bIsAttachObjExist = 0;
@@ -121,7 +119,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<class AAFuelRod> EquipFuelRod;
 
-	USoundBase* SFXFuelTankMove;
-	USoundBase* SFXFuelRodIn;
-	USoundBase* SFXFuelRodOut;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXFuelTankMove;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXFuelRodIn;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXFuelRodOut;
 };

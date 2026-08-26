@@ -45,7 +45,8 @@ private:
 	uint32 bIsPrinting = 0;
 	uint32 bIsStamping = 0;
 
-	USoundBase* SFXPaperGrab;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXPaperGrab;
 
 private:
 

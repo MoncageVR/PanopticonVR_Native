@@ -85,6 +85,7 @@ void AAPump::EquipmentRegistrable(AActor* InActor)
 
 void AAPump::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, AVRHand* InGrabbingHand)
 {
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
 	if (bIsDeLoreanOperationFlag)
 	{
 		MCRef = &InMCRef;

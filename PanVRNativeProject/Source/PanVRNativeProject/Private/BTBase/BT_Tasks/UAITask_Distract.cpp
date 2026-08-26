@@ -20,18 +20,25 @@ UUAITask_Distract::UUAITask_Distract()
 		DistractMontageArrs.Add(MonFinder_Streching.Object);
 		DistractMontageArrs.Add(MonFinder_Sleep.Object);
 	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Sleep(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Distract/sfx_sleep.sfx_sleep"));
+	if (SFXFinder_Sleep.Succeeded())
+		SFX_Sleep = SFXFinder_Sleep.Object;
 }
 
 EBTNodeResult::Type UUAITask_Distract::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	if (Super::ExecuteTask(OwnerComp, NodeMemory) == EBTNodeResult::Failed) return EBTNodeResult::Failed;
-	//UE_LOG(LogTemp, Log, TEXT("UAI_Task Distract Execute!!"));
 
 	int32 RanPlayMontageNum = FMath::FMath::RandRange(0, DistractMontageArrs.Num() - 1);
 
-	//UE_LOG(LogTemp, Log, TEXT("Select Mon Num : %d"), RanPlayMontageNum);
+	if (RanPlayMontageNum == 4)
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_Sleep);
+
+	CachedOwnerComp = &OwnerComp;
 
 	UAnimMontage* CurrPlayMontage = DistractMontageArrs[RanPlayMontageNum];
+	UE_LOG(LogTemp, Log, TEXT("1:Dance,2:Hello,3:Point,4:Strech,5:Sleep - CurrIndex : %d"), RanPlayMontageNum);
 
 	if (MyAnimInst)
 	{
@@ -45,9 +52,12 @@ EBTNodeResult::Type UUAITask_Distract::ExecuteTask(UBehaviorTreeComponent& Owner
 
 void UUAITask_Distract::OnDistractMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	//UE_LOG(LogTemp, Log, TEXT("Distract Montage Play End!!!"));
-
-	PrisonerControllerObj->HandleNextTask();
 	MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Distract::OnDistractMontageEnded);
+	PrisonerControllerObj->HandleNextTask();
+	if (CachedOwnerComp)
+	{
+		FinishLatentTask(*CachedOwnerComp, EBTNodeResult::Succeeded);
+	}
+
 	return;
 }

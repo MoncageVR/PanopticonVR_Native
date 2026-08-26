@@ -52,11 +52,15 @@ protected:
 	TObjectPtr<class UBoxComponent> FRCLStick;
 
 private:
-	uint32 bIsAttaching = 0;
-	class UTimelineComponent* GaugeTimelineComp;
-	UCurveFloat* GaugeMoveCurve;
-	USoundBase* SFXFuelRodLowGauge;
+	UPROPERTY()
+	TObjectPtr<class UTimelineComponent> GaugeTimelineComp;
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> GaugeMoveCurve;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXFuelRodLowGauge;
+
 	bool bWasLowGauge = false;
+	uint32 bIsAttaching = 0;
 
 private:
 

@@ -19,5 +19,11 @@ protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
+	FTimerHandle ExitDoorControlTimer;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_ButtonClick;
+
+private:
 	void CallControlExitDoorFunction();
 };

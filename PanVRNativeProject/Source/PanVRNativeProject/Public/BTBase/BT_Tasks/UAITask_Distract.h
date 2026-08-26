@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -28,5 +26,9 @@ protected:
 	void OnDistractMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 private:
-	
+	UPROPERTY()
+	TObjectPtr<UBehaviorTreeComponent> CachedOwnerComp;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Sleep;
 };

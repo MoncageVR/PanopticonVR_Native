@@ -14,12 +14,13 @@ public:
 	AJailBuilding();
 	virtual void EquipmentRegistrable(AActor* InActor) override;
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 
 	// Call The MoveTheExitDoorSideward Handle Function, 
+	UFUNCTION()
 	void HandleExitDoor();
 
 	// Call The MoveTheHatchSideward Handle Function, 
+	UFUNCTION()
 	void HandleHatchDoor();
 
 #pragma region Getter
@@ -29,45 +30,45 @@ public:
 
 protected:
 	// Scene Component Variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> JailMainRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> FirstFloorRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> SecondFloorRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> ThirdFloorRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> MoveableBuildingsRoot;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|SceneComponent")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USceneComponent> StaticBuildingsRoot;
 
 	// Static Mesh Variables
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> JailExitDoor;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> JailHatch;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> JailRoof;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> Jail1FWeaponDoor;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> Jail2FWeaponDoor;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|StaticMesh")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UStaticMeshComponent> Jail3FWeaponDoor;
 
 	// Collision Component Variable
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Collision")
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CLSubdueHatch;
 
 	UPROPERTY(VisibleAnywhere)
@@ -81,7 +82,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<class UTimelineComponent> DownwardMoveTimelineComp;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UTimelineComponent> SideWardsMoveTimelineComp;
 
 	UPROPERTY()
@@ -90,7 +91,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> MoveTheWeaponDoorFloatCurve;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCurveFloat> MoveTheExitDoorFloatCurve;
 
 	UPROPERTY()
@@ -147,12 +148,21 @@ protected:
 	);
 
 private:
+	UPROPERTY()
 	TArray<TObjectPtr<UStaticMeshComponent>> SMWeaponDoorArrs;
 	TArray<FVector> TargetDownVecArrs;
 	TArray<FVector> TargetUpVecArrs;
 	int32 CurrFloorNum = 3;
-	USoundBase* GloveNJailDoorOperationSFX;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> GloveNJailDoorOperationSFX;
 	FTransform HatchDefaultTransform;
+
+	UPROPERTY()
+	TObjectPtr<class AVRGameMode> MyVRGM;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_ExitDoor;
 
 private:
 	void InitRefDoorNVector();

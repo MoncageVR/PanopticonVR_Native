@@ -111,6 +111,9 @@ protected:
 
 private:
 	UPROPERTY()
+	TObjectPtr<class UPrisonerManagerSubsystem> UPrisonerMgrSubSytemPtr;
+
+	UPROPERTY()
 	TObjectPtr<UAnimInstance> AnimInstancePtr;
 
 	UPROPERTY()
@@ -118,6 +121,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class USphereComponent> CL_FlameTransition;
+
+	UPROPERTY()
+	TObjectPtr<class APrisonerCharacter> MyPrisonerCha;
 
 	FTimerHandle FLameTransitionTimer;
 

@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_TopEscape.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
@@ -12,6 +9,10 @@ UUAITask_TopEscape::UUAITask_TopEscape()
 	bCreateNodeInstance = true;
 	bNotifyTick = true;
 	bIsRotatePossibleFlag = false;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_TopEscape(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/TopEscape/sfx_topescape.sfx_topescape"));
+	if (SFXFinder_TopEscape.Succeeded())
+		SFX_TopEscape = SFXFinder_TopEscape.Object;
 }
 
 EBTNodeResult::Type UUAITask_TopEscape::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -48,7 +49,7 @@ EBTNodeResult::Type UUAITask_TopEscape::ExecuteTask(UBehaviorTreeComponent& Owne
 
 		// UpperState : Dangerous(4) | LowerState : TopEscape(11)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 11);
-
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_TopEscape);
 		bIsRotatePossibleFlag = true;
 
 		GetWorld()->GetTimerManager().SetTimer(

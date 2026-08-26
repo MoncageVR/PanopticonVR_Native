@@ -128,12 +128,6 @@ void AAFuelTank::BeginPlay()
 	Super::BeginPlay();
 
 	this->EquipmentRegistrable(this);
-
-	// Debug
-	/*EquipFuelRod = GetWorld()->SpawnActor<AAFuelRod>(AAFuelRod::StaticClass(), this->GetRootComponent()->GetComponentTransform());
-	EquipFuelRod->SetFRIsAttaching(false);
-	EquipFuelRod->HandleGaugeOperation(true);*/
-	// Debug
 }
 
 void AAFuelTank::Tick(float DeltaTimes)
@@ -146,7 +140,7 @@ void AAFuelTank::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& H
 	if (bIsHanding)
 	{
 		TempMCRef = &InMCRef;
-		//mSoundPlayer->PlaySoundEffect(this, SFXFuelTankMove, FTMeshRoot->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
 		GetWorldTimerManager().SetTimer(
 			FuelTankMoveTimer,
 			this,
@@ -194,7 +188,7 @@ void AAFuelTank::FuelRodColOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 			EquipFuelRod = Cast<AAFuelRod>(OtherActor);
 			if (EquipFuelRod)
 			{
-				mSoundPlayer->PlaySoundEffect(this, SFXFuelRodIn, FTCLRod->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXFuelRodIn, FTCLRod->GetComponentLocation());
 				EquipFuelRod->SetFRIsAttaching(1);
 				EquipFuelRod->OnDropped();
 				EquipFuelRod->GetRootComponent()->AttachToComponent(FTCLRod, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -220,7 +214,7 @@ void AAFuelTank::FuelRodColOverlapEnd(UPrimitiveComponent* OverlappedComp, AActo
 {
 	if (EquipFuelRod == Cast<AAFuelRod>(OtherActor) && OtherComp->ComponentHasTag(FName("FuelRod")))
 	{
-		mSoundPlayer->PlaySoundEffect(this, SFXFuelRodOut, FTCLRod->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFXFuelRodOut, FTCLRod->GetComponentLocation());
 		bIsAttachObjExist = false;
 		EquipFuelRod->SetFRIsAttaching(0);
 		EquipFuelRod->HandleGaugeOperation(false);
@@ -269,6 +263,6 @@ void AAFuelTank::MoveOperateFuelTank()
 
 	if (bWasOpen != bIsOpen)
 	{
-		mSoundPlayer->PlaySoundEffect(this, SFXFuelTankMove, FTMeshRoot->GetComponentLocation());
+		HVRSoundPlayer::PlaySoundEffect(this, SFXFuelTankMove, FTMeshRoot->GetComponentLocation());
 	}
 }

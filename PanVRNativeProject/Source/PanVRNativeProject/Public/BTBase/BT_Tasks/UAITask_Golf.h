@@ -32,6 +32,9 @@ protected:
 	virtual EBTNodeResult::Type AbortTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
 private:
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_GolfShooting;
+
 	uint8 GolfSwingCount;
 	FVector GolfBallTargetVec;
 	FVector GolfBallStartAndSpawnVec;

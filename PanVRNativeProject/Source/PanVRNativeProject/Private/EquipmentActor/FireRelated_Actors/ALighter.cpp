@@ -97,6 +97,7 @@ void AALighter::Tick(float DeltaTimes)
 void AALighter::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {
 	TempMCRef = &InMCRef;
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 	AdjustGrabTransform();
 	LighterHeadMovement(1);
 	LSCAudioPlayer->Play();

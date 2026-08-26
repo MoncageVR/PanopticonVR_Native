@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -62,6 +60,9 @@ protected:
 
 private:
 	FVector CraneHeadDefaultVec;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXCraneHeadFall;
 
 private:
 	void ActuallyOperateCraneHead();

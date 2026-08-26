@@ -5,32 +5,27 @@
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
 #include "CoreCommon/PrisonerRelated/PrisonerController.h"
+#include "CoreCommon/AmbientSound/AAmbientSound.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "CoreCommon/VRPawn/VRCharacterBase.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Kismet/GameplayStatics.h"
 
-void AVRGameMode::InitGameState()
-{
-	//DefaultPawnClass = 
-}
+void AVRGameMode::InitGameState() { }
 
 AVRGameMode::AVRGameMode()
 {
 	DefaultPawnClass = ACVRPawn::StaticClass();
 	bIsGameOverFlag = false;
+	bIsGameSuccessFlag = false;
 	MyVRPawn = nullptr;
-
-	//static ConstructorHelpers::FClassFinder<AActor> PanwFinder_Spectator(TEXT("/Game/VRSpectator/VRSpectator.VRSpectator_C"));
-	//if (PanwFinder_Spectator.Succeeded())
-	//{
-	//	//SpectatorClass = PanwFinder_Spectator.Class;
-	//}
 }
 
 void AVRGameMode::StartPlay()
 {
 	Super::StartPlay();
+
+	this->ClearGameResultFlag();
 
 	MyVRGameInstance = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
 	if (MyVRGameInstance)
@@ -42,15 +37,26 @@ void AVRGameMode::StartPlay()
 		check(UMapObjMgrSubSyPtr);
 		check(VREquipWorldSubSyPtr);
 
+		UPrisonerMgrSubSyPtr->HandleClearVarsForGameStart();
 		UPrisonerMgrSubSyPtr->CreateAllPrisoner();
-		//UPrisonerMgrSubSyPtr->Create_Paranormal_Phenomenon();
+		//UPrisonerMgrSubSyPtr->Create_Paranormal_Phenomenon(); // Debug
 
-		//UMapObjMgrSubSyPtr->CreateAllGratings();
+		UMapObjMgrSubSyPtr->CreateAllGratings();
 
 		VREquipWorldSubSyPtr->FGameStartSignature.AddDynamic(this, &AVRGameMode::HandleGMReceiveByGTW);
 	}
 
 	MyVRPawn = Cast<ACVRPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+
+	if (UWorld* MyWorld = GetWorld())
+	{
+		FTransform TempSpawnTransform(FTransform::Identity);
+		AAAmbientSound* TempAmbientSoundActor = MyWorld->SpawnActor<AAAmbientSound>(AAAmbientSound::StaticClass(), TempSpawnTransform);
+		if (TempAmbientSoundActor)
+		{
+			TempAmbientSoundActor->SetPlayingSound(0);
+		}
+	}
 }
 
 void AVRGameMode::GameOverCheckEvent()
@@ -59,6 +65,7 @@ void AVRGameMode::GameOverCheckEvent()
 	{
 		if (MyVRPawn)
 		{
+			MyVRGameInstance->SetIsGameResultFail(true);
 			MyVRPawn->HandleDownMovePlayer();
 		}
 		else
@@ -72,6 +79,25 @@ void AVRGameMode::GameOverCheckEvent()
 	}
 }
 
+void AVRGameMode::GameSuccessCheckEvent()
+{
+	if (bIsGameSuccessFlag)
+	{
+		MyVRGameInstance->SetIsGameResultSuccess(true);
+		MyVRPawn->HandleDownMovePlayer();
+	}
+	else
+	{
+		return;
+	}
+}
+
+void AVRGameMode::ClearGameResultFlag()
+{
+	bIsGameOverFlag = false;
+	bIsGameSuccessFlag = false;
+}
+
 void AVRGameMode::HandleListOfFloatNTelePrisoners(uint8 InHandleFlag, int32 InUniqueNum)
 {
 	if (InHandleFlag)
@@ -82,16 +108,29 @@ void AVRGameMode::HandleListOfFloatNTelePrisoners(uint8 InHandleFlag, int32 InUn
 
 void AVRGameMode::HandleListOfFlamePrisoners(uint8 InHandleFlag, int32 InFlameUniqueNum)
 {
-	UE_LOG(LogTemp, Log, TEXT("InHandleFlag : %d"), InHandleFlag);
-	if (InHandleFlag)
+	if (InHandleFlag) // InHandleFlag Value Is Valid(1,2 ..)
 	{
 		if (InHandleFlag >= 2)
+		{ // InHandleFlag Value is 2 More = Flame Status Prisoner Subdue By Firealarm
 			ListOfPrisonersWithFlameStatus.Empty();
-		else
+		}
+		else // InHandleFlag Value is 1 = Flame Status Prisoner to be Added
+		{
 			ListOfPrisonersWithFlameStatus.AddUnique(InFlameUniqueNum);
+			if (ListOfPrisonersWithFlameStatus.Num() >= 5)
+			{
+				// GameOver Logic Execute Parts!
+				this->SetIsGameOverFlag(true);
+				this->GameOverCheckEvent();
+
+				return;
+			}
+		}
 	}
-	else
+	else // InHandleFlag Value Is Not Valid(0)
+	{
 		ListOfPrisonersWithFlameStatus.RemoveSingleSwap(InFlameUniqueNum);
+	}
 }
 
 void AVRGameMode::HandleGMReceiveByGTW(bool bIsGameStartFlag)

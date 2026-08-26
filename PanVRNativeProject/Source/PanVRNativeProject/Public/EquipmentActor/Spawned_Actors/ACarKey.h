@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -32,4 +30,7 @@ protected:
 
 private:
 	FTimerHandle DestroySelfTimer;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXKeyGrab;
 };

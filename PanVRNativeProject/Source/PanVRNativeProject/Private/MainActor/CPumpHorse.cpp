@@ -104,6 +104,7 @@ void ACPumpHorse::ActuallySubduePrisoner(APrisonerController* Prisoner)
 {
 	if (!Prisoner) return;
 
+	UE_LOG(LogTemp, Log, TEXT("Subdue Prisoner ByPumpHorse"));
 	TArray<uint8> GivenUpperStates = { 1 };
 	TArray<uint8> GivenLowerStates = { 1 };
 	Prisoner->State_based_ExecutionTasks_GiventoSomeone(GivenUpperStates, GivenLowerStates);

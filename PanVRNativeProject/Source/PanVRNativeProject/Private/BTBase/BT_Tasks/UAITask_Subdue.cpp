@@ -7,6 +7,14 @@ UUAITask_Subdue::UUAITask_Subdue()
 {
 	NodeName = TEXT("BTTask_Subdue");
 	bCreateNodeInstance = true;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Subdue(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Subdue/sfx_subdue.sfx_subdue"));
+	if (SFXFinder_Subdue.Succeeded())
+		SFX_Subdue = SFXFinder_Subdue.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_ReSpawn(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Subdue/sfx_respawn.sfx_respawn"));
+	if (SFXFinder_ReSpawn.Succeeded())
+		SFX_ReSpawn = SFXFinder_ReSpawn.Object;
 }
 
 EBTNodeResult::Type UUAITask_Subdue::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -18,7 +26,7 @@ EBTNodeResult::Type UUAITask_Subdue::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	{
 		PrisonerCharacterObj->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	}
-
+	PrisonerCharacterObj->HandlePlayAPSound(SFX_Subdue);
 	PrisonerCharacterObj->LaunchCharacter(FVector(0.f, -1000.f, 1000.f), false, false);
 	PrisonerCharacterObj->GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"), true);
 
@@ -32,6 +40,7 @@ void UUAITask_Subdue::thisMeshSimulatingFunc() { PrisonerCharacterObj->GetMesh()
 
 void UUAITask_Subdue::BeginReSpawnRagdool()
 {
+	PrisonerCharacterObj->HandlePlayAPSound(SFX_ReSpawn);
 	int32 TempUniqueNum = PrisonerControllerObj->GetBBComp()->GetValueAsInt(TEXT("UniqueNum"));
 	PrisonerCharacterObj->GetMesh()->SetHiddenInGame(false, false);
 	PrisonerCharacterObj->GetCapsuleComponent()->SetWorldLocation(PrisonerManagerSubSystemInst->GetFinalAllSpawnPositions()[TempUniqueNum]);
@@ -58,4 +67,6 @@ void UUAITask_Subdue::RegenerationFromRagdoll()
 	PrisonerControllerObj->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
 	// 0 = UpperState : Idle , 1 = LowerState : Default
 	PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 1);
+
+	PrisonerControllerObj->HandleNextTask();
 }

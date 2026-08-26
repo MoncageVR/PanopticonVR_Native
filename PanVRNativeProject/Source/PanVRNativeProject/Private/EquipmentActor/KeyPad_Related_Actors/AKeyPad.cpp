@@ -161,6 +161,7 @@ AAKeyPad::AAKeyPad()
 	// Load the shared scoreboard glass mesh and material (loaded once)
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Glass(TEXT("/Game/VRContent/Modeling/13_Keypad/SM_KeyPad_Out_Glass.SM_KeyPad_Out_Glass"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Glass(TEXT("/Game/VRContent/Material/SRS_Stage_KeyPadGlass.SRS_Stage_KeyPadGlass"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_PanFont(TEXT("/Game/VRContent/Font/MI_Panopticon_Font.MI_Panopticon_Font"));
 
 	// Build 4 scoreboard digits: each has a body, a glass cover, and a text label
 	for (int j = 1; j < 5; j++)
@@ -205,6 +206,9 @@ AAKeyPad::AAKeyPad()
 		TR_ScoreBoard_Text[j - 1]->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 		TR_ScoreBoard_Text[j - 1]->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 		TR_ScoreBoard_Text[j - 1]->SetWorldSize(10.0f);
+
+		if(MatFinder_PanFont.Succeeded())
+			TR_ScoreBoard_Text[j - 1]->SetMaterial(0, MatFinder_PanFont.Object);
 
 		// Debug
 		FString TempNum = FString::Printf(TEXT("%d"), j);
@@ -448,7 +452,7 @@ void AAKeyPad::OnKeyOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	{
 		if (!bIsOverlapping)
 		{
-			mSoundPlayer->PlaySoundEffect(this, ButtonPressSFX, ActorBaseMesh->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, ButtonPressSFX, ActorBaseMesh->GetComponentLocation());
 			CheckOverlapColToInt(Cast<UBoxComponent>(OverlappedComp));
 		}
 	}
@@ -505,7 +509,7 @@ void AAKeyPad::OnCameraOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* O
 
 void AAKeyPad::ClearOutputArrays()
 {
-	mSoundPlayer->PlaySoundEffect(this, ReturnButtonPressSFX, ActorBaseMesh->GetComponentLocation());
+	HVRSoundPlayer::PlaySoundEffect(this, ReturnButtonPressSFX, ActorBaseMesh->GetComponentLocation());
 	UE_LOG(LogTemp, Log, TEXT("AKeyPad In Text Array Clear"));
 	for (UTextRenderComponent* TextRender : TR_ScoreBoard_Text)
 	{

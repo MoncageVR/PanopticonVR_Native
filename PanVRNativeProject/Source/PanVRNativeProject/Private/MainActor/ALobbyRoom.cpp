@@ -1,8 +1,14 @@
 #include "MainActor/ALobbyRoom.h"
+#include "EquipmentActor/Spawned_Actors/ATape.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/BoxComponent.h"
 #include "CoreCommon/Component/UGrabComp.h"
+#include "Components/TimelineComponent.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/LevelSequenceManagerSubsystem.h"
+#include "CoreObj/GameMode/VRLobbyGameMode.h"
+#include "CoreCommon/VRPawn/CVRPawn.h"
+#include "LevelSequence.h"
 
 AALobbyRoom::AALobbyRoom()
 {
@@ -107,7 +113,8 @@ AALobbyRoom::AALobbyRoom()
 		CL_TapeTarget->SetupAttachment(ActorBaseMesh);
 		CL_TapeTarget->SetRelativeLocation(FVector(26.5f, 13.0f, 0.5f));
 		CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
-		CL_TapeTarget->ComponentTags.Add("TapeDispenser");
+		CL_TapeTarget->OnComponentBeginOverlap.AddDynamic(this, &AALobbyRoom::TapePathOverlapBegin);
+		CL_TapeTarget->OnComponentEndOverlap.AddDynamic(this, &AALobbyRoom::TapePathOverlapEnd);
 	}
 
 	SM_SL_Roller01 = CreateDefaultSubobject<UStaticMeshComponent>("SM_Roller01_Comp");
@@ -115,17 +122,29 @@ AALobbyRoom::AALobbyRoom()
 	SM_SL_Roller03 = CreateDefaultSubobject<UStaticMeshComponent>("SM_Roller03_Comp");
 	if (SM_SL_Roller01 && SM_SL_Roller02 && SM_SL_Roller03)
 	{
+		float TempY = 16.2f;
+		float TempZ = 21.8f;
 		SM_SL_Roller01->SetupAttachment(ActorBaseMesh);
+		SM_SL_Roller01->SetRelativeLocation(FVector(8.8f, TempY, TempZ));
+		SM_SL_Roller01->SetRelativeScale3D(FVector(1.05f));
+
 		SM_SL_Roller02->SetupAttachment(ActorBaseMesh);
+		SM_SL_Roller02->SetRelativeLocation(FVector(26.4f, TempY, TempZ));
+		SM_SL_Roller02->SetRelativeScale3D(FVector(1.05f));
+
 		SM_SL_Roller03->SetupAttachment(ActorBaseMesh);
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Roller(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_StartLever_Roller.SM_StartLever_Roller"));
-		if (SMFinder_Roller.Succeeded())
-		{
-			SM_SL_Roller01->SetStaticMesh(SMFinder_Roller.Object);
-			SM_SL_Roller02->SetStaticMesh(SMFinder_Roller.Object);
-			SM_SL_Roller03->SetStaticMesh(SMFinder_Roller.Object);
-		}
+		SM_SL_Roller03->SetRelativeLocation(FVector(44.1f, TempY, TempZ));
+		SM_SL_Roller03->SetRelativeScale3D(FVector(1.05f));
 	}
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Roller001(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_StartLever_Roller001.SM_StartLever_Roller001"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Roller002(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_StartLever_Roller002.SM_StartLever_Roller002"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Roller003(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_StartLever_Roller003.SM_StartLever_Roller003"));
+	if (SMFinder_Roller001.Succeeded())
+		SM_SL_Roller01->SetStaticMesh(SMFinder_Roller001.Object);
+	if (SMFinder_Roller002.Succeeded())
+		SM_SL_Roller02->SetStaticMesh(SMFinder_Roller002.Object);
+	if (SMFinder_Roller003.Succeeded())
+		SM_SL_Roller03->SetStaticMesh(SMFinder_Roller003.Object);
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Lobby(TEXT("/Game/VRContent/Material/SRS_LOBBY.SRS_LOBBY"));
 	if (MatFinder_Lobby.Succeeded())
@@ -136,13 +155,35 @@ AALobbyRoom::AALobbyRoom()
 		SM_RoomStuff->SetMaterial(0, MatFinder_Lobby.Object);
 		ActorBaseMesh->SetMaterial(0, MatFinder_Lobby.Object);
 		SM_StartLeverHandle->SetMaterial(0, MatFinder_Lobby.Object);
-		SM_SL_Roller01->SetMaterial(0, MatFinder_Lobby.Object);
-		SM_SL_Roller02->SetMaterial(0, MatFinder_Lobby.Object);
-		SM_SL_Roller03->SetMaterial(0, MatFinder_Lobby.Object);
 	}
 
 	AtFirstHandleRot = FRotator::ZeroRotator;
 	bIsHanding = false;
+
+	TL_TapeMove = CreateDefaultSubobject<UTimelineComponent>("TapeMoveInTLComp");
+	if (TL_TapeMove)
+	{
+		TL_TapeMove->SetLooping(false);
+		TL_TapeMove->SetTimelineLength(2.01f);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> CFFinder_MoveIn(TEXT("/Game/VRContent/Blueprints/TimelineCurve/LobbyRoom_Tape_MoveIn_Curve.LobbyRoom_Tape_MoveIn_Curve"));
+	if (CFFinder_MoveIn.Succeeded())
+	{
+		CF_TapeMoveIn = CFFinder_MoveIn.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Roller(TEXT("/Game/VRContent/Material/SRS_Lobby_StartLever_Rollers.SRS_Lobby_StartLever_Rollers"));
+	if (MatFinder_Roller.Succeeded())
+	{
+		SM_SL_Roller01->SetMaterial(0, MatFinder_Roller.Object);
+		SM_SL_Roller02->SetMaterial(0, MatFinder_Roller.Object);
+		SM_SL_Roller03->SetMaterial(0, MatFinder_Roller.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<ULevelSequence> LQFinder_Debugging(TEXT("/Game/VRContent/LevelSequence/DebuggingLQ.DebuggingLQ"));
+	if (LQFinder_Debugging.Succeeded())
+		LQ_Roller = LQFinder_Debugging.Object;
 }
 
 void AALobbyRoom::BeginPlay()
@@ -150,14 +191,29 @@ void AALobbyRoom::BeginPlay()
 	Super::BeginPlay();
 
 	AtFirstHandleRot = SM_StartLeverHandle->GetRelativeRotation();
+
+	FOnTimelineFloat TapeMoveProgressFunc;
+	FOnTimelineEvent TapeMoveFinishedEvent;
+
+	TapeMoveProgressFunc.BindUFunction(this, FName("TapeMovePlayEvent"));
+	TapeMoveFinishedEvent.BindUFunction(this, FName("TapeMoveFinishedEvent"));
+
+	TL_TapeMove->AddInterpFloat(CF_TapeMoveIn, TapeMoveProgressFunc);
+	TL_TapeMove->SetTimelineFinishedFunc(TapeMoveFinishedEvent);
+
+	ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));// Debug
+	CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
+	bIsTapeMoveingFlag = 0;
 }
 
 void AALobbyRoom::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, AVRHand* InGrabbingHand)
 {
+	//StartLobbyRoomLQ();
 	TempMCRef = &InMCRef;
 	AdjustVecNRot(&InMCRef);
 	if (bIsHanding)
 	{
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
 		GetWorld()->GetTimerManager().SetTimer(
 			StartLeverMoveTimer,
 			this,
@@ -192,6 +248,48 @@ void AALobbyRoom::SLHandleFOverlapEnd(UPrimitiveComponent* OverlappedComp, AActo
 	}
 }
 
+void AALobbyRoom::TapePathOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp && OtherComp->ComponentHasTag(FName("Tape")) && IsValid(OtherActor) && !IsValid(NewTape))
+	{
+		NewTape = Cast<AATape>(OtherActor);
+		check(NewTape);
+		NewTape->GC->GCTryRelease();
+
+		if (NewTape->GetRootComponent()->AttachToComponent(CL_TapeTarget, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
+		{
+			bIsTapeMoveingFlag = 1;
+			NewTape->HandleDontGrabPhysics(1);
+			TL_TapeMove->PlayFromStart();
+		}
+	}
+}
+
+void AALobbyRoom::TapePathOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (bIsTapeMoveingFlag) return;
+	if (OtherComp && OtherComp->ComponentHasTag(FName("Tape")) && IsValid(NewTape))
+		NewTape = nullptr;
+}
+
+void AALobbyRoom::TapeMovePlayEvent(float Value)
+{
+	if (IsValid(NewTape))
+	{
+		NewTape->GetRootComponent()->SetRelativeLocation(FVector(0.f, Value * 10.0f, 0.f), false, nullptr, ETeleportType::TeleportPhysics);
+	}
+}
+
+void AALobbyRoom::TapeMoveFinishedEvent()
+{
+	if (IsValid(NewTape))
+	{
+		bIsTapeMoveingFlag = 0;
+		NewTape->HandleDontGrabPhysics(0);
+		UE_LOG(LogTemp, Log, TEXT("Tape Move In End!"));
+	}
+}
+
 void AALobbyRoom::AdjustVecNRot(UMotionControllerComponent* InMC)
 {
 	if (InMC->ComponentHasTag(FName(TEXT("RightMC"))))
@@ -223,7 +321,38 @@ void AALobbyRoom::UpdateStartLever()
 void AALobbyRoom::LeverOnGameStartEvent()
 {
 	this->OnDropped();
-	//UE_LOG(LogTemp, Warning, TEXT("In Lobby Game Start Logic Call Part!"));
+	UE_LOG(LogTemp, Warning, TEXT("In Lobby Game Start Logic Call Part!"));
+	
+	StartLQInLobbyRoom();
 
-	//EquipmentWorldSubSystem->NotifyGameStartInLobbyBroadCast();
+	/*if (APlayerController* mPC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		if (ACVRPawn* TempVRPawn = Cast<ACVRPawn>(mPC->GetPawn()))
+		{
+			TempVRPawn->GameStartInLobbyEvent();
+		}
+	}*/
+}
+
+void AALobbyRoom::StartLQInLobbyRoom()
+{
+	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
+	if (LQMgr)
+	{
+		FOnSequenceFinishedSignature CallBack;
+		CallBack.BindDynamic(this, &AALobbyRoom::OnLobbyRoomLQDone);
+		LQMgr->PlaySequence(LQ_Roller, CallBack);
+	}
+}
+
+void AALobbyRoom::OnLobbyRoomLQDone()
+{
+	// Player Lobby Up Move Part
+	if (APlayerController* mPC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		if (ACVRPawn* TempVRPawn = Cast<ACVRPawn>(mPC->GetPawn()))
+		{
+			TempVRPawn->GameStartInLobbyEvent();
+		}
+	}
 }

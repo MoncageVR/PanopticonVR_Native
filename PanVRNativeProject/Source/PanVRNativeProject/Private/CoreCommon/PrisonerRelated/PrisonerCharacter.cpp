@@ -2,6 +2,7 @@
 #include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include "Components/AudioComponent.h"
 
 APrisonerCharacter::APrisonerCharacter()
 {
@@ -75,12 +76,25 @@ APrisonerCharacter::APrisonerCharacter()
 
 	MeshDefaultRelativePos = this->GetMesh()->GetRelativeLocation();
 	MeshDefaultRelativeRot = this->GetMesh()->GetRelativeRotation();
+
+	PrisonerAudioPlayer = CreateDefaultSubobject<UAudioComponent>("SoundPlayerComp");
+	if (PrisonerAudioPlayer)
+	{
+		PrisonerAudioPlayer->SetupAttachment(this->GetRootComponent());
+		PrisonerAudioPlayer->SetAutoActivate(false);
+		PrisonerAudioPlayer->bAllowSpatialization = false;
+	}
 }
 
 void APrisonerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	this->GetMesh()->SetPhysMaterialOverride(PrisonerPhysMat);
+
+	if (PrisonerAudioPlayer)
+	{
+		PrisonerAudioPlayer->Stop();
+	}
 }
 
 void APrisonerCharacter::Tick(float DeltaTime)
@@ -105,4 +119,33 @@ void APrisonerCharacter::SetPrisonerAppearanceByDT(bool bIsHairVisible, bool bIs
 void APrisonerCharacter::HandleSetPrisonerNewSkin()
 {
 	this->GetMesh()->SetMaterial(0, SecondTypePrisonerMat);
+}
+
+void APrisonerCharacter::HandlePlayAPSound(USoundBase* InSound)
+{
+	if (PrisonerAudioPlayer && InSound)
+	{
+		if (!PrisonerAudioPlayer->IsPlaying())
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s : %s Sound - Playing!"), *this->GetName(), *InSound->GetName());
+			PrisonerAudioPlayer->SetSound(InSound);
+			PrisonerAudioPlayer->Play();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Already Playing , Sound Play Noop"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Sound Play Noop"));
+	}
+}
+
+void APrisonerCharacter::HandlePauseAPSound()
+{
+	if (PrisonerAudioPlayer->IsPlaying())
+	{
+		PrisonerAudioPlayer->Stop();
+	}
 }

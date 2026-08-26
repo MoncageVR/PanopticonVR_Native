@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -28,5 +26,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UMapObjManagerSubsystem> MapObjManagerSubSystemRef;
 
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_GolfEffect;
 private:
 };

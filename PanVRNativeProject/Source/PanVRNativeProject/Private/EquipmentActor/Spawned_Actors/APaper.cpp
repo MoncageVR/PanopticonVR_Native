@@ -29,6 +29,7 @@ AAPaper::AAPaper()
 		CLA4->SetHiddenInGame(false); // Debug
 	}
 
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_CharPrinterFont(TEXT("/Game/VRContent/Font/MI_Panopticon_Font.MI_Panopticon_Font"));
 	TR_CharPrinter = CreateDefaultSubobject<UTextRenderComponent>("TRComp");
 	if (TR_CharPrinter)
 	{
@@ -42,6 +43,8 @@ AAPaper::AAPaper()
 		TR_CharPrinter->SetYScale(1.0f);
 		TR_CharPrinter->SetWorldSize(5.0f);
 		TR_CharPrinter->Text = FText();
+		if (MatFinder_CharPrinterFont.Succeeded())
+			TR_CharPrinter->SetMaterial(0, MatFinder_CharPrinterFont.Object);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Paper(TEXT("/Game/VRContent/Material/SRS_STAGE_Paper.SRS_STAGE_Paper"));
@@ -87,7 +90,7 @@ void AAPaper::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& Hand
 	GetWorldTimerManager().PauseTimer(DestroySelfTimer);
 	bIsHanding = 1;
 
-	mSoundPlayer->PlaySoundEffect(this, SFXPaperGrab, ActorBaseMesh->GetComponentLocation());
+	HVRSoundPlayer::PlaySoundEffect(this, SFXPaperGrab, ActorBaseMesh->GetComponentLocation());
 }
 
 void AAPaper::OnDropped()

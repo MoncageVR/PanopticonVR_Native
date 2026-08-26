@@ -44,8 +44,18 @@ protected:
 	UFUNCTION()
 	void OnAssistNeighborMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
+	UFUNCTION()
+	void OnDoorPickingMontageNotify(FName NotifyName, const FBranchingPointNotifyPayload& Payload);
 private:
-	UAnimMontage* NeighborDoorPickingMontage;
+	UPROPERTY()
+	TObjectPtr<UAnimMontage> NeighborDoorPickingMontage;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_DoorPickingForNeighbor;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_WalkForNeighbor;
+
 	TArray<uint8> GrantedUpperStates;
 	TArray<uint8> GrantedLowerStates;
 

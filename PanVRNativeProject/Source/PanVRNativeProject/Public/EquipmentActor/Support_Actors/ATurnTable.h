@@ -165,7 +165,8 @@ protected:
 	void OperateLPRotationInPlace();
 
 private:
-	class UMotionControllerComponent* TempMCRef;
+	UPROPERTY()
+	TObjectPtr<class UMotionControllerComponent> TempMCRef;
 
 	FTimerHandle TTLeverMovementTimer;
 	FTimerHandle LPMovementTimer;
@@ -174,8 +175,6 @@ private:
 	int32 CurrSongNum = 0;
 	int32 PlaySongNum = 0;
 	uint32 bIsTouching = 0;
-
-	//TArray<UMaterialInstance*> TTGlassMats;
 
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> TTGlassMID;

@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -46,4 +44,6 @@ public:
 
 	UPROPERTY()
 	TObjectPtr<AVRGameMode> MyVRGameMode;
+
+
 };

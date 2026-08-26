@@ -17,6 +17,10 @@ UUAITask_TowerRaid::UUAITask_TowerRaid()
 	SpeedOfSplineRoute = 0.0f;
 	CurrPositionOfSplineRoute = 0.0f;
 	bIsCanMove = 0;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_TowerRaiding(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/TowerRaid/sfx_towerraid.sfx_towerraid"));
+	if (SFXFinder_TowerRaiding.Succeeded())
+		SFX_TowerRaiding = SFXFinder_TowerRaiding.Object;
 }
 
 EBTNodeResult::Type UUAITask_TowerRaid::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -57,6 +61,8 @@ EBTNodeResult::Type UUAITask_TowerRaid::ExecuteTask(UBehaviorTreeComponent& Owne
 	DistanceOfSplineRoute = TowerBuildingObj->GetTowerRaidMoveRouteComp()->GetSplineLength();
 	SpeedOfSplineRoute = DistanceOfSplineRoute / TimeOfSplineRoute;
 	bIsCanMove = 1;
+
+	PrisonerCharacterObj->HandlePlayAPSound(SFX_TowerRaiding);
 
 	return EBTNodeResult::InProgress;
 }

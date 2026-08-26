@@ -78,10 +78,12 @@ protected:
 		int32 OtherBodyIndex
 	);
 #pragma endregion
-
+	
 private:
-	class UMotionControllerComponent* TempMCRef = nullptr;
-	class AVRHand* TempGrabbingHandRed = nullptr;
+	UPROPERTY()
+	TObjectPtr<class UMotionControllerComponent> TempMCRef = nullptr;
+	UPROPERTY()
+	TObjectPtr<class AVRHand> TempGrabbingHandRed = nullptr;
 
 	uint32 bIsOvenDoorHanding = 0;
 	FTimerHandle OvenDoorMovementTimer;
@@ -93,8 +95,10 @@ private:
 
 	FTimerHandle RubberDuckMovementStopTimer;
 
-	USoundBase* SFXGrabHeavy;
-	USoundBase* SFXOperateFlush;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXGrabHeavy;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXOperateFlush;
 
 	UPROPERTY()
 	TObjectPtr<class AAElevatorButton> TempElevatorObj;

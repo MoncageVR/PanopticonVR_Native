@@ -9,6 +9,10 @@ UUAITask_Teleport::UUAITask_Teleport()
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> AMFinder_Teleport(TEXT("/Game/VRContent/Prisoner/PrisonerAnimation/TargetAnim/Montages/Retarget_Teleport_Anim_Montage.Retarget_Teleport_Anim_Montage"));
 	if (AMFinder_Teleport.Succeeded())
 		TeleportingMontage = AMFinder_Teleport.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Teleport(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Teleport/sfx_teleport.sfx_teleport"));
+	if (SFXFinder_Teleport.Succeeded())
+		SFX_Teleport = SFXFinder_Teleport.Object;
 }
 
 EBTNodeResult::Type UUAITask_Teleport::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -22,6 +26,7 @@ EBTNodeResult::Type UUAITask_Teleport::ExecuteTask(UBehaviorTreeComponent& Owner
 	MyVRGameMode->HandleListOfFloatNTelePrisoners(1, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));
 	if (MyAnimInst)
 	{
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_Teleport);
 		MyAnimInst->OnMontageEnded.RemoveDynamic(this, &UUAITask_Teleport::OnTeleportMontageEnded);
 		MyAnimInst->OnMontageEnded.AddDynamic(this, &UUAITask_Teleport::OnTeleportMontageEnded);
 	}

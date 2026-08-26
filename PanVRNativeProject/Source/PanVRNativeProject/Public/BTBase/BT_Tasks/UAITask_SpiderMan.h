@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -29,10 +27,16 @@ private:
 	float SpeedOfSplineRoute_InSpiderManState;
 	float CurrPositionOfSplineRoute_InSpiderManState;
 
-	class AJailBuilding* JailBuildingObj;
+	UPROPERTY()
+	TObjectPtr<class AJailBuilding> JailBuildingObj;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_SpiderManWalk;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_SpiderMan;
 
 private:
 	const bool HasReachedCeilingEscapeTargetVec(const FVector InChaVec, const FVector InTargetVec);
-
 	const bool HasReachedTopEscapeTargetVec(const FVector InChaVec, const FVector InTopEscapeTargetVec);
 };

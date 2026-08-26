@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_SpiderMan.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 #include "Components/SplineComponent.h"
@@ -14,7 +11,15 @@ UUAITask_SpiderMan::UUAITask_SpiderMan()
 	bNotifyTick = true;
 
 	bIsCanMoveAlongSpline = 0;
-	TimeOfSplineRoute_InSpiderManState = 10.0f;
+	TimeOfSplineRoute_InSpiderManState = 30.0f; // DebugValue : 10.0f, DefaultValue : 30.0f;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_SpiderManWalk(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Run/sfx_walk.sfx_walk"));
+	if (SFXFinder_SpiderManWalk.Succeeded())
+		SFX_SpiderManWalk = SFXFinder_SpiderManWalk.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_SpiderMan(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/SpiderMan/sfx_spiderman.sfx_spiderman"));
+	if (SFXFinder_SpiderMan.Succeeded())
+		SFX_SpiderMan = SFXFinder_SpiderMan.Object;
 }
 
 EBTNodeResult::Type UUAITask_SpiderMan::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -25,6 +30,8 @@ EBTNodeResult::Type UUAITask_SpiderMan::ExecuteTask(UBehaviorTreeComponent& Owne
 	if (HasReachedCeilingEscapeTargetVec(PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(),
 		PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("CeilingEscapeTargetVec"))))
 	{
+		PrisonerCharacterObj->HandlePauseAPSound();
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_SpiderMan);
 		// UpperState : Dangerous(4) | LowerState : TowerRaid(13)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(4, 13);
 		PrisonerCharacterObj->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
@@ -34,6 +41,7 @@ EBTNodeResult::Type UUAITask_SpiderMan::ExecuteTask(UBehaviorTreeComponent& Owne
 	}
 	else
 	{
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_SpiderManWalk);
 		// UpperState : Move(2) | LowerState : Run(4)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 		PrisonerCharacterObj->GetCharacterMovement()->MaxWalkSpeed = PrisonerControllerObj->GetBBComp()->GetValueAsFloat(TEXT("RunningSpeed"));

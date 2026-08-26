@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/BT_Tasks/UAITask_RandomMove.h"
 #include "PanVRNativeProject/PanVRNativeProject.h"
 
@@ -8,6 +5,10 @@ UUAITask_RandomMove::UUAITask_RandomMove()
 {
 	NodeName = TEXT("BTTask_RandomMove");
 	bCreateNodeInstance = true;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_RanMoveWalk(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Run/sfx_walk.sfx_walk"));
+	if (SFXFinder_RanMoveWalk.Succeeded())
+		SFX_RanMoveWalk = SFXFinder_RanMoveWalk.Object;
 }
 
 EBTNodeResult::Type UUAITask_RandomMove::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -16,6 +17,7 @@ EBTNodeResult::Type UUAITask_RandomMove::ExecuteTask(UBehaviorTreeComponent& Own
 
 	if (HasReachedRandomTargetPos(PrisonerCharacterObj->GetRootComponent()->GetComponentLocation(), PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("RandomMoveTargetVec"))))
 	{
+		PrisonerCharacterObj->HandlePauseAPSound();
 		UE_LOG(LogTemp, Log, TEXT("Random Move Target Vector Reach Success!"));
 		// UpperState : Idle(0) | LowerState : Default(0)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(0, 0);
@@ -23,6 +25,7 @@ EBTNodeResult::Type UUAITask_RandomMove::ExecuteTask(UBehaviorTreeComponent& Own
 	}
 	else
 	{
+		PrisonerCharacterObj->HandlePlayAPSound(SFX_RanMoveWalk);
 		// UpperState : Move(2) | LowerState : Run(4)
 		PrisonerControllerObj->GetPrisonerAnimInstance()->SetPrisonerUpperStates(2, 4);
 

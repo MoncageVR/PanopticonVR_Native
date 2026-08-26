@@ -30,7 +30,6 @@ AATurnTable::AATurnTable()
 
 	// Glass Mesh Setting
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Glass(TEXT("/Game/VRContent/Modeling/26_TurnTable/SM_TurnTableGlass.SM_TurnTableGlass"));
-	//static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_SW(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass1_SunnyWeather.MI_Stage_TurnTableGlass1_SunnyWeather"));
 	TTGlass = CreateDefaultSubobject<UStaticMeshComponent>("SM_Glass");
 	if (TTGlass)
 	{
@@ -40,10 +39,6 @@ AATurnTable::AATurnTable()
 		{
 			TTGlass->SetStaticMesh(ModelingFinder_Glass.Object);
 		}
-		/*if (MaterialFinder_Glass_SW.Succeeded())
-		{
-			TTGlass->SetMaterial(0, MaterialFinder_Glass_SW.Object);
-		}*/
 	}
 
 	// Handle Lever And GrabComponent Setting
@@ -147,15 +142,6 @@ AATurnTable::AATurnTable()
 	CLLPTarget->OnComponentBeginOverlap.AddDynamic(this, &AATurnTable::OverlapLPBoxBegin);
 	CLLPTarget->OnComponentEndOverlap.AddDynamic(this, &AATurnTable::OverlapLPBoxEnd);
 	CLLPSpawn->OnComponentEndOverlap.AddDynamic(this, &AATurnTable::OverlapSpawnLPBoxEnd);
-
-	/*static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_PE(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass2_PrisonerElevator.MI_Stage_TurnTableGlass2_PrisonerElevator"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_FJ(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass3_FastJazz.MI_Stage_TurnTableGlass3_FastJazz"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Glass_EP(TEXT("/Game/VRContent/Material/MI_Stage_TurnTableGlass4_ElectricPickle.MI_Stage_TurnTableGlass4_ElectricPickle"));
-
-	if (MaterialFinder_Glass_SW.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_SW.Object); }
-	if (MaterialFinder_Glass_PE.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_PE.Object); }
-	if (MaterialFinder_Glass_FJ.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_FJ.Object); }
-	if (MaterialFinder_Glass_EP.Succeeded()) { TTGlassMats.Add(MaterialFinder_Glass_EP.Object); }*/
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_TTPublicMat(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));
 	if (MaterialFinder_TTPublicMat.Succeeded())
@@ -314,7 +300,7 @@ void AATurnTable::OperateTTLeverMovement()
 	{
 		if (!bIsAlreadySpawnLP) // Check Already Spawn LP Exist?
 		{
-			mSoundPlayer->PlaySoundEffect(this, SFXLeverPullSound, TTHandleLever->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, SFXLeverPullSound, TTHandleLever->GetComponentLocation());
 			SpawnNewLP();
 			this->OnDropped();
 		}
@@ -375,6 +361,7 @@ void AATurnTable::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& 
 
 	if (TempMCRef)
 	{
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
 		if (bIsLPSpawnOperation) // If Spawning New Lp, Don't Execute, Lever Movement Function
 		{
 			return;
@@ -426,7 +413,7 @@ void AATurnTable::OverlapLBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	{
 		if (OtherComp->ComponentHasTag(FName("HandIndex")))
 		{
-			mSoundPlayer->PlaySoundEffect(this, SFXButtonPressSound, TTLeftButton->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, SFXButtonPressSound, TTLeftButton->GetComponentLocation());
 			bIsTouching = 1;
 			if (CurrSongNum == 0) { CurrSongNum = 3; }
 			else { CurrSongNum -= 1; }
@@ -452,7 +439,7 @@ void AATurnTable::OverlapRBBoxBegin(UPrimitiveComponent* OverlappedComp, AActor*
 	{
 		if (OtherComp->ComponentHasTag(FName("HandIndex")))
 		{
-			mSoundPlayer->PlaySoundEffect(this, SFXButtonPressSound, TTRightButton->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, SFXButtonPressSound, TTRightButton->GetComponentLocation());
 			bIsTouching = 1;
 			if (CurrSongNum == 3) { CurrSongNum = 0; }
 			else { CurrSongNum += 1; }
@@ -496,7 +483,7 @@ void AATurnTable::OverlapLPBoxBegin(UPrimitiveComponent* OverlappedComp, AActor*
 				AttachingLP->GetRootComponent()->SetRelativeLocationAndRotation(CLLPTarget->GetRelativeLocation(), TempSpawnRot);
 				PlaySongNum = AttachingLP->GetSongNum();
 
-				mSoundPlayer->PlaySoundEffect(this, SFXLPDropSound, CLLPTarget->GetComponentLocation());
+				HVRSoundPlayer::PlaySoundEffect(this, SFXLPDropSound, CLLPTarget->GetComponentLocation());
 				PlaySoundBGM(PlaySongNum);
 
 				if (AttachingLP->GetIsAttaching() && bIsGameStarted)

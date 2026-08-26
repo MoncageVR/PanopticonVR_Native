@@ -83,11 +83,14 @@ protected:
 	void PPMoveTLEndFunc();
 
 private:
-	UCurveFloat* PPMoveCurve;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> PPMoveCurve;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXPrinterMove;
+
 	//class AAPaper* NewSpawnPaper = nullptr;
 	FTimerHandle NewSpawnTimer;
-
-	USoundBase* SFXPrinterMove;
 
 private:
 	void PPMoveEndFunc();

@@ -94,7 +94,6 @@ private:
 	UPROPERTY()
 	TObjectPtr<USoundBase> AButtonSFX;
 
-	//USoundBase* AButtonSFX;
 	UPROPERTY()
 	TObjectPtr<USoundBase> BButtonSFX;
 

@@ -1,6 +1,3 @@
-
-
-
 #include "BTBase/UAITask_Base.h"
 #include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
 #include "CoreCommon/PrisonerRelated/PrisonerController.h"

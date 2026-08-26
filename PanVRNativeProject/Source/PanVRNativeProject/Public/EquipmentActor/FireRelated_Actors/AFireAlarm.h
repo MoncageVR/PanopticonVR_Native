@@ -61,5 +61,6 @@ private:
 	FTimerHandle SprinklerOperateTimer;
 	FTimerHandle SprinklerCooldownTimer;
 
-	USoundBase* SFXFireAlarm;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXFireAlarm;
 };

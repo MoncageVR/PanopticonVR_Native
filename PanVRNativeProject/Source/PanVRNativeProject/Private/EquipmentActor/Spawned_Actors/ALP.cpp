@@ -64,7 +64,7 @@ void AALP::Tick(float DeletaTime)
 void AALP::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, class AVRHand* InGrabbingHand)
 {
 	bIsHanding = 1;
-
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_LightGrab, this->GetRootComponent()->GetComponentLocation());
 	GetWorldTimerManager().PauseTimer(SelfDestroyTimer);
 }
 

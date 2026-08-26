@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -24,6 +22,12 @@ private:
 	FTimerHandle SimulDelayTimer;
 	FTimerHandle HideMeshDelayTimer;
 	FTimerHandle ReSpawnDelayTimer;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_Subdue;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_ReSpawn;
 
 private:
 	void thisMeshSimulatingFunc();

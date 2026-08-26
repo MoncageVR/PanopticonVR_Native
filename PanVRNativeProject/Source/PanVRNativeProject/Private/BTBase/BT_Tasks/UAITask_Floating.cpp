@@ -7,6 +7,10 @@ UUAITask_Floating::UUAITask_Floating()
 	NodeName = TEXT("BTTask_Floating");
 	bCreateNodeInstance = true;
 	FloatingExecutionTime = 30.0f;
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Floating(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Floating/sfx_float.sfx_float"));
+	if (SFXFinder_Floating.Succeeded())
+		SFX_Floating = SFXFinder_Floating.Object;
 }
 
 EBTNodeResult::Type UUAITask_Floating::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -17,6 +21,8 @@ EBTNodeResult::Type UUAITask_Floating::ExecuteTask(UBehaviorTreeComponent& Owner
 	FloatingTargetVec = PrisonerControllerObj->GetBBComp()->GetValueAsVector(TEXT("TopEscapeTargetVec"));
 	PrisonerCharacterObj->GetCapsuleComponent()->SetEnableGravity(true);
 	PrisonerCharacterObj->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+	PrisonerCharacterObj->HandlePlayAPSound(SFX_Floating);
 
 	this->ActuallyMoveToTargetVec();
 	MyVRGameMode->HandleListOfFloatNTelePrisoners(1, PrisonerControllerObj->GetBBComp()->GetValueAsInt(FName("UniqueNum")));

@@ -83,6 +83,11 @@ AACarCrane::AACarCrane()
 	if (CurveFinder_CraneHead.Succeeded())
 		CraneHeadDownwardMove_Curve = CurveFinder_CraneHead.Object;
 
+	// Setting Sound Asset
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Fall(TEXT("/Game/VRContent/Sound/Wavs/CarTypePanel/sfx_carpanel_fall.sfx_carpanel_fall"));
+	if (SFXFinder_Fall.Succeeded())
+		SFXCraneHeadFall = SFXFinder_Fall.Object;
+
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
@@ -168,5 +173,6 @@ void AACarCrane::CraneHeadOperatingTimelineEnd()
 void AACarCrane::ActuallyOperateCraneHead()
 {
 	CLUFOSubdue->SetGenerateOverlapEvents(true);
+	HVRSoundPlayer::PlaySoundEffect(this, SFXCraneHeadFall, CarCraneMainRoot->GetComponentLocation());
 	TL_CraneDownward->PlayFromStart();
 }

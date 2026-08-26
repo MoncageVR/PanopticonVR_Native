@@ -15,6 +15,10 @@ UUAITask_Golf::UUAITask_Golf()
 	GolfSwingCount = 0;
 	GolfBallMake_Time = 1.2f;
 	GolfNextActionWait_Time = 4.63f;
+	
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_GolfShooting(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Golf/sfx_golf_shoot.sfx_golf_shoot"));
+	if (SFXFinder_GolfShooting.Succeeded())
+		SFX_GolfShooting = SFXFinder_GolfShooting.Object;
 }
 
 EBTNodeResult::Type UUAITask_Golf::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -62,6 +66,7 @@ void UUAITask_Golf::GolfBallFly()
 {
 	if (GolfSwingCount <= 4)
 	{
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_GolfShooting, PrisonerCharacterObj->GetRootComponent()->GetComponentLocation());
 		GetWorld()->GetTimerManager().SetTimer(
 			GolfBallMakeTimer,
 			this,

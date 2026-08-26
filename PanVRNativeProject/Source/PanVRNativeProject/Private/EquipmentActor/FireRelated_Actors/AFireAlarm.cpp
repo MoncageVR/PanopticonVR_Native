@@ -108,9 +108,7 @@ void AAFireAlarm::FireCheckColOverlapEnd(UPrimitiveComponent* OverlappedComp, AA
 
 void AAFireAlarm::SprinklerOperation()
 {
-	mSoundPlayer->PlaySoundEffect(this, SFXFireAlarm, ActorBaseMesh->GetComponentLocation());
-
-	//UE_LOG(LogTemp, Log, TEXT("Sprinkler Logic Execution Part"));
+	HVRSoundPlayer::PlaySoundEffect(this, SFXFireAlarm, ActorBaseMesh->GetComponentLocation());
 
 	AVRGameMode* TempGM = Cast<AVRGameMode>(GetWorld()->GetAuthGameMode());
 	check(TempGM);

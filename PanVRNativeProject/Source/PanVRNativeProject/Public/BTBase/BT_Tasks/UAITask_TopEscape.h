@@ -1,5 +1,3 @@
-
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -23,7 +21,13 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 
 private:
-	class AJailBuilding* mJailBuildingObj;
+
+	UPROPERTY()
+	TObjectPtr<class AJailBuilding> mJailBuildingObj;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_TopEscape;
+
 	bool bIsRotatePossibleFlag;
 	FTimerHandle HatchOpenSuccessTimer;
 

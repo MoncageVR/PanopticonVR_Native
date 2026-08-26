@@ -46,12 +46,17 @@ protected:
 	);
 
 private:
-	class AAPaper* AttachingPaper = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<class AAPaper> AttachingPaper = nullptr;
 	float AttachedPaperZPos = 0.f;
 	FTimerHandle FaxOperationTimer;
 
-	USoundBase* SFXShredSuccess;
-	USoundBase* SFXShredFail;
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXShredSuccess;
+
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFXShredFail;
 
 private:
 	void PaperShredding();

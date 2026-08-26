@@ -100,7 +100,8 @@ void AAEmergencyButton::EMButtonColOverlapBegin(UPrimitiveComponent* OverlappedC
 		if (TryGetSubdueRoomNumber())
 		{
 			UE_LOG(LogTemp, Log, TEXT("%d Prisoner Subdue Play!"), FinalRoomNum);
-			mSoundPlayer->PlaySoundEffect(this, ButtonSuccessSFX, ActorBaseMesh->GetComponentLocation());
+
+			HVRSoundPlayer::PlaySoundEffect(this, ButtonSuccessSFX, ActorBaseMesh->GetComponentLocation());
 			ClearStopButtonOutputArray();
 			CoolDownOperation(10.0f);
 
@@ -113,7 +114,7 @@ void AAEmergencyButton::EMButtonColOverlapBegin(UPrimitiveComponent* OverlappedC
 		}
 		else
 		{
-			mSoundPlayer->PlaySoundEffect(this, ButtonFailSFX, ActorBaseMesh->GetComponentLocation());
+			HVRSoundPlayer::PlaySoundEffect(this, ButtonFailSFX, ActorBaseMesh->GetComponentLocation());
 			ClearStopButtonOutputArray();
 			CoolDownOperation(1.0f);
 			FinalRoomNum = 0;

@@ -342,13 +342,13 @@ void ACVRPawn::BeginPlay()
 		TempEquipmentWorldSubSytem->FGameStartSignature.AddDynamic(this, &ACVRPawn::HandleVRPawnReceivceByGTW);
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(
+	/*GetWorld()->GetTimerManager().SetTimer(
 		DebuggingTimer,
 		this,
 		&ACVRPawn::Debuggigng,
 		3.0f,
 		false
-	);
+	);*/
 }
 
 void ACVRPawn::Debuggigng()

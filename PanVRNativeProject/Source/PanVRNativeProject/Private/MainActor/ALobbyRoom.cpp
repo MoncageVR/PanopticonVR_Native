@@ -33,7 +33,7 @@ AALobbyRoom::AALobbyRoom()
 	if (SM_Cup)
 	{
 		SM_Cup->SetupAttachment(SC_MainRoot);
-		SM_Cup->SetRelativeLocation(FVector((47.4f, -91.5f, 62.0f)));
+		SM_Cup->SetRelativeLocation(FVector(47.4f, -91.5f, 62.0f));
 		SM_Cup->SetRelativeRotation(FRotator(0.f, -90.0f, 0.f));
 		SM_Cup->SetRelativeScale3D(FVector(0.8f));
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Cup(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_Cup.SM_Cup"));
@@ -201,8 +201,8 @@ void AALobbyRoom::BeginPlay()
 	TL_TapeMove->AddInterpFloat(CF_TapeMoveIn, TapeMoveProgressFunc);
 	TL_TapeMove->SetTimelineFinishedFunc(TapeMoveFinishedEvent);
 
-	ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));// Debug
-	CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
+	//ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));// Debug
+	//CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
 	bIsTapeMoveingFlag = 0;
 }
 
@@ -323,7 +323,8 @@ void AALobbyRoom::LeverOnGameStartEvent()
 	this->OnDropped();
 	UE_LOG(LogTemp, Warning, TEXT("In Lobby Game Start Logic Call Part!"));
 	
-	StartLQInLobbyRoom();
+	//StartLQInLobbyRoom();
+	OnLobbyRoomLQDone();
 
 	/*if (APlayerController* mPC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
 	{

@@ -105,7 +105,8 @@ void UUAITask_SpiderMan::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 
 const bool UUAITask_SpiderMan::HasReachedCeilingEscapeTargetVec(const FVector InChaVec, const FVector InTargetVec)
 {
-	bool XReturnValue, YReturnValue = false;
+	bool XReturnValue = false;
+	bool YReturnValue = false;
 	if (FMath::IsNearlyEqual(InChaVec.X, InTargetVec.X, 5.0f))
 		XReturnValue = true;
 	if (FMath::IsNearlyEqual(InChaVec.Y, InTargetVec.Y, 5.0f))

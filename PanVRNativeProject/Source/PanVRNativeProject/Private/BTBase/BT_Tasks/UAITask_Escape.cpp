@@ -30,7 +30,7 @@ EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 				ExitDoorControlTimer,
 				this,
 				&UUAITask_Escape::CallControlExitDoorFunction,
-				1.9f,
+				17.9f,
 				false
 			);
 			return EBTNodeResult::Succeeded;

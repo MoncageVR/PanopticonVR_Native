@@ -163,7 +163,7 @@ void APrisonerController::InitializeStatesFromLogicDT()
 	if (!TempRowNames.IsEmpty())
 	{
 		// Number that Allows you to Select a Row Within DataTable(Starting form 0)
-		int32 RowRandomChoice = 5;//= FMath::RandRange(0, TempRowNames.Num() - 1);
+		int32 RowRandomChoice = FMath::RandRange(0, TempRowNames.Num() - 1);
 
 		FPrisonerInfoRow* MyRow = mLogicDT->FindRow<FPrisonerInfoRow>(TempRowNames[RowRandomChoice], TEXT(""));
 		UEnum* UpperEnum = StaticEnum<EPrisonerUpperStateType>();

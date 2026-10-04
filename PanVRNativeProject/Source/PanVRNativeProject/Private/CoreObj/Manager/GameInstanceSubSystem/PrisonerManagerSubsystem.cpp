@@ -231,22 +231,22 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		TempPrisonerCon->InitializeStatesFromLogicDT();
 
 		// Debug!
-		if (i == 0)
-		{
-			TempPrisonerCon->SetMyLogicDT(DTGroupA);
+		//if (i == 0)
+		//{
+		//	TempPrisonerCon->SetMyLogicDT(DTGroupA);
 
-			TempPrisonerCon->InitializeStatesFromLogicDT();
+		//	TempPrisonerCon->InitializeStatesFromLogicDT();
 
-			//// Interact(3) - DoorPicking(8)
-			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 4);
-			//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 14);
+		//	//// Interact(3) - DoorPicking(8)
+		//	//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 4);
+		//	//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 14);
 
-			uint8 TempBPUpperValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState"));
-			EPrisonerUpperStateType TempCPPUpperValue = EPrisonerUpperStateType::Dangerous;
+		//	uint8 TempBPUpperValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState"));
+		//	EPrisonerUpperStateType TempCPPUpperValue = EPrisonerUpperStateType::Dangerous;
 
-			uint8 TempBPLowerValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState"));
-			EPrisonerLowerStateType TempCPPLowerValue = EPrisonerLowerStateType::Radioactivity;
-		}
+		//	uint8 TempBPLowerValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState"));
+		//	EPrisonerLowerStateType TempCPPLowerValue = EPrisonerLowerStateType::Radioactivity;
+		//}
 		// Debug
 	}
 
@@ -261,14 +261,14 @@ void UPrisonerManagerSubsystem::Create_Paranormal_Phenomenon()
 
 	float TempWeight = (float)(PhenomenonOccurProbability * InGamePrisonerTotalNum);
 	//bool bIsPhenomenonResult = true; // Debug : This Variable that Sets the probability of creating Phenomenon to 100%
-	bool bIsPhenomenonResult = true;//= FMath::FRand() < TempWeight;
+	bool bIsPhenomenonResult = FMath::FRand() < TempWeight;
 
 	if (bIsPhenomenonResult)
 	{
 		// Random Number Create And Choice
-		// RandomChoice = FMath::RandRange(0, InGamePrisonerTotalNum - 1);
+		RandomChoice = FMath::RandRange(0, InGamePrisonerTotalNum - 1);
 
-		RandomChoice = 0; // Debug
+		//RandomChoice = 0; // Debug
 
 		if (PrisonerPossibleNumbers[RandomChoice] != -1)
 		{

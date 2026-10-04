@@ -11,7 +11,7 @@ AAPickle::AAPickle()
 	if (SKM_CucumberBody)
 	{
 		this->SetRootComponent(SKM_CucumberBody);
-		SKM_CucumberBody->SetDefaultAnimatingRigOverride(TSoftObjectPtr<UObject>(FSoftObjectPath(TEXT("/Game/VRContent/Modeling/Cucumber/Cucumber_CtrlRig.Cucumber_CtrlRig"))));
+		//SKM_CucumberBody->SetDefaultAnimatingRigOverride(TSoftObjectPtr<UObject>(FSoftObjectPath(TEXT("/Game/VRContent/Modeling/Cucumber/Cucumber_CtrlRig.Cucumber_CtrlRig"))));
 		SKM_CucumberBody->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		SKM_CucumberBody->SetSimulatePhysics(true);
 	}

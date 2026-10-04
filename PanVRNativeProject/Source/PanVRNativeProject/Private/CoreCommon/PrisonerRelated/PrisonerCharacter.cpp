@@ -127,18 +127,19 @@ void APrisonerCharacter::HandlePlayAPSound(USoundBase* InSound)
 	{
 		if (!PrisonerAudioPlayer->IsPlaying())
 		{
-			UE_LOG(LogTemp, Log, TEXT("%s : %s Sound - Playing!"), *this->GetName(), *InSound->GetName());
+			//UE_LOG(LogTemp, Log, TEXT("%s : %s Sound - Playing!"), *this->GetName(), *InSound->GetName());
+			PrisonerAudioPlayer->Stop();
 			PrisonerAudioPlayer->SetSound(InSound);
 			PrisonerAudioPlayer->Play();
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("Already Playing , Sound Play Noop"));
+			//UE_LOG(LogTemp, Log, TEXT("Already Playing , Sound Play Noop"));
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Sound Play Noop"));
+		//UE_LOG(LogTemp, Log, TEXT("Sound Play Noop"));
 	}
 }
 

@@ -2,6 +2,8 @@
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/TimelineComponent.h"
+#include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
+#include "CoreCommon/PrisonerRelated/PrisonerController.h"
 
 AAGlove::AAGlove()
 {
@@ -44,6 +46,9 @@ AAGlove::AAGlove()
 			TempCollisionComp->SetCapsuleHalfHeight(130.0f);
 
 			TempCollisionComp->SetHiddenInGame(false); // Debug
+
+			TempCollisionComp->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+			TempCollisionComp->SetGenerateOverlapEvents(true);
 
 			GloveCollisions.Add(TempCollisionComp);
 
@@ -155,6 +160,13 @@ void AAGlove::BeginPlay()
 		BackwardFinishedEvent.BindUFunction(this, FName("BackwardMoveTheGloveFinishedEvent"));
 		BackwardMoveTheGloveTimeline->AddInterpFloat(MoveTheGloveFloatCurve, BackwardProgressFunc);
 		BackwardMoveTheGloveTimeline->SetTimelineFinishedFunc(BackwardFinishedEvent);
+	}
+
+	for (UCapsuleComponent* Capsule : GloveCollisions)
+	{
+		if (!Capsule) continue;
+		Capsule->OnComponentBeginOverlap.RemoveDynamic(this, &AAGlove::OnGloveOverlapBegin);
+		Capsule->OnComponentBeginOverlap.AddDynamic(this, &AAGlove::OnGloveOverlapBegin);
 	}
 
 	/* // Glove Related StaticMeshComponent Arrays And CapsuleComponent Arrays Check Debug Logic
@@ -291,6 +303,31 @@ void AAGlove::HandleGloveReceiveByEB(FName InTag, int32 InFloor)
 void AAGlove::HandleGloveReceiveByJail()
 {
 	MoveTheGloveForward();
+}
+
+void AAGlove::OnGloveOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherComp->ComponentHasTag(FName(TEXT("PrisonerCharacter"))))
+	{
+		UE_LOG(LogTemp, Log, TEXT("Run State Prisoner Overlap Glove!"));
+		APrisonerCharacter* OverlapPrisonerCha = Cast<APrisonerCharacter>(OtherActor);
+		checkf(OverlapPrisonerCha, TEXT("In Jail, Overlap Prisoner Not Valid!"));
+		APrisonerController* OverlapPrisonerCon = Cast<APrisonerController>(OverlapPrisonerCha->GetController());
+		checkf(OverlapPrisonerCon, TEXT("In Jail, Overlap Prisoner Controller Not Valid"));
+
+		if (OverlapPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState")) == 2 && OverlapPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState")) == 4)
+		{
+			TArray<uint8> GivenUpperStates = { 1 };
+			TArray<uint8> GivenLowerStates = { 1 };
+
+			//OverlapPrisonerCha->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			OverlapPrisonerCon->State_based_ExecutionTasks_GiventoSomeone(GivenUpperStates, GivenLowerStates);
+
+			//CLSubdueHatch->SetGenerateOverlapEvents(false);
+			//CLSubdueHatch->OnComponentBeginOverlap.RemoveDynamic(this, &AJailBuilding::OverlapHatchBoxBegin);
+
+		}
+	}
 }
 
 // Forward Move Call Function In Use Timeline PlayFromStart

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIALOGUE RUNTIME MONITOR — 대사 재생시간 계산기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg-deep:#0a0c12;
+    --bg-panel:#11141d;
+    --bg-panel-2:#161a26;
+    --line-blue:#4d7ad9;
+    --line-blue-dim:#2c3a5c;
+    --text-dim:#7a819c;
+    --text-bright:#e3e7f5;
+    --amber:#e0a542;
+    --rec-red:#e2544f;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-deep);color:var(--text-bright);
+    font-family:var(--mono);}
+  body{
+    min-height:100vh;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px),
+      radial-gradient(ellipse at 50% -10%, rgba(77,122,217,0.10), transparent 60%);
+    padding: 28px 20px 60px;
+  }
+  .wrap{ max-width: 1180px; margin: 0 auto; }
+
+  /* ── Header / monitor bezel ───────────────────────── */
+  .bezel{
+    border:1px solid var(--line-blue-dim);
+    border-radius:6px;
+    background: linear-gradient(180deg, var(--bg-panel), var(--bg-deep));
+    box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 20px 60px -20px rgba(0,0,0,.7);
+    overflow:hidden;
+  }
+  .headbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px;
+    border-bottom:1px solid var(--line-blue-dim);
+    background: linear-gradient(180deg, rgba(77,122,217,.07), transparent);
+  }
+  .headbar .id{
+    font-size:11px; letter-spacing:.14em; color:var(--text-dim);
+  }
+  .headbar h1{
+    margin:2px 0 0; font-size:16px; letter-spacing:.05em; font-weight:600;
+    color:var(--text-bright);
+  }
+  .headbar h1 small{ display:block; font-weight:400; font-size:11px; color:var(--text-dim); margin-top:3px; letter-spacing:.08em;}
+  .rec{
+    display:flex; align-items:center; gap:8px;
+    font-size:11px; letter-spacing:.12em; color:var(--text-dim);
+  }
+  .rec .dot{
+    width:8px; height:8px; border-radius:50%; background:var(--rec-red);
+    box-shadow:0 0 8px 1px var(--rec-red);
+    animation: blink 1.6s infinite;
+  }
+  @keyframes blink{ 0%,55%{opacity:1;} 56%,100%{opacity:.15;} }
+  .grandtotal{
+    font-size:20px; color:var(--text-bright); font-variant-numeric: tabular-nums;
+    letter-spacing:.03em;
+  }
+  .grandtotal .lbl{ font-size:10px; color:var(--text-dim); letter-spacing:.12em; display:block; margin-bottom:2px;}
+
+  /* ── Control strip ─────────────────────────────────── */
+  .controls{
+    display:flex; flex-wrap:wrap; gap:10px 22px; align-items:center;
+    padding:14px 20px; border-bottom:1px solid var(--line-blue-dim);
+    background: rgba(255,255,255,0.012);
+  }
+  .modebtns{ display:flex; gap:8px; }
+  .modebtn{
+    font-family:var(--mono); font-size:12px; letter-spacing:.05em;
+    color:var(--text-dim); background:var(--bg-panel-2);
+    border:1px solid var(--line-blue-dim); border-radius:4px;
+    padding:8px 14px; cursor:pointer; transition:.15s;
+  }
+  .modebtn:hover{ color:var(--text-bright); border-color:var(--line-blue); }
+  .modebtn.active{
+    color:#dce6ff; background: rgba(77,122,217,.16); border-color:var(--line-blue);
+    box-shadow: inset 0 0 0 1px rgba(77,122,217,.25);
+  }
+  .setting{ display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--text-dim); }
+  .setting input[type=number]{
+    width:70px; background:var(--bg-deep); border:1px solid var(--line-blue-dim);
+    color:var(--text-bright); font-family:var(--mono); font-size:12px;
+    border-radius:3px; padding:5px 7px;
+  }
+  .setting input[type=checkbox]{ accent-color: var(--line-blue); }
+  .setting label{ cursor:pointer; user-select:none; }
+
+  /* ── Body panels ───────────────────────────────────── */
+  .body-panel{ padding:20px; }
+  .hint{
+    font-size:11.5px; color:var(--text-dim); line-height:1.6; margin-bottom:16px;
+    border-left:2px solid var(--line-blue-dim); padding-left:10px;
+  }
+  .hint b{ color:var(--text-bright); font-weight:600; }
+
+  /* file drop */
+  .dropzone{
+    border:1px dashed var(--line-blue-dim); border-radius:6px;
+    padding:34px 20px; text-align:center; color:var(--text-dim);
+    font-size:12.5px; cursor:pointer; transition:.15s; background:rgba(255,255,255,.012);
+  }
+  .dropzone:hover, .dropzone.drag{ border-color:var(--line-blue); color:var(--text-bright); background:rgba(77,122,217,.06); }
+  .dropzone input{ display:none; }
+  .dropzone .big{ font-size:13px; color:var(--text-bright); margin-bottom:4px; letter-spacing:.03em;}
+  .filename{ margin-top:10px; font-size:11.5px; color:var(--amber); }
+
+  textarea#manualInput{
+    width:100%; min-height:220px; resize:vertical;
+    background:var(--bg-deep); border:1px solid var(--line-blue-dim); border-radius:5px;
+    color:var(--text-bright); font-family:var(--mono); font-size:13px; line-height:1.7;
+    padding:12px 14px;
+  }
+  textarea#manualInput:focus{ outline:none; border-color:var(--line-blue); }
+
+  /* sheet tabs */
+  .sheettabs{ display:flex; flex-wrap:wrap; gap:6px; margin:20px 0 12px; }
+  .sheettab{
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.04em;
+    padding:6px 12px; border-radius:3px; cursor:pointer;
+    color:var(--text-dim); background:var(--bg-panel-2); border:1px solid var(--line-blue-dim);
+  }
+  .sheettab.active{ color:#dce6ff; border-color:var(--line-blue); background:rgba(77,122,217,.14); }
+  .sheettab .t{ color:inherit; opacity:.7; font-size:10px; margin-left:6px;}
+
+  table.linetable{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  table.linetable th{
+    text-align:left; font-weight:600; font-size:10.5px; letter-spacing:.08em;
+    color:var(--text-dim); border-bottom:1px solid var(--line-blue-dim);
+    padding:8px 10px; position:sticky; top:0; background:var(--bg-panel);
+  }
+  table.linetable td{
+    padding:8px 10px; border-bottom:1px solid rgba(77,122,217,.08);
+    vertical-align:top; color:var(--text-bright);
+  }
+  table.linetable tr:hover td{ background:rgba(77,122,217,.045); }
+  .num{ color:var(--text-dim); font-variant-numeric: tabular-nums; width:38px; }
+  .chars{ text-align:right; width:60px; font-variant-numeric: tabular-nums; color:var(--text-dim); }
+  .time{ text-align:right; width:110px; font-variant-numeric: tabular-nums; }
+  .fallback-tag{ color:var(--amber); font-size:10px; margin-left:6px; }
+  .rowtext{ line-height:1.5; }
+
+  .tablewrap{ max-height:480px; overflow:auto; border:1px solid var(--line-blue-dim); border-radius:5px; }
+
+  .sheettotal{
+    display:flex; justify-content:flex-end; gap:10px; align-items:baseline;
+    padding:12px 4px 4px; font-size:13px; color:var(--text-bright);
+  }
+  .sheettotal .lbl{ font-size:10.5px; letter-spacing:.1em; color:var(--text-dim); }
+  .sheettotal .val{ font-variant-numeric: tabular-nums; font-size:16px; }
+
+  .grandbar{
+    margin-top:22px; padding:16px 20px; border-radius:6px;
+    background: linear-gradient(180deg, rgba(77,122,217,.10), rgba(77,122,217,.02));
+    border:1px solid var(--line-blue);
+    display:flex; flex-wrap:wrap; gap:20px 34px; align-items:center; justify-content:space-between;
+  }
+  .grandbar .breakdown{ display:flex; flex-wrap:wrap; gap:16px; font-size:11.5px; color:var(--text-dim); }
+  .grandbar .breakdown span b{ color:var(--text-bright); font-weight:600; }
+  .grandbar .total{ text-align:right; }
+  .grandbar .total .lbl{ font-size:10.5px; letter-spacing:.12em; color:var(--text-dim); }
+  .grandbar .total .val{ font-size:26px; color:#dce6ff; font-variant-numeric: tabular-nums; }
+
+  .empty{ color:var(--text-dim); font-size:12.5px; padding:30px 0; text-align:center; }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-track{ background:var(--bg-deep); }
+  ::-webkit-scrollbar-thumb{ background:var(--line-blue-dim); border-radius:5px; }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--line-blue); }
+
+  @media (max-width:640px){
+    .headbar{ flex-direction:column; align-items:flex-start; gap:10px; }
+    .grandtotal{ align-self:flex-end; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bezel">
+    <div class="headbar">
+      <div>
+        <div class="id">DLG-RUNTIME · MONITOR I-07</div>
+        <h1>대사 재생시간 계산기
+          <small>줄 단위 재생시간 · 시트/전체 합산 — 판옵티콘 VR 다이얼로그 툴</small>
+        </h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:22px;">
+        <div class="rec"><span class="dot"></span>LIVE CALC</div>
+        <div class="grandtotal">
+          <span class="lbl">TOTAL RUNTIME</span>
+          <span id="headerTotal">0:00.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="modebtns">
+        <button class="modebtn active" id="btnModeExcel" onclick="setMode('excel')">📁 엑셀 불러오기</button>
+        <button class="modebtn" id="btnModeManual" onclick="setMode('manual')">✎ 직접 입력</button>
+      </div>
+      <div class="setting">
+        <label for="defaultRate">기본 글자당 재생시간(초)</label>
+        <input type="number" id="defaultRate" value="0.07" step="0.01" min="0.01" onchange="recalcAll()">
+      </div>
+      <div class="setting">
+        <input type="checkbox" id="excludeParens" checked onchange="recalcAll()">
+        <label for="excludeParens">괄호( ) 안 지문 제외</label>
+      </div>
+    </div>
+
+    <div class="body-panel">
+
+      <!-- ══ EXCEL MODE ══ -->
+      <div id="panelExcel">
+        <div class="hint">
+          <b>text_kr</b> · <b>text_time</b> 열이 있는 시트를 자동으로 인식합니다. 방금 만든 <b>PVR_DialogueData.xlsx</b> 형식(id/num/text_en/text_kr/sound/text_time/note)을 그대로 불러올 수 있습니다.
+          해당 줄에 text_time 값이 비어 있으면 위의 기본 글자당 재생시간을 사용합니다.
+        </div>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          <div class="big">엑셀 파일을 끌어놓거나 클릭해서 선택하세요</div>
+          <div>.xlsx / .xls — 여러 시트 모두 자동 계산</div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls">
+          <div class="filename" id="filenameLabel"></div>
+        </div>
+        <div id="excelResults"></div>
+      </div>
+
+      <!-- ══ MANUAL MODE ══ -->
+      <div id="panelManual" style="display:none;">
+        <div class="hint">
+          한 줄에 대사 하나씩 입력하세요. 빈 줄은 무시됩니다. 모든 줄에 위의 기본 글자당 재생시간이 동일하게 적용됩니다.
+        </div>
+        <textarea id="manualInput" placeholder="으..잠깐 잠들었었나봐&#10;빈둥거릴 시간이 있다면 근무지침서를 숙지하도록 하세요&#10;저희 시설은 보육원이 아닙니다.">잭: 빈둥거릴 시간이 있다면 근무지침서를 숙지하도록 하세요
+에녹: 잔소리는..
+잭: 뭐라고요?</textarea>
+        <div id="manualResults"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let mode = 'excel';
+let excelSheets = []; // [{name, rows:[{num,text,time,fallback}], total}]
+let manualLines = []; // [{text,time,fallback}]
+
+function setMode(m){
+  mode = m;
+  document.getElementById('btnModeExcel').classList.toggle('active', m==='excel');
+  document.getElementById('btnModeManual').classList.toggle('active', m==='manual');
+  document.getElementById('panelExcel').style.display = m==='excel' ? '' : 'none';
+  document.getElementById('panelManual').style.display = m==='manual' ? '' : 'none';
+  updateHeaderTotal();
+}
+
+function fmtTime(sec){
+  const m = Math.floor(sec/60);
+  const s = sec - m*60;
+  return m + ':' + s.toFixed(2).padStart(5,'0');
+}
+
+function countChars(text, excludeParens){
+  let t = String(text || '');
+  if (excludeParens) t = t.replace(/\([^)]*\)/g, '').replace(/[()]/g,'');
+  t = t.replace(/[\s\u3000]/g, ''); // remove all whitespace incl. full-width space
+  return t.length;
+}
+
+function lineTime(text, perCharTime, excludeParens){
+  return countChars(text, excludeParens) * perCharTime;
+}
+
+/* ── Excel handling ───────────────────────────────── */
+const fileInput = document.getElementById('fileInput');
+const dropzone = document.getElementById('dropzone');
+
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+let lastWorkbookData = null;
+
+function handleFile(file){
+  document.getElementById('filenameLabel').textContent = '불러온 파일: ' + file.name;
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      lastWorkbookData = wb;
+      parseWorkbook(wb);
+    }catch(err){
+      document.getElementById('excelResults').innerHTML =
+        '<div class="empty">파일을 읽는 중 오류가 발생했습니다: ' + err.message + '</div>';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function normHeader(h){ return String(h||'').trim().toLowerCase(); }
+
+function parseWorkbook(wb){
+  const defaultRate = parseFloat(document.getElementById('defaultRate').value) || 0.07;
+  const excludeParens = document.getElementById('excludeParens').checked;
+  excelSheets = [];
+
+  wb.SheetNames.forEach(sheetName => {
+    const ws = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+    if (!rows.length) return;
+
+    const headerRow = rows[0].map(normHeader);
+    const idxKr = headerRow.findIndex(h => h === 'text_kr' || h.includes('text_kr'));
+    const idxTime = headerRow.findIndex(h => h === 'text_time' || h.includes('text_time'));
+    const idxNum = headerRow.findIndex(h => h === 'num');
+    const idxSound = headerRow.findIndex(h => h === 'sound');
+
+    if (idxKr === -1) return; // sheet doesn't match expected format, skip
+
+    const lineRows = [];
+    for (let r = 1; r < rows.length; r++){
+      const row = rows[r];
+      const text = row[idxKr];
+      if (text === null || text === undefined || String(text).trim() === '') continue;
+      let t = idxTime !== -1 ? row[idxTime] : null;
+      let fallback = false;
+      let rate = defaultRate;
+      if (t !== null && t !== undefined && String(t).trim() !== '' && !isNaN(parseFloat(t))){
+        rate = parseFloat(t);
+      } else {
+        fallback = true;
+      }
+      const chars = countChars(text, excludeParens);
+      const time = chars * rate;
+      lineRows.push({
+        num: idxNum !== -1 && row[idxNum] !== null ? row[idxNum] : (lineRows.length+1),
+        text: String(text),
+        sound: idxSound !== -1 ? row[idxSound] : null,
+        rate, chars, time, fallback
+      });
+    }
+    if (lineRows.length){
+      const total = lineRows.reduce((a,b)=>a+b.time,0);
+      excelSheets.push({name: sheetName, rows: lineRows, total});
+    }
+  });
+
+  renderExcel();
+  updateHeaderTotal();
+}
+
+let activeSheetIdx = 0;
+
+function renderExcel(){
+  const container = document.getElementById('excelResults');
+  if (!excelSheets.length){
+    container.innerHTML = '<div class="empty">text_kr / text_time 열을 가진 시트를 찾지 못했습니다. PVR_DialogueData.xlsx 형식의 파일을 사용해주세요.</div>';
+    return;
+  }
+  if (activeSheetIdx >= excelSheets.length) activeSheetIdx = 0;
+
+  let tabsHtml = '<div class="sheettabs">';
+  excelSheets.forEach((s, i) => {
+    tabsHtml += `<div class="sheettab ${i===activeSheetIdx?'active':''}" onclick="selectSheet(${i})">${s.name}<span class="t">${s.rows.length}줄 · ${fmtTime(s.total)}</span></div>`;
+  });
+  tabsHtml += '</div>';
+
+  const sheet = excelSheets[activeSheetIdx];
+  let rowsHtml = sheet.rows.map((r,i) => `
+    <tr>
+      <td class="num">${r.num ?? (i+1)}</td>
+      <td class="rowtext">${escapeHtml(r.text)}</td>
+      <td class="chars">${r.chars}</td>
+      <td class="time">${r.time.toFixed(2)}s${r.fallback ? '<span class="fallback-tag">기본값</span>' : ''}</td>
+    </tr>`).join('');
+
+  const grandTotal = excelSheets.reduce((a,s)=>a+s.total,0);
+  const breakdown = excelSheets.map(s => `<span>${s.name}: <b>${fmtTime(s.total)}</b></span>`).join('');
+
+  container.innerHTML = tabsHtml + `
+    <div class="tablewrap">
+      <table class="linetable">
+        <thead><tr><th>NUM</th><th>TEXT_KR</th><th style="text-align:right">글자수</th><th style="text-align:right">재생시간</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+    <div class="sheettotal">
+      <span class="lbl">${sheet.name} SHEET TOTAL</span>
+      <span class="val">${fmtTime(sheet.total)}</span>
+    </div>
+    <div class="grandbar">
+      <div class="breakdown">${breakdown}</div>
+      <div class="total">
+        <div class="lbl">전체 시트 합산</div>
+        <div class="val">${fmtTime(grandTotal)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function selectSheet(i){ activeSheetIdx = i; renderExcel(); }
+
+/* ── Manual handling ──────────────────────────────── */
+const manualInput = document.getElementById('manualInput');
+manualInput.addEventListener('input', recalcManual);
+
+function recalcManual(){
+  const defaultRate = parseFloat(document.getElementById('defaultRate').value) || 0.07;
+  const excludeParens = document.getElementById('excludeParens').checked;
+  const rawLines = manualInput.value.split('\n').map(l => l.trim()).filter(l => l.length);
+
+  manualLines = rawLines.map(text => {
+    const chars = countChars(text, excludeParens);
+    const time = chars * defaultRate;
+    return {text, chars, time};
+  });
+
+  const container = document.getElementById('manualResults');
+  if (!manualLines.length){
+    container.innerHTML = '<div class="empty">대사를 입력하면 줄 단위 재생시간이 계산됩니다.</div>';
+    updateHeaderTotal();
+    return;
+  }
+
+  let rowsHtml = manualLines.map((r,i) => `
+    <tr>
+      <td class="num">${String(i+1).padStart(3,'0')}</td>
+      <td class="rowtext">${escapeHtml(r.text)}</td>
+      <td class="chars">${r.chars}</td>
+      <td class="time">${r.time.toFixed(2)}s</td>
+    </tr>`).join('');
+
+  const total = manualLines.reduce((a,b)=>a+b.time,0);
+
+  container.innerHTML = `
+    <div class="tablewrap" style="margin-top:16px;">
+      <table class="linetable">
+        <thead><tr><th>NUM</th><th>TEXT</th><th style="text-align:right">글자수</th><th style="text-align:right">재생시간</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+    <div class="sheettotal">
+      <span class="lbl">TOTAL</span>
+      <span class="val">${fmtTime(total)}</span>
+    </div>
+  `;
+  updateHeaderTotal();
+}
+
+function updateHeaderTotal(){
+  let total = 0;
+  if (mode === 'excel'){
+    total = excelSheets.reduce((a,s)=>a+s.total,0);
+  } else {
+    total = manualLines.reduce((a,b)=>a+b.time,0);
+  }
+  document.getElementById('headerTotal').textContent = fmtTime(total);
+}
+
+function recalcAll(){
+  if (lastWorkbookData) parseWorkbook(lastWorkbookData);
+  recalcManual();
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// initial render
+recalcManual();
+</script>
+</body>
+</html>

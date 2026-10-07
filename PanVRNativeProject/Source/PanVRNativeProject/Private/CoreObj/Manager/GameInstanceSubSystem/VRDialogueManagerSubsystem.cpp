@@ -16,6 +16,21 @@ void UVRDialogueManagerSubsystem::StartDialogue()
 	PlayDialogue(DTDialogueTuto1);
 }
 
+void UVRDialogueManagerSubsystem::StartTuto01Dialogue()
+{
+	PlayDialogue(DTDialogueTuto1);
+}
+
+void UVRDialogueManagerSubsystem::StartTuto02Dialogue()
+{
+	PlayDialogue(DTDialogueTuto2);
+}
+
+void UVRDialogueManagerSubsystem::StartTuto03Dialogue()
+{
+	PlayDialogue(DTDialogueTuto3);
+}
+
 void UVRDialogueManagerSubsystem::PlayDialogue(UDataTable* InDT)
 {
 	if (!InDT) return;
@@ -38,15 +53,21 @@ void UVRDialogueManagerSubsystem::PlayCurrentLine()
 	FDialogueInfoRow* Row = CurrentDT->FindRow<FDialogueInfoRow>(RowNames[CurrentIndex], TEXT(""));
 	if (Row)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Num : %d | text_en : %s | Sound : %d | text_time : %f | text_total_en : %f"), Row->num, *Row->text_en.ToString(), (Row->sound-1), Row->text_time, Row->text_total_en);
+		UE_LOG(LogTemp, Warning, TEXT("Num : %d | text_en : %s | Sound : %d | text_time : %f | text_total_en : %f"), Row->num, *Row->text_en.ToString(), (Row->sound - 1), Row->text_time, Row->text_total_en);
 		FDialogueChanged.Broadcast(Row->text_en, Row->text_time, Row->text_total_en, Row->sound - 1);
 	}
 }
 
-
 void UVRDialogueManagerSubsystem::NotifyLineFinished()
 {
+	const int32 TempFinishedIndex = CurrentIndex;
 	CurrentIndex++;
+
+	if (TryTriggerTutorialEvent(TempFinishedIndex))
+	{
+		return;
+	}
+
 	if (bIsPaused)
 	{
 		bPendingNextLine = true;
@@ -71,6 +92,49 @@ void UVRDialogueManagerSubsystem::ResumeDialogue()
 	if (bPendingNextLine)
 	{
 		bPendingNextLine = false;
+		PlayCurrentLine();
+	}
+}
+
+bool UVRDialogueManagerSubsystem::TryTriggerTutorialEvent(int32 FinishedIndex)
+{
+	bWaitingForEvent = true;
+	switch (FinishedIndex)
+	{
+	case 0:
+		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 1 - Dialogue Print End!"));
+		OnTutorialEvent.Broadcast(5); // Game Start Lever Disabled!
+		OnTutorialEvent.Broadcast(1); // Change Screen Jack Mode
+		return true;
+	case 2:
+		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 3 - Dialogue Print End!"));
+		OnTutorialEvent.Broadcast(3); // Tape Injection Sequence Play And Change Screen Default Mode
+		return true;
+	case 3:
+		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 4 - Dialogue Print End!"));
+		OnTutorialEvent.Broadcast(1); // Change Screen Jack Mode
+		return true;
+	case 6:
+		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 7 - Dialogue Print End!"));
+		OnTutorialEvent.Broadcast(2); // Change Screen Default Mode
+		return true;
+	case 7:
+		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 8 - Dialogue Print End!"));
+		OnTutorialEvent.Broadcast(4); // Arrow Indicating the Tape Self
+		return true;
+	case 8:
+		OnTutorialEvent.Broadcast(6); // Game Start Lever Enabled!
+		return true;
+	default:
+		return false;
+	}
+}
+
+void UVRDialogueManagerSubsystem::NotifyTutorialEventFinished()
+{
+	if (bWaitingForEvent)
+	{
+		bWaitingForEvent = false;
 		PlayCurrentLine();
 	}
 }

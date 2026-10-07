@@ -243,11 +243,11 @@ void ACVRPawn::BeginPlay()
 			MaskMID_1Index->SetScalarParameterValue(FName("MaskOpacity"), 0.0f);
 		}
 		SM_MaskPlane->SetVisibility(false);
-		UE_LOG(LogTemp, Warning, TEXT("Mask Related Setting Success!!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Mask Related Setting Success!!"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Mask Related Setting Already!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Mask Related Setting Already!"));
 	}
 
 	this->SpawnHands();
@@ -342,22 +342,7 @@ void ACVRPawn::BeginPlay()
 		TempEquipmentWorldSubSytem->FGameStartSignature.AddDynamic(this, &ACVRPawn::HandleVRPawnReceivceByGTW);
 	}
 
-	/*GetWorld()->GetTimerManager().SetTimer(
-		DebuggingTimer,
-		this,
-		&ACVRPawn::Debuggigng,
-		3.0f,
-		false
-	);*/
-}
-
-void ACVRPawn::Debuggigng()
-{
-	UVRDialogueManagerSubsystem* TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
-
-	FText TempText = FText::FromString(TEXT("Ugh... I must have dozed off for a moment."));
-
-	TempDialogueMgr->StartDialogue();
+	TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
 }
 
 void ACVRPawn::InitFloorData()
@@ -485,6 +470,14 @@ void ACVRPawn::VRPawnDownMoveInLobbyTLFunc(float Value)
 void ACVRPawn::VRPawnDownMoveInLobbyTLEndFunc()
 {
 	UE_LOG(LogTemp, Log, TEXT("LobbyMap Arrived!"));
+
+	UVRGameInstance* TempVRGameInstanceRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
+	if (!TempVRGameInstanceRef->GetIsFirstLobbyEntryFlag())
+	{
+		TempDialogueMgr->StartTuto01Dialogue();
+	}
+	TempVRGameInstanceRef->SetIsFirstLobbyEntryFlag(true);
+	// Executes only When First Enter the LobbyMap
 
 	mVRLobbyGMRef->CheckGameResult();
 }

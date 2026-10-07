@@ -14,15 +14,11 @@ AATape::AATape()
 		ActorBaseMesh->SetCollisionProfileName(FName("PhysicsActor"));
 	}
 
-	//CL_TapeBody = CreateDefaultSubobject<UBoxComponent>("TapeColComp");
-	//if (CL_TapeBody)
-	//{
-	//	CL_TapeBody->SetupAttachment(ActorBaseMesh);
-	//	CL_TapeBody->SetBoxExtent(FVector(20.2f, 10.0f, 3.1f));
-	//	CL_TapeBody->SetHiddenInGame(false); // Debug
-	//	CL_TapeBody->SetCollisionProfileName(FName("OverlapAll"));
-	//	CL_TapeBody->ComponentTags.Add(FName("Tape"));
-	//}
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_TapeTutorial(TEXT("/Game/VRContent/Material/SRS_Lobby_Tape_Tutorial01.SRS_Lobby_Tape_Tutorial01"));
+	if (MatFinder_TapeTutorial.Succeeded())
+	{
+		ActorBaseMesh->SetMaterial(0, MatFinder_TapeTutorial.Object);
+	}
 }
 
 void AATape::BeginPlay()

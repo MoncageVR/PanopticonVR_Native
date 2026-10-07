@@ -4,6 +4,8 @@
 #include "CoreCommon/VRPawn/VRCharacterBase.h"
 #include "CVRPawn.generated.h"
 
+class UVRDialogueManagerSubsystem;
+
 /**
  * 
  */
@@ -144,6 +146,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<class AVRLobbyGameMode> mVRLobbyGMRef;
 
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgr;
+
 	int32 CurrFloorNum;
 	int32 PressedFloorNum;
 	TArray<float> TargetPlayerHeights;
@@ -160,9 +165,6 @@ private:
 	void SpawnHands();
 
 private:
-	FTimerHandle DebuggingTimer;
-
-	void Debuggigng();
 
 
 };

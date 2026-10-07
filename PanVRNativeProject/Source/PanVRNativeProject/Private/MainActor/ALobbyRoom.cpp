@@ -6,6 +6,7 @@
 #include "Components/TimelineComponent.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/LevelSequenceManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "LevelSequence.h"
@@ -94,11 +95,9 @@ AALobbyRoom::AALobbyRoom()
 		CL_Handle->SetupAttachment(SM_StartLeverHandle);
 		CL_Handle->SetRelativeLocation(FVector(63.0f, 0.0f, 50.0f));
 		CL_Handle->SetCollisionProfileName(TEXT("OverlapAll"));
-		CL_Handle->SetCapsuleRadius(2.25f, true);
-		CL_Handle->SetCapsuleHalfHeight(5.0f);
+		CL_Handle->SetCapsuleRadius(4.0f, true);
+		CL_Handle->SetCapsuleHalfHeight(10.0f);
 		CL_Handle->SetHiddenInGame(false); // Debug
-		CL_Handle->OnComponentBeginOverlap.AddDynamic(this, &AALobbyRoom::SLHandleOverlapBegin);
-		CL_Handle->OnComponentEndOverlap.AddDynamic(this, &AALobbyRoom::SLHandleFOverlapEnd);
 	}
 
 	if (GC)
@@ -113,8 +112,6 @@ AALobbyRoom::AALobbyRoom()
 		CL_TapeTarget->SetupAttachment(ActorBaseMesh);
 		CL_TapeTarget->SetRelativeLocation(FVector(26.5f, 13.0f, 0.5f));
 		CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
-		CL_TapeTarget->OnComponentBeginOverlap.AddDynamic(this, &AALobbyRoom::TapePathOverlapBegin);
-		CL_TapeTarget->OnComponentEndOverlap.AddDynamic(this, &AALobbyRoom::TapePathOverlapEnd);
 	}
 
 	SM_SL_Roller01 = CreateDefaultSubobject<UStaticMeshComponent>("SM_Roller01_Comp");
@@ -125,15 +122,18 @@ AALobbyRoom::AALobbyRoom()
 		float TempY = 16.2f;
 		float TempZ = 21.8f;
 		SM_SL_Roller01->SetupAttachment(ActorBaseMesh);
-		SM_SL_Roller01->SetRelativeLocation(FVector(8.8f, TempY, TempZ));
+		SM_SL_Roller01->SetRelativeLocation(FVector(44.1f, TempY, TempZ));
+		//SM_SL_Roller01->SetRelativeLocation(FVector(8.8f, TempY, TempZ));
 		SM_SL_Roller01->SetRelativeScale3D(FVector(1.05f));
 
 		SM_SL_Roller02->SetupAttachment(ActorBaseMesh);
-		SM_SL_Roller02->SetRelativeLocation(FVector(26.4f, TempY, TempZ));
+		SM_SL_Roller02->SetRelativeLocation(FVector(8.8f, TempY, TempZ));
+		//SM_SL_Roller02->SetRelativeLocation(FVector(26.4f, TempY, TempZ));
 		SM_SL_Roller02->SetRelativeScale3D(FVector(1.05f));
 
 		SM_SL_Roller03->SetupAttachment(ActorBaseMesh);
-		SM_SL_Roller03->SetRelativeLocation(FVector(44.1f, TempY, TempZ));
+		SM_SL_Roller03->SetRelativeLocation(FVector(26.4f, TempY, TempZ));
+		//SM_SL_Roller03->SetRelativeLocation(FVector(44.1f, TempY, TempZ));
 		SM_SL_Roller03->SetRelativeScale3D(FVector(1.05f));
 	}
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Roller001(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_StartLever_Roller001.SM_StartLever_Roller001"));
@@ -158,7 +158,6 @@ AALobbyRoom::AALobbyRoom()
 	}
 
 	AtFirstHandleRot = FRotator::ZeroRotator;
-	bIsHanding = false;
 
 	TL_TapeMove = CreateDefaultSubobject<UTimelineComponent>("TapeMoveInTLComp");
 	if (TL_TapeMove)
@@ -190,6 +189,8 @@ void AALobbyRoom::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CL_TapeTarget->OnComponentBeginOverlap.AddDynamic(this, &AALobbyRoom::TapePathOverlapBegin);
+	CL_TapeTarget->OnComponentEndOverlap.AddDynamic(this, &AALobbyRoom::TapePathOverlapEnd);
 	AtFirstHandleRot = SM_StartLeverHandle->GetRelativeRotation();
 
 	FOnTimelineFloat TapeMoveProgressFunc;
@@ -200,10 +201,15 @@ void AALobbyRoom::BeginPlay()
 
 	TL_TapeMove->AddInterpFloat(CF_TapeMoveIn, TapeMoveProgressFunc);
 	TL_TapeMove->SetTimelineFinishedFunc(TapeMoveFinishedEvent);
-
-	//ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));// Debug
-	//CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
 	bIsTapeMoveingFlag = 0;
+
+	ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));
+	CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
+
+	if (TempDialogueMgr = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	{
+		TempDialogueMgr->OnTutorialEvent.AddDynamic(this, &AALobbyRoom::HandleTutoEvent);
+	}
 }
 
 void AALobbyRoom::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, AVRHand* InGrabbingHand)
@@ -211,17 +217,15 @@ void AALobbyRoom::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& 
 	//StartLobbyRoomLQ();
 	TempMCRef = &InMCRef;
 	AdjustVecNRot(&InMCRef);
-	if (bIsHanding)
-	{
-		HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
-		GetWorld()->GetTimerManager().SetTimer(
-			StartLeverMoveTimer,
-			this,
-			&AALobbyRoom::UpdateStartLever,
-			0.01f,
-			true
-		);
-	}
+
+	HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
+	GetWorld()->GetTimerManager().SetTimer(
+		StartLeverMoveTimer,
+		this,
+		&AALobbyRoom::UpdateStartLever,
+		0.01f,
+		true
+	);
 }
 
 void AALobbyRoom::OnDropped()
@@ -230,22 +234,6 @@ void AALobbyRoom::OnDropped()
 	GetWorld()->GetTimerManager().ClearTimer(StartLeverMoveTimer);
 	TempMCRef = nullptr;
 	SM_StartLeverHandle->SetRelativeRotation(AtFirstHandleRot);
-}
-
-void AALobbyRoom::SLHandleOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
-	{
-		bIsHanding = true;
-	}
-}
-
-void AALobbyRoom::SLHandleFOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
-	{
-		bIsHanding = false;
-	}
 }
 
 void AALobbyRoom::TapePathOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -322,21 +310,20 @@ void AALobbyRoom::LeverOnGameStartEvent()
 {
 	this->OnDropped();
 	UE_LOG(LogTemp, Warning, TEXT("In Lobby Game Start Logic Call Part!"));
-	
-	//StartLQInLobbyRoom();
-	OnLobbyRoomLQDone();
 
-	/*if (APlayerController* mPC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
+	// Player Lobby Up Move Part
+	if (APlayerController* mPC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		if (ACVRPawn* TempVRPawn = Cast<ACVRPawn>(mPC->GetPawn()))
 		{
 			TempVRPawn->GameStartInLobbyEvent();
 		}
-	}*/
+	}
 }
 
 void AALobbyRoom::StartLQInLobbyRoom()
 {
+	UE_LOG(LogTemp, Error, TEXT("Tape Injection Sequence Play!!"));
 	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
 	if (LQMgr)
 	{
@@ -348,12 +335,66 @@ void AALobbyRoom::StartLQInLobbyRoom()
 
 void AALobbyRoom::OnLobbyRoomLQDone()
 {
-	// Player Lobby Up Move Part
-	if (APlayerController* mPC = Cast<APlayerController>(GetWorld()->GetFirstPlayerController()))
+	UE_LOG(LogTemp, Error, TEXT("Tape Injection Sequence Play End!"));
+	SwitchScreenMode(false);
+}
+
+void AALobbyRoom::HandleTutoEvent(int32 InEventID)
+{
+	switch (InEventID)
 	{
-		if (ACVRPawn* TempVRPawn = Cast<ACVRPawn>(mPC->GetPawn()))
-		{
-			TempVRPawn->GameStartInLobbyEvent();
-		}
+	case 1: // Screen Jack Mode
+		SwitchScreenMode(true);
+		break;
+	case 2: // Screen Default Mode
+		SwitchScreenMode(false);
+		break;
+	case 3: // Lobby Room In Tape Injection Sequence Play
+		StartLQInLobbyRoom(); // Tape Injecting Sequence Play Function
+		break;
+	case 4: // Tape Shelf Arrow Pointing
+		ArrowPointingTotheTapeShelf();
+		break;
+	case 5:
+		SwitchGameStartLeverStatus(false);
+		break;
+	case 6:
+		SwitchGameStartLeverStatus(true);
+		break;
+	default:
+		break;
 	}
+}
+
+// T : Jack Mode , F : Default Mode
+void AALobbyRoom::SwitchScreenMode(bool InScreenMode)
+{
+	if (InScreenMode) // True = Jack Mode
+	{
+		UE_LOG(LogTemp, Log, TEXT("LobbyRoom Screen Jack Mode!"));
+		TempDialogueMgr->NotifyTutorialEventFinished();
+	}
+	else // False = Default Mode
+	{
+		UE_LOG(LogTemp, Log, TEXT("LobbyRoom Screen Default Mode!"));
+		TempDialogueMgr->NotifyTutorialEventFinished();
+	}
+}
+
+void AALobbyRoom::SwitchGameStartLeverStatus(bool InStatusFlag)
+{
+	if (InStatusFlag) // True : Game Start Lever Enabled
+	{
+		UE_LOG(LogTemp, Log, TEXT("GmaeStart Lever Enabled"));
+	}
+	else // False : Game Start Lever Disabled
+	{
+		UE_LOG(LogTemp, Log, TEXT("GmaeStart Lever Disabled"));
+	}
+}
+
+void AALobbyRoom::ArrowPointingTotheTapeShelf()
+{
+	UE_LOG(LogTemp, Log, TEXT("Pointing Arrow To the Tape Shelf"));
+	TempDialogueMgr->NotifyTutorialEventFinished();
 }

@@ -7,8 +7,10 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnDialogueChangeSignature, const FText&, Text, float, PrintTime, float, TotalPrintTime, int32, SoundNum);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDialogueLineFinished);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDialoguePauseSignature, bool, bPause);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTutorialEventSignature, int32, EventID); // Tutorial Event Trigger
 
 class UUserWidget;
+class UVRDialogueManagerSubsystem;
 
 UCLASS()
 class PANVRNATIVEPROJECT_API UVRDialogueManagerSubsystem : public UVRGameInstanceSubsystem
@@ -28,8 +30,23 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDialoguePauseSignature OnDialoguePauseToggle;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnTutorialEventSignature OnTutorialEvent; // Event Biding
+
+	UFUNCTION(BlueprintCallable)
+	void NotifyTutorialEventFinished();
+
 	UFUNCTION()
 	void StartDialogue();
+
+	UFUNCTION()
+	void StartTuto01Dialogue();
+
+	UFUNCTION()
+	void StartTuto02Dialogue();
+
+	UFUNCTION()
+	void StartTuto03Dialogue();
 
 	UFUNCTION(BlueprintCallable)
 	void PlayDialogue(class UDataTable* InDT);
@@ -65,6 +82,10 @@ private:
 	bool bIsPaused = false;
 	bool bPendingNextLine = false;
 
+	bool bWaitingForEvent = false;
+
 private:
 	void PlayCurrentLine();
+	
+	bool TryTriggerTutorialEvent(int32 FinishedIndex);
 };

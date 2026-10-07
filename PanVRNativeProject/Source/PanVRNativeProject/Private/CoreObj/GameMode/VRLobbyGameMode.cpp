@@ -1,6 +1,7 @@
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
 #include "CoreObj/Manager/VRGameInstance.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "CoreCommon/AmbientSound/AAmbientSound.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,9 +22,12 @@ void AVRLobbyGameMode::StartPlay()
 	if (!mVRGameInstanceRef->GetIsFirstLobbyEntryFlag())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Player is Lobby First Entry!"));
+		//UVRDialogueManagerSubsystem* TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
+		//TempDialogueMgr->StartDialogue();
 	}
 	// Debug
-	mVRGameInstanceRef->SetIsFirstLobbyEntryFlag(true);
+
+	
 
 	if (UWorld* MyWorld = GetWorld())
 	{

@@ -54,6 +54,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void NotifyLineFinished();
 
+	void ProceedAfterLine();
+
+
 	UFUNCTION(BlueprintCallable)
 	void PauseDialogue();
 
@@ -83,6 +86,9 @@ private:
 	bool bPendingNextLine = false;
 
 	bool bWaitingForEvent = false;
+
+	FTimerHandle NextLineDelayTimer;
+	float DelayTime = 1.0f;
 
 private:
 	void PlayCurrentLine();

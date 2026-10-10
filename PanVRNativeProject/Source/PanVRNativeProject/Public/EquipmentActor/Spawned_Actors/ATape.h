@@ -23,10 +23,19 @@ public:
 
 	void HandleDontGrabPhysics(uint8 bIsGrabFlag);
 
+#pragma region Getter
+	uint32 const GetTapeNum() { return TapeNum; }
+#pragma endregion
+
+#pragma region Setter
+	void SetTapeNum(uint32 InNum) { TapeNum = InNum; }
+#pragma endregion
+
 protected:
 
 private:
 	/*UPROPERTY()
 	TObjectPtr<class UBoxComponent> CL_TapeBody;*/
 
+	uint32 TapeNum = 1;
 };

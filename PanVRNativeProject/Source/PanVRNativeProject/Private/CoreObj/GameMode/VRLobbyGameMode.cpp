@@ -22,8 +22,6 @@ void AVRLobbyGameMode::StartPlay()
 	if (!mVRGameInstanceRef->GetIsFirstLobbyEntryFlag())
 	{
 		UE_LOG(LogTemp, Error, TEXT("Player is Lobby First Entry!"));
-		//UVRDialogueManagerSubsystem* TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
-		//TempDialogueMgr->StartDialogue();
 	}
 	// Debug
 

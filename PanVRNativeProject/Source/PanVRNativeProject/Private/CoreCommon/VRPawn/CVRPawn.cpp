@@ -17,6 +17,7 @@
 #include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
 #include "CoreObj/GameMode/VRGameMode.h"
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
+#include "CoreObj/GameMode/VRIntroGameMode.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "MainActor/TowerBuilding.h"
 #include "Components/WidgetComponent.h"
@@ -340,6 +341,11 @@ void ACVRPawn::BeginPlay()
 
 		TempEquipmentWorldSubSytem->FEBMoveOrderSignature.AddDynamic(this, &ACVRPawn::HandleMovePlayerToFloor);
 		TempEquipmentWorldSubSytem->FGameStartSignature.AddDynamic(this, &ACVRPawn::HandleVRPawnReceivceByGTW);
+	}
+	else if (Cast<AVRIntroGameMode>(CurrGM))
+	{
+		UE_LOG(LogTemp, Log, TEXT("This Map is Intro Map!"));
+		HideTowerHeadMesh(true);
 	}
 
 	TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();

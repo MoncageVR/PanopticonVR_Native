@@ -18,6 +18,7 @@ void UVRDialogueManagerSubsystem::StartDialogue()
 
 void UVRDialogueManagerSubsystem::StartTuto01Dialogue()
 {
+	OnTutorialEvent.Broadcast(5); // Game Start Lever Disabled!
 	PlayDialogue(DTDialogueTuto1);
 }
 
@@ -44,9 +45,11 @@ void UVRDialogueManagerSubsystem::PlayDialogue(UDataTable* InDT)
 
 void UVRDialogueManagerSubsystem::PlayCurrentLine()
 {
+
 	if (!CurrentDT || !RowNames.IsValidIndex(CurrentIndex))
 	{
 		//UE_LOG(LogTemp, Log, TEXT("[Dialogue] All lines finished."));
+		FDialogueChanged.Broadcast(FText::FromString(TEXT("")), 100.0f, 100.0f, 100); // "Clear Content" Section After Outputting All Lines
 		return;
 	}
 
@@ -54,11 +57,35 @@ void UVRDialogueManagerSubsystem::PlayCurrentLine()
 	if (Row)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Num : %d | text_en : %s | Sound : %d | text_time : %f | text_total_en : %f"), Row->num, *Row->text_en.ToString(), (Row->sound - 1), Row->text_time, Row->text_total_en);
+
+		if (Row->text_total_en / 3.0f <= 1.0f)
+		{
+			DelayTime = 1.0f;
+		}
+		else
+		{
+			DelayTime = Row->text_total_en / 3.0f;
+		}
+
 		FDialogueChanged.Broadcast(Row->text_en, Row->text_time, Row->text_total_en, Row->sound - 1);
 	}
 }
 
 void UVRDialogueManagerSubsystem::NotifyLineFinished()
+{
+	if (UWorld* mWorld = GetWorld())
+	{
+		mWorld->GetTimerManager().SetTimer(
+			NextLineDelayTimer,
+			this,
+			&UVRDialogueManagerSubsystem::ProceedAfterLine,
+			DelayTime,
+			false
+		);
+	}
+}
+
+void UVRDialogueManagerSubsystem::ProceedAfterLine()
 {
 	const int32 TempFinishedIndex = CurrentIndex;
 	CurrentIndex++;
@@ -73,6 +100,7 @@ void UVRDialogueManagerSubsystem::NotifyLineFinished()
 		bPendingNextLine = true;
 		return;
 	}
+
 	PlayCurrentLine();
 }
 
@@ -102,24 +130,23 @@ bool UVRDialogueManagerSubsystem::TryTriggerTutorialEvent(int32 FinishedIndex)
 	switch (FinishedIndex)
 	{
 	case 0:
-		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 1 - Dialogue Print End!"));
-		OnTutorialEvent.Broadcast(5); // Game Start Lever Disabled!
+		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 1 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(1); // Change Screen Jack Mode
 		return true;
 	case 2:
-		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 3 - Dialogue Print End!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 3 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(3); // Tape Injection Sequence Play And Change Screen Default Mode
 		return true;
 	case 3:
-		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 4 - Dialogue Print End!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 4 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(1); // Change Screen Jack Mode
 		return true;
 	case 6:
-		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 7 - Dialogue Print End!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 7 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(2); // Change Screen Default Mode
 		return true;
 	case 7:
-		UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 8 - Dialogue Print End!"));
+		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 8 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(4); // Arrow Indicating the Tape Self
 		return true;
 	case 8:

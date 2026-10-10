@@ -62,6 +62,13 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UTimelineComponent> TL_TapeMove;
 
+	UPROPERTY(VisibleAnywhere)
+	TArray<TObjectPtr<UStaticMeshComponent>> LobbyMonitor_Glasses;
+
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SM_TapeHintArrow;
+
 protected:
 
 	UFUNCTION()
@@ -109,7 +116,16 @@ private:
 	TObjectPtr<class ULevelSequence> LQ_Roller; // LevelSequence Variable To Play
 
 	UPROPERTY()
+	TSoftObjectPtr<class ULevelSequence> LQ_TapeOut;
+
+	UPROPERTY()
 	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgr;
+
+	UPROPERTY()
+	TObjectPtr<UMaterialInstance> MI_BossMonitor;
+
+	UPROPERTY()
+	TObjectPtr<UMaterial> M_Hologram;
 
 private:
 	void AdjustVecNRot(UMotionControllerComponent* InMC);
@@ -119,10 +135,16 @@ private:
 	void LeverOnGameStartEvent();
 
 	UFUNCTION()
-	void StartLQInLobbyRoom(); // Lobby Romm In Level Sequence Start Function
+	void StartTapeOutLQInLobbyRoom(); // Lobby Romm In Level Sequence Start Function
 
 	UFUNCTION()
-	void OnLobbyRoomLQDone(); // LobbyRoom In Level Sequence End After CallBack Receive Function
+	void StartRollerLQLobbyRoom();
+
+	UFUNCTION()
+	void OnLobbyRoomTapeOutLQDone(); // LobbyRoom In Level Sequence End After CallBack Receive Function
+
+	UFUNCTION()
+	void OnLobbyRoomRollerLQDone();
 
 	void SwitchScreenMode(bool InScreenMode); // T : Jack Mode , F : Default Mode
 

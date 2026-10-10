@@ -129,6 +129,8 @@ void AAEmergencyButton::OperateAfterReturn()
 	CLButton->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	bIsHitting = 0;
+
+	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }
 
 void AAEmergencyButton::HandleThisReceiveByKeyPad(bool bIsFlag, uint32 InputIndex)

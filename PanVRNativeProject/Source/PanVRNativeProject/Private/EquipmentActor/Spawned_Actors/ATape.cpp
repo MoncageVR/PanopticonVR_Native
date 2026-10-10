@@ -14,11 +14,13 @@ AATape::AATape()
 		ActorBaseMesh->SetCollisionProfileName(FName("PhysicsActor"));
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_TapeTutorial(TEXT("/Game/VRContent/Material/SRS_Lobby_Tape_Tutorial01.SRS_Lobby_Tape_Tutorial01"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_TapeTutorial(TEXT("/Game/VRContent/Material/SRS_Lobby_Tape_Tutorial_01.SRS_Lobby_Tape_Tutorial_01"));
 	if (MatFinder_TapeTutorial.Succeeded())
 	{
 		ActorBaseMesh->SetMaterial(0, MatFinder_TapeTutorial.Object);
 	}
+
+	TapeNum = 1;
 }
 
 void AATape::BeginPlay()

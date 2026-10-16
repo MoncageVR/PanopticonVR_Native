@@ -233,6 +233,9 @@ void ACVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	VRGmaeInstRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
+	check(VRGmaeInstRef);
+
 	if (!MaskMID_0Index && !MaskMID_1Index)
 	{
 		MaskMID_0Index = SM_MaskPlane->CreateDynamicMaterialInstance(0, MaskMI);
@@ -441,6 +444,13 @@ void ACVRPawn::VRPawnMoveUpTLFunc(float Value)
 void ACVRPawn::VRPawnMoveUpTLEndFunc()
 {
 	//UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End In MainMap"));
+
+	if (VRGmaeInstRef->GetCurrTapeType() == 0 && VRGmaeInstRef->GetCurrTapeNum() == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End And Tutorial Level 2 Play!"));
+		TempDialogueMgr->StartTuto02Dialogue();
+	}
+
 	return;
 }
 // VRPawn Move Down Function In MainMap
@@ -477,12 +487,11 @@ void ACVRPawn::VRPawnDownMoveInLobbyTLEndFunc()
 {
 	UE_LOG(LogTemp, Log, TEXT("LobbyMap Arrived!"));
 
-	UVRGameInstance* TempVRGameInstanceRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
-	if (!TempVRGameInstanceRef->GetIsFirstLobbyEntryFlag())
+	if (!VRGmaeInstRef->GetIsFirstLobbyEntryFlag())
 	{
 		TempDialogueMgr->StartTuto01Dialogue();
 	}
-	TempVRGameInstanceRef->SetIsFirstLobbyEntryFlag(true);
+	VRGmaeInstRef->SetIsFirstLobbyEntryFlag(true);
 	// Executes only When First Enter the LobbyMap
 
 	mVRLobbyGMRef->CheckGameResult();

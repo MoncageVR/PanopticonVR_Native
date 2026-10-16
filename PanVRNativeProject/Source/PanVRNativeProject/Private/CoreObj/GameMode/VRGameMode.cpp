@@ -2,6 +2,7 @@
 #include "CoreObj/Manager/VRGameInstance.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/PrisonerManagerSubsystem.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/MapObjManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
 #include "CoreCommon/PrisonerRelated/PrisonerController.h"
@@ -33,9 +34,11 @@ void AVRGameMode::StartPlay()
 		UPrisonerMgrSubSyPtr = MyVRGameInstance->GetPrisonerManager();
 		UMapObjMgrSubSyPtr = MyVRGameInstance->GetMapObjManager();
 		VREquipWorldSubSyPtr = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
+		VRDialogueSubSyPtr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
 		check(UPrisonerMgrSubSyPtr);
 		check(UMapObjMgrSubSyPtr);
 		check(VREquipWorldSubSyPtr);
+		check(VRDialogueSubSyPtr);
 
 		UPrisonerMgrSubSyPtr->HandleClearVarsForGameStart();
 		UPrisonerMgrSubSyPtr->CreateAllPrisoner();
@@ -55,6 +58,23 @@ void AVRGameMode::StartPlay()
 		if (TempAmbientSoundActor)
 		{
 			TempAmbientSoundActor->SetPlayingSound(0);
+		}
+	}
+
+	if (MyVRGameInstance)
+	{
+		if (MyVRGameInstance->GetCurrTapeType() == 0 && MyVRGameInstance->GetCurrTapeNum() == 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("In MainMap Play Tutorial Level 2 Play!!!!"));
+			//VRDialogueSubSyPtr->StartTuto02Dialogue();
+		}
+		else if (MyVRGameInstance->GetCurrTapeType() == 0 && MyVRGameInstance->GetCurrTapeNum() == 1)
+		{
+			UE_LOG(LogTemp, Error, TEXT("In MainMap Play Tutorial Level 3 Play!!!!"));
+		}
+		else if (MyVRGameInstance->GetCurrTapeType() == 1 && MyVRGameInstance->GetCurrTapeNum() == 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("In MainMap Play, Default Game Play!"));
 		}
 	}
 }

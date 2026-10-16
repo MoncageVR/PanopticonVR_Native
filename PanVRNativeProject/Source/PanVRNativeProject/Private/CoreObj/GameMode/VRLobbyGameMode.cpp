@@ -6,6 +6,7 @@
 #include "CoreCommon/AmbientSound/AAmbientSound.h"
 #include "Kismet/GameplayStatics.h"
 #include "MainActor/AGameResultScreen.h"
+#include "EquipmentActor/Spawned_Actors/ATape.h"
 
 AVRLobbyGameMode::AVRLobbyGameMode()
 {
@@ -25,8 +26,6 @@ void AVRLobbyGameMode::StartPlay()
 	}
 	// Debug
 
-	
-
 	if (UWorld* MyWorld = GetWorld())
 	{
 		FTransform TempSpawnTransform(FTransform::Identity);
@@ -36,6 +35,47 @@ void AVRLobbyGameMode::StartPlay()
 			TempAmbientSoundActor->SetPlayingSound(1);
 		}
 	}
+
+	if (UWorld* mWorld = GetWorld())
+	{
+		TapeArrs.Empty();
+		TArray<AActor*> TempFoundTapes;
+		UGameplayStatics::GetAllActorsOfClass(mWorld, AATape::StaticClass(), TempFoundTapes);
+
+		for (AActor* Actor : TempFoundTapes)
+		{
+			if (AATape* TempCastTape = Cast<AATape>(Actor))
+			{
+				TempCastTape->GetRootComponent()->SetVisibility(false);
+				TempCastTape->GetRootComponent()->SetHiddenInGame(true);
+				TapeArrs.Add(TempCastTape);
+			}
+		}
+
+		if (TapeArrs.Num() == 3)
+		{
+			TapeArrs.Sort([](const AATape& A, const AATape& B)
+				{
+					if (A.GetTapeTypeNum() != B.GetTapeTypeNum())
+						return A.GetTapeTypeNum() < B.GetTapeTypeNum();
+					return A.GetTapeNum() < B.GetTapeNum();
+				});
+		}
+	}
+
+	TArray<bool> TempArrs = mVRGameInstanceRef->GetTapeUnlockFlagArr();
+
+	for (int32 i = 0; i < TempArrs.Num(); i++)
+	{
+		if (TempArrs[i])
+		{
+			TapeArrs[i]->SetTapeGrabOn();
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Tape Unlock Flag Arr[%d] : [%d]"), i, TempArrs[i]);
+	}
+
+	mVRGameInstanceRef->ClearCurrTapeRelatedInfo();
 }
 
 void AVRLobbyGameMode::HandleOpenMainMap()

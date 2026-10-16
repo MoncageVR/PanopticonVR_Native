@@ -149,6 +149,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgr;
 
+	UPROPERTY()
+	TObjectPtr<class UVRGameInstance> VRGmaeInstRef;
+
 	int32 CurrFloorNum;
 	int32 PressedFloorNum;
 	TArray<float> TargetPlayerHeights;

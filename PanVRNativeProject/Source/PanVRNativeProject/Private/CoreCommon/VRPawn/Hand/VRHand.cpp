@@ -93,6 +93,49 @@ void AVRHand::Tick(float DeltaTime)
 
 void AVRHand::GrabObject()
 {
+	TArray<UPrimitiveComponent*> OverlappingComps;
+	CLGrabSphere->GetOverlappingComponents(OverlappingComps);
+
+	const FVector CurrentHandPos = HandMesh->GetComponentLocation(); // Current Hand Mesh Location Variable
+	float NearestRelativeDis = TNumericLimits<float>::Max();
+
+	if (!OverlappingComps.IsEmpty()) // Check OverlappingActors Not Empty
+	{
+		for (UPrimitiveComponent* TempComp : OverlappingComps)
+		{
+			if (!TempComp) continue; // Check TempOverlappingActors Not Empty
+
+			if (TempComp->ComponentHasTag(FName("DoNotGrab"))) continue;
+
+			AActor* OwnerActor = TempComp->GetOwner();
+
+			TArray<UUGrabComp*> TempGCs; // TempOverlappingActors in All GC Array
+			OwnerActor->GetComponents<UUGrabComp>(TempGCs);
+
+			if (TempGCs.Num() == 0) continue; // Check TempGCs Not Empty
+
+			for (UUGrabComp* TempGC : TempGCs)
+			{
+				if (!TempGC) continue; // Check TempGC Not Empty
+
+				const float CalcDistsq = FVector::DistSquared(TempGC->GetComponentLocation(), CurrentHandPos);
+				if (CalcDistsq < NearestRelativeDis)
+				{
+					NearestRelativeDis = CalcDistsq;
+					GrabbleActorGC = TempGC;
+				}
+			}
+		}
+
+		// Finally HandMesh Nearest GC
+		if (GrabbleActorGC)
+		{
+			//UE_LOG(LogTemp, Log, TEXT("First Overlap GC Name : %s"), *GrabbleActorGC->GetName()); // Debug
+			GrabbleActorGC->GCTryGrab(MC, HandMesh, this);
+		}
+	}
+
+	/*
 	TArray<AActor*> OverlappingActors;
 	CLGrabSphere->GetOverlappingActors(OverlappingActors);
 
@@ -104,6 +147,13 @@ void AVRHand::GrabObject()
 		for (AActor* TempOverlpaiingActors : OverlappingActors)
 		{
 			if (!TempOverlpaiingActors) continue; // Check TempOverlappingActors Not Empty
+
+			TArray<UActorComponent*> TempDoNotComps = TempOverlpaiingActors->GetComponentsByTag(UBoxComponent::StaticClass(), FName("DoNotGrab"));
+			if (TempDoNotComps.Num() > 0)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Don't Lever Grab!"));
+				continue;
+			}
 
 			TArray<UUGrabComp*> TempGCs; // TempOverlappingActors in All GC Array
 			TempOverlpaiingActors->GetComponents<UUGrabComp>(TempGCs);
@@ -130,6 +180,7 @@ void AVRHand::GrabObject()
 			GrabbleActorGC->GCTryGrab(MC, HandMesh, this);
 		}
 	}
+	*/
 
 	return;
 }

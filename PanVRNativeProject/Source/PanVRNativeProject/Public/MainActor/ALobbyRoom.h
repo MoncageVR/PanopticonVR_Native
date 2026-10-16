@@ -101,6 +101,8 @@ private:
 private:
 	FRotator AtFirstHandleRot;
 	FTimerHandle StartLeverMoveTimer;
+	FTimerHandle TapeShelfArrowTimer;
+	FTimerHandle TapeDestroyTimer;
 	uint8 bIsTapeMoveingFlag;
 
 	UPROPERTY()
@@ -111,6 +113,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class AATape> NewTape;
+
+	UPROPERTY()
+	TObjectPtr<class AATape> SpawnNewTape;
 
 	UPROPERTY()
 	TObjectPtr<class ULevelSequence> LQ_Roller; // LevelSequence Variable To Play
@@ -127,6 +132,13 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMaterial> M_Hologram;
 
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_LeverFail;
+
+
+	UPROPERTY()
+	TObjectPtr<class UVRGameInstance> VRGameInstPtr;
+
 private:
 	void AdjustVecNRot(UMotionControllerComponent* InMC);
 
@@ -136,6 +148,8 @@ private:
 
 	UFUNCTION()
 	void StartTapeOutLQInLobbyRoom(); // Lobby Romm In Level Sequence Start Function
+	// Lobby Room In Level Sequence After Spawn Tape Destroy Function
+	void DestroySpawnNewTape();
 
 	UFUNCTION()
 	void StartRollerLQLobbyRoom();
@@ -151,4 +165,6 @@ private:
 	void SwitchGameStartLeverStatus(bool InStatusFlag); // T : Enabled , F : Disabled
 
 	void ArrowPointingTotheTapeShelf();
+
+	void PointingAfterArrowHide();
 };

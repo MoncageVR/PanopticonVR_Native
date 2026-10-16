@@ -27,7 +27,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> LogoMID;
 
+	UPROPERTY()
+	TObjectPtr<USoundBase> SFX_LogoPlay;
+
+	FTimerHandle TempSoundTimer;
+
 private:
+	void ActuallyPlayFadeEffect();
+
+	void PlayLogoSound();
+
 	UFUNCTION()
 	void HandleFadeProgress(float Value);
 	

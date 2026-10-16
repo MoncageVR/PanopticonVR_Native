@@ -17,6 +17,15 @@ void UVRGameInstance::Init()
 	P_PrisonerManager = GetSubsystem<UPrisonerManagerSubsystem>();
 	P_MapObjManager = GetSubsystem<UMapObjManagerSubsystem>();
 	P_VREquipmentManager = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();//GetSubsystem<UVREquipmentWorldSubsystem>();
+
+	TapeUnlockArrs.Empty();
+	TapeUnlockArrs.Reserve(3);
+	TapeUnlockArrs.Add(false);
+	TapeUnlockArrs.Add(false);
+	TapeUnlockArrs.Add(false);
+
+	CurrTapeType = 10;
+	CurrTapeNum = 10;
 }
 
 void UVRGameInstance::ClearAllFlag()

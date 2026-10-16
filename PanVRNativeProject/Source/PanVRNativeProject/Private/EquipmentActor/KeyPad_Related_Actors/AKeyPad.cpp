@@ -1,11 +1,14 @@
 #include "EquipmentActor/KeyPad_Related_Actors/AKeyPad.h"
 #include "CoreCommon/VRPawn/AScopeCamera.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/LevelSequenceManagerSubsystem.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Components/BoxComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "Components/TimelineComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "LevelSequence.h"
 
 AAKeyPad::AAKeyPad()
 {
@@ -299,6 +302,40 @@ AAKeyPad::AAKeyPad()
 		KeyPadMove_CurveF = CurveFinder_KeyPadMove.Object;
 	}
 
+	SM_BMBody = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("BossMonitorSMComp")));
+	if (SM_BMBody)
+	{
+		SM_BMBody->SetupAttachment(SM_KeyPad_Bar);
+
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_BMBody(TEXT("/Game/VRContent/Modeling/02_BossMonitor/BossMonitorBody.BossMonitorBody"));
+		if (SMFinder_BMBody.Succeeded())
+			SM_BMBody->SetStaticMesh(SMFinder_BMBody.Object);
+	}
+
+	SM_BMGlass = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("BossMonitorGlassSMComp")));
+	if (SM_BMGlass)
+	{
+		SM_BMGlass->SetupAttachment(SM_BMBody);
+
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_BMGlass(TEXT("/Game/VRContent/Modeling/02_BossMonitor/BossMonitorGlass.BossMonitorGlass"));
+		if (SMFinder_BMGlass.Succeeded())
+			SM_BMGlass->SetStaticMesh(SMFinder_BMGlass.Object);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> MatFinder_Hologram(TEXT("/Game/VRContent/Material/M_Hologram.M_Hologram"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_MonitorBody(TEXT("/Game/VRContent/Material/SRS_STAGE_ABbutton.SRS_STAGE_ABbutton"));
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_JackFace(TEXT("/Game/VRContent/Material/SRS_Stage_BossMonitor.SRS_Stage_BossMonitor"));
+	if (MatFinder_Hologram.Succeeded() && MatFinder_MonitorBody.Succeeded() && MatFinder_JackFace.Succeeded())
+	{
+		SM_BMBody->SetMaterial(0, MatFinder_MonitorBody.Object);
+		SM_BMGlass->SetMaterial(0, MatFinder_Hologram.Object);
+
+		M_Hologram = MatFinder_Hologram.Object;
+		MI_BossFace = MatFinder_JackFace.Object;
+	}
+
+	LQ_BeamProjector = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/VRContent/LevelSequence/LS_Sequence1.LS_Sequence1")));
+
 	// Debug
 	TArray<UBoxComponent*> AllCollisionComps;
 	GetComponents<UBoxComponent>(AllCollisionComps);
@@ -364,6 +401,12 @@ void AAKeyPad::BeginPlay()
 	EnterDist = 2.0f;
 	ExitDist = 8.0f;
 	ReArmDist = 12.0f;
+
+	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[KeyPad] Bind to Subsystem ptr: %p"), TempDialogueMgrRef);
+		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &AAKeyPad::HandleTutoL2Event);
+	}
 }
 
 void AAKeyPad::Tick(float DeltaTimes)
@@ -622,4 +665,57 @@ void AAKeyPad::KeyPadMoveFinishedEvent()
 	{
 		CL_PerisScope->SetGenerateOverlapEvents(true);
 	}
+}
+
+void AAKeyPad::SwitchBossMonitorMode(bool InScreenMode)
+{
+	if (InScreenMode)
+	{
+		SM_BMGlass->SetMaterial(0, MI_BossFace);
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+	}
+	else
+	{
+		SM_BMGlass->SetMaterial(0, M_Hologram);
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+	}
+}
+
+void AAKeyPad::HandleTutoL2Event(int32 InTuto2EventID)
+{
+	UE_LOG(LogTemp, Log, TEXT("Tuto Event Function Call Success!"));
+	switch (InTuto2EventID)
+	{
+	case 7:
+		UE_LOG(LogTemp, Log, TEXT("Keypad Actor Boss Monitor Change Jack Mode"));
+		SwitchBossMonitorMode(true);
+		break;
+	case 8:
+		UE_LOG(LogTemp, Log, TEXT("BeamProjector LevelSequence Play!"));
+		StartBeamProjectorLQInMainMap();
+		break;
+	default:
+		break;
+	}
+}
+
+void AAKeyPad::StartBeamProjectorLQInMainMap()
+{
+	UE_LOG(LogTemp, Error, TEXT("BeamProjector Sequence Play!!"));
+	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
+
+	ULevelSequence* TempLQ = LQ_BeamProjector.LoadSynchronous();
+
+	if (LQMgr)
+	{
+		FOnSequenceFinishedSignature CallBack;
+		CallBack.BindDynamic(this, &AAKeyPad::OnMainMapBeamProjectorLQDone);
+		LQMgr->PlaySequence(TempLQ, CallBack);
+	}
+}
+
+void AAKeyPad::OnMainMapBeamProjectorLQDone()
+{
+	UE_LOG(LogTemp, Error, TEXT("BeamProjector Sequence Play End!!"));
+	TempDialogueMgrRef->NotifyTutorialEventFinished();
 }

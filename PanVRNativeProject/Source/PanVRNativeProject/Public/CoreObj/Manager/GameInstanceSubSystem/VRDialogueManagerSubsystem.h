@@ -93,5 +93,7 @@ private:
 private:
 	void PlayCurrentLine();
 	
-	bool TryTriggerTutorialEvent(int32 FinishedIndex);
+	bool TryTriggerTutorialEvent(int32 FinishedIndex); // For Tutorial Level 1
+
+	bool TryTriggerTutorialLevel2Event(int32 InFinishedIndexNum); // For Tutorial Level 2
 };

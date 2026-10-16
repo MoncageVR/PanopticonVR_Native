@@ -39,16 +39,16 @@ void UVRDialogueManagerSubsystem::PlayDialogue(UDataTable* InDT)
 	CurrentDT = InDT;
 	RowNames = InDT->GetRowNames();
 	CurrentIndex = 0;
+	bWaitingForEvent = false;
 
 	PlayCurrentLine();
 }
 
 void UVRDialogueManagerSubsystem::PlayCurrentLine()
 {
-
 	if (!CurrentDT || !RowNames.IsValidIndex(CurrentIndex))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("[Dialogue] All lines finished."));
+		UE_LOG(LogTemp, Log, TEXT("[Dialogue] All lines finished."));
 		FDialogueChanged.Broadcast(FText::FromString(TEXT("")), 100.0f, 100.0f, 100); // "Clear Content" Section After Outputting All Lines
 		return;
 	}
@@ -90,9 +90,21 @@ void UVRDialogueManagerSubsystem::ProceedAfterLine()
 	const int32 TempFinishedIndex = CurrentIndex;
 	CurrentIndex++;
 
-	if (TryTriggerTutorialEvent(TempFinishedIndex))
+	if (CurrentDT == DTDialogueTuto1)
 	{
-		return;
+		UE_LOG(LogTemp, Log, TEXT("Tuto 1 Event Play!"));
+		if (TryTriggerTutorialEvent(TempFinishedIndex))
+		{
+			return;
+		}
+	}
+	else if (CurrentDT == DTDialogueTuto2)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Tuto 2 Event Play!"));
+		if (TryTriggerTutorialLevel2Event(TempFinishedIndex))
+		{
+			return;
+		}
 	}
 
 	if (bIsPaused)
@@ -133,28 +145,56 @@ bool UVRDialogueManagerSubsystem::TryTriggerTutorialEvent(int32 FinishedIndex)
 		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 1 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(1); // Change Screen Jack Mode
 		return true;
+		break;
 	case 2:
 		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 3 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(3); // Tape Injection Sequence Play And Change Screen Default Mode
 		return true;
+		break;
 	case 3:
 		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 4 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(1); // Change Screen Jack Mode
 		return true;
+		break;
 	case 6:
 		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 7 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(2); // Change Screen Default Mode
 		return true;
+		break;
 	case 7:
 		//UE_LOG(LogTemp, Warning, TEXT("Tuto1 Num : 8 - Dialogue Print End!"));
 		OnTutorialEvent.Broadcast(4); // Arrow Indicating the Tape Self
 		return true;
+		break;
 	case 8:
 		OnTutorialEvent.Broadcast(6); // Game Start Lever Enabled!
 		return true;
+		break;
 	default:
 		return false;
+		break;
 	}
+}
+
+bool UVRDialogueManagerSubsystem::TryTriggerTutorialLevel2Event(int32 InFinishedIndexNum)
+{
+	bWaitingForEvent = true;
+	switch (InFinishedIndexNum)
+	{
+	case 0:
+		OnTutorialEvent.Broadcast(7); // Keypad Actor Boss Monitor Change Jack Mode
+		return true;
+		break;
+	case 7:
+		OnTutorialEvent.Broadcast(8);
+		return true;
+		break;
+	default:
+		return false;
+		break;
+	}
+
+	return false;
 }
 
 void UVRDialogueManagerSubsystem::NotifyTutorialEventFinished()

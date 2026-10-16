@@ -130,7 +130,7 @@ void AAEmergencyButton::OperateAfterReturn()
 
 	bIsHitting = 0;
 
-	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
+	UGameplayStatics::OpenLevel(this, FName("LobbyMap")); // Debug
 }
 
 void AAEmergencyButton::HandleThisReceiveByKeyPad(bool bIsFlag, uint32 InputIndex)

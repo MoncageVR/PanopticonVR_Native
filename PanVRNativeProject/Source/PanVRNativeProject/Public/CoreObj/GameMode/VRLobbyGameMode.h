@@ -31,11 +31,20 @@ public:
 	void NotifyGameResultPrint(bool bIsGameResultFlag);
 #pragma endregion
 
+#pragma region Getter
+	TArray<TObjectPtr<class AATape>> const GetTapeArrs() { return TapeArrs; }
+#pragma endregion
+
+#pragma region Setter
+
+#pragma endregion
+
 protected:
 	UPROPERTY()
 	TObjectPtr<class UVRGameInstance> mVRGameInstanceRef;
 
 
 private:
-	
+	UPROPERTY(VisibleAnywhere)
+	TArray<TObjectPtr<class AATape>> TapeArrs;
 };

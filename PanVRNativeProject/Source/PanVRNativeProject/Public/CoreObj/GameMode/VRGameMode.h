@@ -76,6 +76,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<class UVREquipmentWorldSubsystem> VREquipWorldSubSyPtr;
 
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueManagerSubsystem> VRDialogueSubSyPtr;
+
 private:
 	UFUNCTION()
 	void HandleGMReceiveByGTW(bool bIsGameStartFlag);

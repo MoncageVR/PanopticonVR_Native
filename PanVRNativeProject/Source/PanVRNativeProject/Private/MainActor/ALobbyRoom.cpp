@@ -7,6 +7,7 @@
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/LevelSequenceManagerSubsystem.h"
 #include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
+#include "CoreObj/Manager/VRGameInstance.h"
 #include "CoreObj/GameMode/VRLobbyGameMode.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "LevelSequence.h"
@@ -48,6 +49,7 @@ AALobbyRoom::AALobbyRoom()
 		SM_RoomWall->SetupAttachment(SC_MainRoot);
 		SM_RoomWall->SetRelativeScale3D(FVector(0.8f));
 		SM_RoomWall->SetCollisionProfileName(TEXT("BlockAll"));
+		SM_RoomWall->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Wall(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_RoomWall.SM_RoomWall"));
 		if (SMFinder_Wall.Succeeded())
 			SM_RoomWall->SetStaticMesh(SMFinder_Wall.Object);
@@ -59,6 +61,7 @@ AALobbyRoom::AALobbyRoom()
 		SM_RoomStuff->SetupAttachment(SC_MainRoot);
 		SM_RoomStuff->SetRelativeScale3D(FVector(0.8f));
 		SM_RoomStuff->SetCollisionProfileName(TEXT("BlockAll"));
+		SM_RoomStuff->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Stuff(TEXT("/Game/VRContent/Modeling/14_Lobby/SM_LobbyStuff.SM_LobbyStuff"));
 		if (SMFinder_Stuff.Succeeded())
 			SM_RoomStuff->SetStaticMesh(SMFinder_Stuff.Object);
@@ -112,6 +115,8 @@ AALobbyRoom::AALobbyRoom()
 		CL_TapeTarget->SetupAttachment(ActorBaseMesh);
 		CL_TapeTarget->SetRelativeLocation(FVector(26.5f, 13.0f, 0.5f));
 		CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
+		CL_TapeTarget->ComponentTags.Add(FName("DoNotGrab"));
+		CL_TapeTarget->SetHiddenInGame(false); // Debug
 	}
 
 	SM_SL_Roller01 = CreateDefaultSubobject<UStaticMeshComponent>("SM_Roller01_Comp");
@@ -221,13 +226,15 @@ AALobbyRoom::AALobbyRoom()
 	{
 		SM_TapeHintArrow->SetupAttachment(SC_MainRoot);
 
-		SM_TapeHintArrow->SetRelativeLocation(FVector(-105.0f, 37.5f, 155.0f));
-		SM_TapeHintArrow->SetRelativeRotation(FRotator(0.f, 90.0f, 0.f));
+		SM_TapeHintArrow->SetRelativeLocation(FVector(-105.0f, -20.0f, 123.6f));
+		SM_TapeHintArrow->SetRelativeRotation(FRotator(90.f, 90.0f, 0.f));
 
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Arrow(TEXT("/Game/VRContent/Modeling/Arrow/Tuto_Arrow.Tuto_Arrow"));
 		if (SMFinder_Arrow.Succeeded())
 		{
 			SM_TapeHintArrow->SetStaticMesh(SMFinder_Arrow.Object);
+			SM_TapeHintArrow->SetVisibility(false);
+			SM_TapeHintArrow->SetHiddenInGame(true);
 		}
 
 		static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_HologramGreen(TEXT("/Game/VRContent/Material/MI_Hologram_Green.MI_Hologram_Green"));
@@ -235,6 +242,12 @@ AALobbyRoom::AALobbyRoom()
 		{
 			SM_TapeHintArrow->SetMaterial(0, MatFinder_HologramGreen.Object);
 		}
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_LobbyLeverFail(TEXT("/Game/VRContent/Sound/Wavs/EmergencyButton/sfx_keypad_fail.sfx_keypad_fail"));
+	if (SFXFinder_LobbyLeverFail.Succeeded())
+	{
+		SFX_LeverFail = SFXFinder_LobbyLeverFail.Object;
 	}
 }
 
@@ -257,7 +270,9 @@ void AALobbyRoom::BeginPlay()
 	bIsTapeMoveingFlag = 0;
 
 	ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));
-	CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
+	CL_TapeTarget->SetBoxExtent(FVector(15.0f, 7.0f, 3.1f));
+
+	//(X = 15.000000, Y = 7.000000, Z = 3.100000)
 
 	if (TempDialogueMgr = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
 	{
@@ -268,12 +283,15 @@ void AALobbyRoom::BeginPlay()
 	SM_StartLeverHandle->SetCollisionProfileName(FName("NoCollision"));
 	CL_Handle->SetCollisionProfileName(FName("PhysicsActor"));
 	
+	VRGameInstPtr = Cast<UVRGameInstance>(GetGameInstance());
+	check(VRGameInstPtr);
+
 	//GC->SetPrimitiveCompPhysics(false);
 }
 
 void AALobbyRoom::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& HandGrabPos, AVRHand* InGrabbingHand)
 {
-	if (CL_Handle->GetCollisionProfileName().IsEqual(FName("PhysicsActor")))
+	if (CL_Handle->GetCollisionProfileName().IsEqual(FName("PhysicsActor")) && IsValid(NewTape))
 	{
 		TempMCRef = &InMCRef;
 		AdjustVecNRot(&InMCRef);
@@ -289,20 +307,10 @@ void AALobbyRoom::OnGrabbed(UMotionControllerComponent& InMCRef, const FVector& 
 	}
 	else
 	{
+		HVRSoundPlayer::PlaySoundEffect(this, SFX_LeverFail, this->GetRootComponent()->GetComponentLocation());
+		UE_LOG(LogTemp, Warning, TEXT("Lever Grab Fial Sound Play!!!!"));
 		return;
 	}
-
-	/*TempMCRef = &InMCRef;
-	AdjustVecNRot(&InMCRef);
-
-	HVRSoundPlayer::PlaySoundEffect(this, SFX_HeavyGrab, this->GetRootComponent()->GetComponentLocation());
-	GetWorld()->GetTimerManager().SetTimer(
-		StartLeverMoveTimer,
-		this,
-		&AALobbyRoom::UpdateStartLever,
-		0.01f,
-		true
-	);*/
 }
 
 void AALobbyRoom::OnDropped()
@@ -320,23 +328,19 @@ void AALobbyRoom::TapePathOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 		NewTape = Cast<AATape>(OtherActor);
 		check(NewTape);
 		NewTape->GC->GCTryRelease();
+		NewTape->GC->SetPrimitiveCompPhysics(false);
 
 		if (NewTape->GetRootComponent()->AttachToComponent(CL_TapeTarget, FAttachmentTransformRules::SnapToTargetNotIncludingScale))
 		{
 			bIsTapeMoveingFlag = 1;
 			NewTape->HandleDontGrabPhysics(1);
+
 			TL_TapeMove->PlayFromStart();
 
-			UE_LOG(LogTemp, Log, TEXT("TapeNum: %d"), NewTape->GetTapeNum());
+			VRGameInstPtr->SetCurrTapeType(NewTape->GetTapeTypeNum());
+			VRGameInstPtr->SetCurrTapeNum(NewTape->GetTapeNum());
 
-			switch (NewTape->GetTapeNum())
-			{
-			case 1:
-				TempDialogueMgr->StartTuto01Dialogue();
-				break;
-			default:
-				break;
-			}
+			//UE_LOG(LogTemp, Log, TEXT("TapeNum: %d"), NewTape->GetTapeNum());
 		}
 	}
 }
@@ -345,7 +349,10 @@ void AALobbyRoom::TapePathOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor
 {
 	if (bIsTapeMoveingFlag) return;
 	if (OtherComp && OtherComp->ComponentHasTag(FName("Tape")) && IsValid(NewTape))
+	{
 		NewTape = nullptr;
+		VRGameInstPtr->ClearCurrTapeRelatedInfo(); // TapeTypeNum : 10 , TapeNum : 10 Setting Func
+	}
 }
 
 void AALobbyRoom::TapeMovePlayEvent(float Value)
@@ -361,7 +368,7 @@ void AALobbyRoom::TapeMoveFinishedEvent()
 	if (IsValid(NewTape))
 	{
 		bIsTapeMoveingFlag = 0;
-		//NewTape->HandleDontGrabPhysics(0);
+		NewTape->HandleDontGrabPhysics(false);
 		UE_LOG(LogTemp, Log, TEXT("Tape Move In End!"));
 	}
 }
@@ -426,8 +433,30 @@ void AALobbyRoom::StartTapeOutLQInLobbyRoom()
 	}
 }
 
+void AALobbyRoom::DestroySpawnNewTape()
+{
+	if (IsValid(SpawnNewTape))
+	{
+		// Tutorial Tape2 lifting a ban in Tape Shelf
+		AVRLobbyGameMode * CurrLobbyGM = Cast<AVRLobbyGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		check(CurrLobbyGM);
+		
+		if (CurrLobbyGM && VRGameInstPtr)
+		{
+			CurrLobbyGM->GetTapeArrs()[0]->SetTapeGrabOn();
+			VRGameInstPtr->SetTapeUnlockNum(0); // Tutorial 2 Tape Unlock Data Setting
+		}
+
+		SpawnNewTape->Destroy();
+		SpawnNewTape = nullptr;
+		GetWorld()->GetTimerManager().PauseTimer(TapeDestroyTimer);
+		GetWorld()->GetTimerManager().ClearTimer(TapeDestroyTimer);
+	}
+}
+
 void AALobbyRoom::StartRollerLQLobbyRoom()
 {
+	SpawnNewTape = nullptr;
 	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
 	if (LQMgr)
 	{
@@ -439,7 +468,26 @@ void AALobbyRoom::StartRollerLQLobbyRoom()
 
 void AALobbyRoom::OnLobbyRoomTapeOutLQDone()
 {
-	UE_LOG(LogTemp, Error, TEXT("Tape Injection Sequence Play End!"));
+	//UE_LOG(LogTemp, Error, TEXT("Tape Injection Sequence Play End!"));
+
+	if (UWorld* mWorld = GetWorld())
+	{
+		FTransform TempSpawnPos(FRotator::ZeroRotator, FVector(80.0f, 47.0f, 115.0f), FVector::OneVector);
+
+		SpawnNewTape = mWorld->SpawnActor<AATape>(AATape::StaticClass(), TempSpawnPos);
+		SpawnNewTape->GC->SetPrimitiveCompPhysics(true);
+		SpawnNewTape->SetTapeInfo(0, 0, 0);
+		SpawnNewTape->HandleDontGrabPhysics(true);
+
+		mWorld->GetTimerManager().SetTimer(
+			TapeDestroyTimer,
+			this,
+			&AALobbyRoom::DestroySpawnNewTape,
+			10.0f,
+			false
+		);
+	}
+
 	SwitchScreenMode(false);
 }
 
@@ -476,6 +524,9 @@ void AALobbyRoom::HandleTutoEvent(int32 InEventID)
 		break;
 	case 6:
 		SwitchGameStartLeverStatus(true);
+		break;
+	case 7:
+		UE_LOG(LogTemp, Log, TEXT("ALobbyRoom Tuto Event Receive!!"));
 		break;
 	default:
 		break;
@@ -526,5 +577,29 @@ void AALobbyRoom::SwitchGameStartLeverStatus(bool InStatusFlag)
 void AALobbyRoom::ArrowPointingTotheTapeShelf()
 {
 	//UE_LOG(LogTemp, Log, TEXT("Pointing Arrow To the Tape Shelf"));
+
+	SM_TapeHintArrow->SetVisibility(true);
+	SM_TapeHintArrow->SetHiddenInGame(false);
+
+	if (UWorld* mWorld = GetWorld())
+	{
+		mWorld->GetTimerManager().SetTimer(
+			TapeShelfArrowTimer,
+			this,
+			&AALobbyRoom::PointingAfterArrowHide,
+			3.0f,
+			false
+		);
+	}
+
 	TempDialogueMgr->NotifyTutorialEventFinished();
+}
+
+void AALobbyRoom::PointingAfterArrowHide()
+{
+	SM_TapeHintArrow->SetVisibility(false);
+	SM_TapeHintArrow->SetHiddenInGame(true);
+
+	GetWorld()->GetTimerManager().PauseTimer(TapeShelfArrowTimer);
+	GetWorld()->GetTimerManager().ClearTimer(TapeShelfArrowTimer);
 }

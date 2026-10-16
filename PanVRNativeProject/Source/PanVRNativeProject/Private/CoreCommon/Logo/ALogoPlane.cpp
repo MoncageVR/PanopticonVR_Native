@@ -1,6 +1,7 @@
 #include "CoreCommon/Logo/ALogoPlane.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRGameInstanceSubsystem.h"
 #include "Components/TimelineComponent.h"
-
+#include "Kismet/GameplayStatics.h"
 
 AALogoPlane::AALogoPlane()
 {
@@ -25,6 +26,12 @@ AALogoPlane::AALogoPlane()
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Logo(TEXT("/Game/VRContent/Material/BasePhotos/Logo/Moncage_ICON_Mat_Inst.Moncage_ICON_Mat_Inst"));
 	if (MatFinder_Logo.Succeeded())
 		SM_Logo->SetMaterial(0, MatFinder_Logo.Object);
+
+	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_Logo(TEXT("/Game/VRContent/Sound/Wavs/Logo/logo_sfx.logo_sfx"));
+	if (SFXFinder_Logo.Succeeded())
+	{
+		SFX_LogoPlay = SFXFinder_Logo.Object;
+	}
 }
 
 void AALogoPlane::BeginPlay()
@@ -46,7 +53,41 @@ void AALogoPlane::BeginPlay()
 		TL_FadeComp->SetTimelineFinishedFunc(FinishedFunc);
 	}
 
+	this->ActuallyPlayFadeEffect();
+}
+
+void AALogoPlane::ActuallyPlayFadeEffect()
+{
+	if (UWorld* mWorld = GetWorld())
+	{
+		mWorld->GetTimerManager().SetTimer(
+			TempSoundTimer,
+			this,
+			&AALogoPlane::PlayLogoSound,
+			2.0f,
+			false
+		);
+	}
+
 	TL_FadeComp->PlayFromStart();
+}
+
+void AALogoPlane::PlayLogoSound()
+{
+	UVRGameInstanceSubsystem* TempGameInstSub = this->GetWorld()->GetGameInstance()->GetSubsystem<UVRGameInstanceSubsystem>();
+
+	if (IsValid(TempGameInstSub) && SFX_LogoPlay)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			SFX_LogoPlay,
+			this->GetRootComponent()->GetComponentLocation() + FVector(0.f, 0.f, 20.0f),
+			TempGameInstSub->GetWorldVolumeMultiplier(),
+			TempGameInstSub->GetWorldVolumePitch()
+		);
+
+		UE_LOG(LogTemp, Log, TEXT("Logo SFX Play Success!"));
+	}
 }
 
 void AALogoPlane::HandleFadeProgress(float Value)
@@ -57,6 +98,7 @@ void AALogoPlane::HandleFadeProgress(float Value)
 
 void AALogoPlane::HandleFadeFinished()
 {
-	UE_LOG(LogTemp, Log, TEXT("Fade Effect Play End!"));
+	GetWorld()->GetTimerManager().PauseTimer(TempSoundTimer);
+	GetWorld()->GetTimerManager().ClearTimer(TempSoundTimer);
 }
 

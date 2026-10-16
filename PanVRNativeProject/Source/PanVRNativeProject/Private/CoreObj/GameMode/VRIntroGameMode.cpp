@@ -18,7 +18,7 @@ void AVRIntroGameMode::StartPlay()
 		IntroTimer,
 		this,
 		&AVRIntroGameMode::GoToLobbyMap,
-		4.1f,
+		7.1f,
 		false
 	);
 }

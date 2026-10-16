@@ -93,7 +93,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<TObjectPtr<class UBoxComponent>> CL_Keys;
 
-	
 	// KeyInRelated : Pickle Box Collision Component
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<class UBoxComponent> CL_PickleKey;
@@ -112,6 +111,14 @@ private:
 	// KeyOutRelated :  ScoreBoard Bar Component
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SM_KeyPad_Bar;
+
+	// KeyOutRelated : Boss Monitor Body Component
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SM_BMBody;
+
+	// KeyOutRelated : Jack Face Visualize Boss Monitor Glass Component
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SM_BMGlass;
 
 	// KeyOutRelated :  ScoreBoard Body Arrays
 	UPROPERTY(VisibleAnywhere)
@@ -152,6 +159,16 @@ private:
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> KeyPadMove_CurveF;
 
+	UPROPERTY()
+	TObjectPtr<UMaterial> M_Hologram;
+
+	UPROPERTY()
+	TObjectPtr<UMaterialInstance> MI_BossFace;
+
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgrRef;
+
+
 private:
 
 	bool bIsOverlapping;
@@ -174,6 +191,9 @@ private:
 	float ExitDist = 8.0f;
 	float ReArmDist = 12.0f;
 
+	UPROPERTY()
+	TSoftObjectPtr<class ULevelSequence> LQ_BeamProjector;
+
 private:
 	void ClearOutputArrays();
 	void CheckOverlapColToInt(TObjectPtr<class UBoxComponent> InBoxCol);
@@ -188,4 +208,15 @@ private:
 
 	UFUNCTION()
 	void KeyPadMoveFinishedEvent();
+	// T : Jack Mode , F : Default Mode
+	void SwitchBossMonitorMode(bool InScreenMode); 
+
+	UFUNCTION()
+	void HandleTutoL2Event(int32 InTuto2EventID);
+
+	UFUNCTION()
+	void StartBeamProjectorLQInMainMap(); // Main Map In Level Sequence Start Function
+
+	UFUNCTION()
+	void OnMainMapBeamProjectorLQDone();
 };

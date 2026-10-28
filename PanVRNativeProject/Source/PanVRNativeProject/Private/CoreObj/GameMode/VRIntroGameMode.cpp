@@ -1,6 +1,7 @@
 #include "CoreObj/GameMode/VRIntroGameMode.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h"
 
 AVRIntroGameMode::AVRIntroGameMode()
 {
@@ -21,10 +22,15 @@ void AVRIntroGameMode::StartPlay()
 		7.1f,
 		false
 	);
+
+	ACVRPawn* TempVRPlayer = Cast<ACVRPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (TempVRPlayer)
+	{
+		TempVRPlayer->GetVRPawnWidgetComp()->SetVisibility(false);
+	}
 }
 
 void AVRIntroGameMode::GoToLobbyMap()
 {
-	UE_LOG(LogTemp, Log, TEXT("[Debug] - Open the LobbyMap Success!"));
 	UGameplayStatics::OpenLevel(this, FName("LobbyMap"));
 }

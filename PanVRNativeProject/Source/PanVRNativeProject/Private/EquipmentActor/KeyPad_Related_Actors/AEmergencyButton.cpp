@@ -129,8 +129,6 @@ void AAEmergencyButton::OperateAfterReturn()
 	CLButton->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	bIsHitting = 0;
-
-	UGameplayStatics::OpenLevel(this, FName("LobbyMap")); // Debug
 }
 
 void AAEmergencyButton::HandleThisReceiveByKeyPad(bool bIsFlag, uint32 InputIndex)
@@ -139,7 +137,7 @@ void AAEmergencyButton::HandleThisReceiveByKeyPad(bool bIsFlag, uint32 InputInde
 	{
 		UE_LOG(LogTemp, Log, TEXT("AEmergencyButton In Text Array Clear"));
 		ClearStopButtonOutputArray();
-		CLButton->SetHiddenInGame(true); // Debug
+		CLButton->SetHiddenInGame(true);
 	}
 	else
 	{
@@ -150,8 +148,7 @@ void AAEmergencyButton::HandleThisReceiveByKeyPad(bool bIsFlag, uint32 InputInde
 
 		if (StopButtonFinalOutputIntArrays.Num() >= 4)
 		{
-			//CLButton->SetGenerateOverlapEvents(true);
-			CLButton->SetHiddenInGame(false); // Debug
+			CLButton->SetHiddenInGame(true);
 		}
 	}
 }

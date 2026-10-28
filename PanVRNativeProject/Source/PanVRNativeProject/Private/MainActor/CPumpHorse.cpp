@@ -49,7 +49,7 @@ ACPumpHorse::ACPumpHorse()
 		CL_PumpHorseForSubdue->SetCollisionProfileName(FName("OverlapAll"));
 		CL_PumpHorseForSubdue->SetGenerateOverlapEvents(true);
 		CL_PumpHorseForSubdue->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		CL_PumpHorseForSubdue->SetHiddenInGame(false); // Debug
+		CL_PumpHorseForSubdue->SetHiddenInGame(true);
 	}
 }
 

@@ -61,7 +61,7 @@ AACarCrane::AACarCrane()
 		CLUFOSubdue->SetRelativeScale3D(FVector(0.025f, 0.025f, 0.025f));
 		CLUFOSubdue->SetBoxExtent(FVector(135.0f, 237.5f, 65.0f));
 		CLUFOSubdue->SetGenerateOverlapEvents(false);
-		CLUFOSubdue->SetHiddenInGame(false); // Debug
+		CLUFOSubdue->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_Main(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));

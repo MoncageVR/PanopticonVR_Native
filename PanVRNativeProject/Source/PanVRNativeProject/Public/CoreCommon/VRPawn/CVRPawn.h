@@ -36,6 +36,7 @@ public:
 
 #pragma region Getter
 	FORCEINLINE TObjectPtr<UStaticMeshComponent> GetHMDSMComp() const { return HMD; }
+	FORCEINLINE TObjectPtr<class UWidgetComponent> GetVRPawnWidgetComp() const { return HUDWidgetComp; }
 #pragma endregion
 
 protected:
@@ -150,7 +151,7 @@ private:
 	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgr;
 
 	UPROPERTY()
-	TObjectPtr<class UVRGameInstance> VRGmaeInstRef;
+	TObjectPtr<class UVRGameInstance> VRGameInstRef;
 
 	int32 CurrFloorNum;
 	int32 PressedFloorNum;
@@ -166,6 +167,9 @@ private:
 
 	UFUNCTION()
 	void SpawnHands();
+
+	UFUNCTION()
+	void HandleTuto2EventForPlayer(int32 InEventID);
 
 private:
 

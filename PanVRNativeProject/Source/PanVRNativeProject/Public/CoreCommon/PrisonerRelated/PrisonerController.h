@@ -48,16 +48,16 @@ public:
 #pragma region DebugVariables
 public:
 	UPROPERTY(VisibleAnywhere)
-	TArray<uint8> Debug_Upper_State;
+	TArray<uint8> Upper_States;
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<uint8> Debug_Lower_State;
+	TArray<uint8> Lower_States;
 
 	UPROPERTY(VisibleAnywhere)
-	int32 Debug_Length;
+	int32 States_Length;
 
 	UPROPERTY(VisibleAnywhere)
-	int32 Debug_CurrStateIndex;
+	int32 CurrStateIndex;
 #pragma endregion
 
 	UPROPERTY(VisibleAnywhere)

@@ -233,8 +233,8 @@ void ACVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	VRGmaeInstRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
-	check(VRGmaeInstRef);
+	VRGameInstRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
+	check(VRGameInstRef);
 
 	if (!MaskMID_0Index && !MaskMID_1Index)
 	{
@@ -352,6 +352,10 @@ void ACVRPawn::BeginPlay()
 	}
 
 	TempDialogueMgr = GetWorld()->GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
+	if (VRGameInstRef->GetCurrTapeType() == 0 && VRGameInstRef->GetCurrTapeNum() == 0)
+	{
+		TempDialogueMgr->OnTutorialEvent.AddDynamic(this, &ACVRPawn::HandleTuto2EventForPlayer);
+	}
 }
 
 void ACVRPawn::InitFloorData()
@@ -435,6 +439,23 @@ void ACVRPawn::SpawnHands()
 	}
 }
 
+void ACVRPawn::HandleTuto2EventForPlayer(int32 InEventID)
+{
+	switch (InEventID)
+	{
+	case 17:
+		this->HandleDownMovePlayer();
+		TempDialogueMgr->NotifyTutorialEventFinished();
+		break;
+	case 18:
+		VRGameInstRef->SetTapeUnlockNum(2);
+		TempDialogueMgr->NotifyTutorialEventFinished();
+		break;
+	default:
+		break;
+	}
+}
+
 // VRPawn Move Up Function In MainMap
 void ACVRPawn::VRPawnMoveUpTLFunc(float Value)
 {
@@ -445,7 +466,7 @@ void ACVRPawn::VRPawnMoveUpTLEndFunc()
 {
 	//UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End In MainMap"));
 
-	if (VRGmaeInstRef->GetCurrTapeType() == 0 && VRGmaeInstRef->GetCurrTapeNum() == 0)
+	if (VRGameInstRef->GetCurrTapeType() == 0 && VRGameInstRef->GetCurrTapeNum() == 0)
 	{
 		UE_LOG(LogTemp, Log, TEXT("VRPawn MoveUp End And Tutorial Level 2 Play!"));
 		TempDialogueMgr->StartTuto02Dialogue();
@@ -487,11 +508,11 @@ void ACVRPawn::VRPawnDownMoveInLobbyTLEndFunc()
 {
 	UE_LOG(LogTemp, Log, TEXT("LobbyMap Arrived!"));
 
-	if (!VRGmaeInstRef->GetIsFirstLobbyEntryFlag())
+	if (!VRGameInstRef->GetIsFirstLobbyEntryFlag())
 	{
 		TempDialogueMgr->StartTuto01Dialogue();
 	}
-	VRGmaeInstRef->SetIsFirstLobbyEntryFlag(true);
+	VRGameInstRef->SetIsFirstLobbyEntryFlag(true);
 	// Executes only When First Enter the LobbyMap
 
 	mVRLobbyGMRef->CheckGameResult();

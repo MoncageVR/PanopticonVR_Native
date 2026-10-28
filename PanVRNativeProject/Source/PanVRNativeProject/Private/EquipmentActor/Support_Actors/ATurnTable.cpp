@@ -3,7 +3,6 @@
 #include "CoreCommon/Component/UGrabComp.h"
 #include "Components/BoxComponent.h"
 #include "Components/AudioComponent.h"
-#include "Debug/FDebugLib.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
 
 AATurnTable::AATurnTable()
@@ -87,8 +86,7 @@ AATurnTable::AATurnTable()
 		TTCLLB->SetRelativeLocation(FVector(-8.7f, 5.0f, 23.25f));
 		TTCLLB->SetBoxExtent(FVector(1.6f, 2.9f, 1.25f));
 		TTCLLB->SetMobility(EComponentMobility::Movable);
-		TTCLLB->SetHiddenInGame(false); // Debug
-		TTCLLB->ShapeColor = FColor::Red; // Debug
+		TTCLLB->SetHiddenInGame(true);
 	}
 
 	// Right Button Setting
@@ -112,8 +110,7 @@ AATurnTable::AATurnTable()
 		TTCLRB->SetRelativeLocation(FVector(5.6f, 5.0f, 23.25f));
 		TTCLRB->SetBoxExtent(FVector(1.6f, 2.9f, 1.25f));
 		TTCLRB->SetMobility(EComponentMobility::Movable);
-		TTCLRB->SetHiddenInGame(false); // Debug
-		TTCLRB->ShapeColor = FColor::Red; // Debug
+		TTCLRB->SetHiddenInGame(true);
 	}
 
 	CLLPTarget = CreateDefaultSubobject<UBoxComponent>("LPTarget_Collision");
@@ -122,7 +119,7 @@ AATurnTable::AATurnTable()
 		CLLPTarget->SetupAttachment(ActorBaseMesh);
 		CLLPTarget->SetRelativeLocation(FVector(0.0f, -11.5f, 37.4f));
 		CLLPTarget->SetBoxExtent(FVector(3.0f, 3.0f, 3.0f));
-		CLLPTarget->SetHiddenInGame(false); // Debug
+		CLLPTarget->SetHiddenInGame(true);
 	}
 
 	CLLPSpawn = CreateDefaultSubobject<UBoxComponent>("LPSpawn_CheckCollision");
@@ -131,7 +128,7 @@ AATurnTable::AATurnTable()
 		CLLPSpawn->SetupAttachment(ActorBaseMesh);
 		CLLPSpawn->SetRelativeLocation(FVector(0.0f, -8.0f, 5.7f));
 		CLLPSpawn->SetBoxExtent(FVector(17.5f, 17.5f, 1.0f));
-		CLLPSpawn->SetHiddenInGame(false); // Debug
+		CLLPSpawn->SetHiddenInGame(true);
 	}
 
 	// Left And Right Button Overlap Function Mapping Part

@@ -99,8 +99,8 @@ AACarPanel::AACarPanel()
 		CLSubHandle->SetRelativeLocation(FVector(1.75f, 0.0f, 14.5f));
 		CLSubHandle->SetCapsuleRadius(1.7f);
 		CLSubHandle->SetCapsuleHalfHeight(5.5f);
-		CLSubHandle->SetVisibility(true); // Debug
-		CLSubHandle->SetHiddenInGame(false); // Debug
+		CLSubHandle->SetVisibility(false);
+		CLSubHandle->SetHiddenInGame(true); 
 	}
 
 	// Setting CarKey Spawn Part
@@ -134,8 +134,8 @@ AACarPanel::AACarPanel()
 		CLKeyHole->SetRelativeLocation(FVector(0.0f, 0.0f, 1.0f));
 		CLKeyHole->SetRelativeRotation(FRotator(0.0f, 0.0f, -90.0f));
 		CLKeyHole->SetBoxExtent(FVector(5.0f, 0.5f, 4.0f));
-		CLKeyHole->SetVisibility(true); // Debug
-		CLKeyHole->SetHiddenInGame(false); // Debug
+		CLKeyHole->SetVisibility(false);
+		CLKeyHole->SetHiddenInGame(true);
 	}
 
 	// Setting KeyHole Body

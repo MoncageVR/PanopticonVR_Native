@@ -44,9 +44,7 @@ AAGlove::AAGlove()
 			TempCollisionComp->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 			TempCollisionComp->SetCapsuleRadius(100.0f);
 			TempCollisionComp->SetCapsuleHalfHeight(130.0f);
-
-			TempCollisionComp->SetHiddenInGame(false); // Debug
-
+			TempCollisionComp->SetHiddenInGame(true);
 			TempCollisionComp->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 			TempCollisionComp->SetGenerateOverlapEvents(true);
 
@@ -168,60 +166,6 @@ void AAGlove::BeginPlay()
 		Capsule->OnComponentBeginOverlap.RemoveDynamic(this, &AAGlove::OnGloveOverlapBegin);
 		Capsule->OnComponentBeginOverlap.AddDynamic(this, &AAGlove::OnGloveOverlapBegin);
 	}
-
-	/* // Glove Related StaticMeshComponent Arrays And CapsuleComponent Arrays Check Debug Logic
-	UE_LOG(LogTemp, Warning,
-		TEXT("[Glove Diagnostic] Actually Attached CapsuleComp Num : %d / GloveCollisions Array Num: %d"),
-		ActualCapsules.Num(), GloveCollisions.Num());
-
-	for (UCapsuleComponent* Capsule : ActualCapsules)
-	{
-		if (!Capsule)
-		{
-			continue;
-		}
-
-		if (!GloveCollisions.Contains(Capsule))
-		{
-			UE_LOG(LogTemp, Error,
-				TEXT("[Glove Diagnostic] '%s' Component actually exists, but it is not in the Glove Collisions Array!"),
-				*Capsule->GetName());
-		}
-	}
-
-	// Glove StaticMesh Array Valid Check
-	if (GloveStaticMeshes.Num() == 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Glove SM Array is Empty"));
-	}
-	int iIndex = 0;
-	for (const TObjectPtr<UStaticMeshComponent>& GloveMesh : GloveStaticMeshes)
-	{
-		if (!IsValid(GloveMesh))
-		{
-			UE_LOG(LogTemp, Log, TEXT("Glove SM [%d] is Not Empty"), iIndex);
-			iIndex++;
-		}
-	}
-
-	// Glove CollisionComp Array Valid Check
-	if (GloveCollisions.Num() == 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Glove Collision Array is Empty"));
-	}
-	int jindex = 0;
-	for (const TObjectPtr<UCapsuleComponent>& CollsioComp : GloveCollisions)
-	{
-		if (!IsValid(CollsioComp))
-		{
-			UE_LOG(LogTemp, Log, TEXT("Glove Collision [%d] is Not Empty"), jindex);
-			jindex++;
-		}
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("Collsion Arrays Num : %d"), GloveCollisions.Num());
-	UE_LOG(LogTemp, Log, TEXT("StaticMesh Arrays Num : %d"), GloveStaticMeshes.Num());
-	*/
 }
 
 void AAGlove::EquipmentRegistrable(AActor* InActor)

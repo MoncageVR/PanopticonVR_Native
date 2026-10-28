@@ -92,4 +92,14 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<USoundBase> SFXQueGTWPulling;
+
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgrRef;
+
+private:
+
+	void LeverDisable();
+
+	UFUNCTION()
+	void HandleTuto2EventForGTWLever(int32 InEventID);
 };

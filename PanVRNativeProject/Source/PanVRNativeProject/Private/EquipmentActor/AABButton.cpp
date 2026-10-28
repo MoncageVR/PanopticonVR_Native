@@ -128,14 +128,10 @@ void AAABButton::EquipmentRegistrable(AActor* InActor)
 	Super::EquipmentRegistrable(InActor);
 }
 
-// Debug Function Called from the Spectator
-void AAABButton::Debug_TopEscapeStatePrisonerSubdue()
+void AAABButton::TopEscapeStatePrisonerSubdue()
 {
-	//UE_LOG(LogTemp, Log, TEXT("TopEscape State Subdue!"));
-
 	EquipmentWorldSubSystem->NotifyJailOperationControlByABBroadCast(TEXT("TopEscape"));
 }
-
 
 void AAABButton::Tick(float DeltaTime)
 {

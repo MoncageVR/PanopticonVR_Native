@@ -33,7 +33,7 @@ AAFax::AAFax()
 		FaxBodyCol->SetupAttachment(ActorBaseMesh);
 		FaxBodyCol->SetRelativeLocation(FVector(4.95f, -0.8f, 3.0f));
 		FaxBodyCol->SetBoxExtent(FVector(0.7f, 6.5f, 1.f));
-		FaxBodyCol->SetHiddenInGame(false); // Debug
+		FaxBodyCol->SetHiddenInGame(true);
 	}
 
 	FaxButtonCol = CreateDefaultSubobject<UCapsuleComponent>("CL_FaxButton");
@@ -43,7 +43,7 @@ AAFax::AAFax()
 		FaxButtonCol->SetRelativeLocation(FVector(1.4f, -4.2f, 3.5f));
 		FaxButtonCol->SetCapsuleRadius(2.3f);
 		FaxButtonCol->SetCapsuleHalfHeight(2.3f);
-		FaxButtonCol->SetHiddenInGame(false); // Debug
+		FaxButtonCol->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Main(TEXT("/Game/VRContent/Material/SRS_Stage_PAX.SRS_Stage_PAX"));
@@ -121,7 +121,7 @@ void AAFax::FaxButtonColOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 			);
 
 			AttachingPaper->SetIsFaxAttaching(0);
-			FaxButtonCol->SetHiddenInGame(true); // Debug
+			FaxButtonCol->SetHiddenInGame(true);
 			FaxButtonCol->SetGenerateOverlapEvents(false);
 		}
 	}
@@ -161,7 +161,7 @@ void AAFax::PaperShredding()
 		*/
 
 		FaxButtonCol->SetGenerateOverlapEvents(true);
-		FaxButtonCol->SetHiddenInGame(false); // Debug
+		FaxButtonCol->SetHiddenInGame(true);
 
 		AttachingPaper->Destroy();
 		AttachingPaper = nullptr;

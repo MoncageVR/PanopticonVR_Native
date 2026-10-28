@@ -14,7 +14,6 @@ AVRCharacterBase::AVRCharacterBase()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(Root);
-	//Camera->bCameraMeshHiddenInGame = false; // Debug
 }
 
 void AVRCharacterBase::BeginPlay()

@@ -20,7 +20,7 @@ void UPrisonerManagerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UPrisonerManagerSubsystem::InitAllValues()
 {
 	InGamePrisonerTotalNum = 24;
-	PrisonerRunSpeed = 189.0f; // Debug Value : 500.0f , Default Value = 189.0f;
+	PrisonerRunSpeed = 189.0f;
 	Radius = 2000.0f;
 	ZPos = 321.0f;
 	HeightBetweenFloor = 950.0f;
@@ -229,25 +229,6 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 		}
 
 		TempPrisonerCon->InitializeStatesFromLogicDT();
-
-		// Debug!
-		//if (i == 0)
-		//{
-		//	TempPrisonerCon->SetMyLogicDT(DTGroupA);
-
-		//	TempPrisonerCon->InitializeStatesFromLogicDT();
-
-		//	//// Interact(3) - DoorPicking(8)
-		//	//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 4);
-		//	//TempPrisonerCon->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 14);
-
-		//	uint8 TempBPUpperValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrUpperState"));
-		//	EPrisonerUpperStateType TempCPPUpperValue = EPrisonerUpperStateType::Dangerous;
-
-		//	uint8 TempBPLowerValue = TempPrisonerCon->GetBBComp()->GetValueAsEnum(TEXT("CurrLowerState"));
-		//	EPrisonerLowerStateType TempCPPLowerValue = EPrisonerLowerStateType::Radioactivity;
-		//}
-		// Debug
 	}
 
 	AlphaZonePrisonerUniqueNumArrs.Sort();
@@ -257,10 +238,9 @@ void UPrisonerManagerSubsystem::CreateAllPrisoner()
 
 void UPrisonerManagerSubsystem::Create_Paranormal_Phenomenon()
 {
-	UE_LOG(LogTemp, Log, TEXT("10 Seconds Passing, Paranormal Phenomenon"));
+	//UE_LOG(LogTemp, Log, TEXT("10 Seconds Passing, Paranormal Phenomenon"));
 
 	float TempWeight = (float)(PhenomenonOccurProbability * InGamePrisonerTotalNum);
-	//bool bIsPhenomenonResult = true; // Debug : This Variable that Sets the probability of creating Phenomenon to 100%
 	bool bIsPhenomenonResult = FMath::FRand() < TempWeight;
 
 	if (bIsPhenomenonResult)
@@ -268,23 +248,21 @@ void UPrisonerManagerSubsystem::Create_Paranormal_Phenomenon()
 		// Random Number Create And Choice
 		RandomChoice = FMath::RandRange(0, InGamePrisonerTotalNum - 1);
 
-		//RandomChoice = 0; // Debug
-
 		if (PrisonerPossibleNumbers[RandomChoice] != -1)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%d Prisoner Logic Play Part!"), RandomChoice);
+			//UE_LOG(LogTemp, Warning, TEXT("%d Prisoner Logic Play Part!"), RandomChoice);
 			AllPrisonerControllerArrs[RandomChoice]->HandlePlayPrisonerLogic(RandomChoice);
 			PrisonerPossibleNumbers[RandomChoice] = -1;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("%d Num Prisoner Already Play Paranormal Phenomenon"), RandomChoice);
+			//UE_LOG(LogTemp, Log, TEXT("%d Num Prisoner Already Play Paranormal Phenomenon"), RandomChoice);
 			return;
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Paranormal Phenomenon Not Create"));
+		//UE_LOG(LogTemp, Log, TEXT("Paranormal Phenomenon Not Create"));
 		return;
 	}
 }

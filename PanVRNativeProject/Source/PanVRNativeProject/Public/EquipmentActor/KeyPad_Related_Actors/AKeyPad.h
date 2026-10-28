@@ -194,6 +194,11 @@ private:
 	UPROPERTY()
 	TSoftObjectPtr<class ULevelSequence> LQ_BeamProjector;
 
+	UPROPERTY()
+	TSoftObjectPtr<class ULevelSequence> LQ_BeamProjector_Up;
+
+	FTimerHandle WaitTimer;
+
 private:
 	void ClearOutputArrays();
 	void CheckOverlapColToInt(TObjectPtr<class UBoxComponent> InBoxCol);
@@ -216,6 +221,9 @@ private:
 
 	UFUNCTION()
 	void StartBeamProjectorLQInMainMap(); // Main Map In Level Sequence Start Function
+
+	UFUNCTION()
+	void StartBeamProjectorUpLQInMainMap();
 
 	UFUNCTION()
 	void OnMainMapBeamProjectorLQDone();

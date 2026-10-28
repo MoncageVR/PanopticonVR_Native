@@ -3,6 +3,8 @@
 #include "CoreCommon/Component/UGrabComp.h"
 #include "CoreCommon/VRPawn/Hand/VRHand.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
+#include "CoreObj/Manager/VRGameInstance.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SplineComponent.h"
@@ -78,19 +80,19 @@ AAElevatorButton::AAElevatorButton()
 		CLB1F->SetRelativeLocation(FVector(-7.0f, 6.0f, 25.0f));
 		CLB1F->SetRelativeRotation(FRotator(0.0f , 0.0f, 15.0f));
 		CLB1F->SetBoxExtent(FVector(3.0f, 3.0f, 3.0f));
-		CLB1F->SetHiddenInGame(false); // Debug
+		CLB1F->SetHiddenInGame(true);
 
 		CLB2F->SetupAttachment(EBB2F);
 		CLB2F->SetRelativeLocation(FVector(0.0f, 7.0f, 28.25f));
 		CLB2F->SetRelativeRotation(FRotator(0.0f, 0.0f, 15.0f));
 		CLB2F->SetBoxExtent(FVector(3.0f, 3.0f, 3.0f));
-		CLB2F->SetHiddenInGame(false); // Debug
+		CLB2F->SetHiddenInGame(true);
 
 		CLB3F->SetupAttachment(EBB3F);
 		CLB3F->SetRelativeLocation(FVector(7.0f, 6.0f, 25.0f));
 		CLB3F->SetRelativeRotation(FRotator(0.0f, 0.0f, 15.0f));
 		CLB3F->SetBoxExtent(FVector(3.0f, 3.0f, 3.0f));
-		CLB3F->SetHiddenInGame(false); // Debug
+		CLB3F->SetHiddenInGame(true);
 	}
 
 	EBMoveRail = CreateDefaultSubobject<USplineComponent>("SplineComp");
@@ -123,6 +125,28 @@ AAElevatorButton::AAElevatorButton()
 		ButtonPressSFX = SoundFinder_ButtonPress.Object;
 	}
 
+	SM_Arrow = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("ArrowSMComp")));
+	if (SM_Arrow)
+	{
+		SM_Arrow->SetupAttachment(ActorBaseMesh);
+		SM_Arrow->SetRelativeLocation(FVector(0.f, 0.f, -10.0f));
+		SM_Arrow->SetRelativeRotation(FRotator(0.f, -180.0f, 180.0f));
+	}
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Arrow(TEXT("/Game/VRContent/Modeling/Arrow/Tuto_Arrow.Tuto_Arrow"));
+	if (SMFinder_Arrow.Succeeded())
+	{
+		SM_Arrow->SetStaticMesh(SMFinder_Arrow.Object);
+		SM_Arrow->SetVisibility(false);
+		SM_Arrow->SetHiddenInGame(true);
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_HologramGreen(TEXT("/Game/VRContent/Material/MI_Hologram_Green.MI_Hologram_Green"));
+	if (MatFinder_HologramGreen.Succeeded())
+	{
+		SM_Arrow->SetMaterial(0, MatFinder_HologramGreen.Object);
+	}
+
 	TArray<UPrimitiveComponent*> AllComps;
 	GetComponents<UPrimitiveComponent>(AllComps);
 	for (UPrimitiveComponent* AllComp : AllComps)
@@ -140,6 +164,9 @@ void AAElevatorButton::BeginPlay()
 {
 	Super::BeginPlay();
 
+	bIsEBOperationSuccessForTutoL2 = false;
+	bIsTuto2Playing = false;
+
 	CLB1F->OnComponentBeginOverlap.AddDynamic(this, &AAElevatorButton::EBBOverlapBegin);
 	CLB2F->OnComponentBeginOverlap.AddDynamic(this, &AAElevatorButton::EBBOverlapBegin);
 	CLB3F->OnComponentBeginOverlap.AddDynamic(this, &AAElevatorButton::EBBOverlapBegin);
@@ -154,6 +181,17 @@ void AAElevatorButton::BeginPlay()
 	{
 		// Jail ¡æ EB : Bind 
 		EquipmentWorldSubSystem->FEBOperateControlSignature.BindUObject(this, &AAElevatorButton::HandleEBReceiveByJail);
+	}
+
+	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	{
+		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &AAElevatorButton::HandleTuto2Event);
+	}
+
+	TempVRGameInstRef = Cast<UVRGameInstance>(GetGameInstance());
+	if (TempVRGameInstRef)
+	{
+		UE_LOG(LogTemp, Log, TEXT("TypeNum : %d , TapeNum : %d"), TempVRGameInstRef->GetCurrTapeType(), TempVRGameInstRef->GetCurrTapeNum());
 	}
 }
 
@@ -179,7 +217,7 @@ void AAElevatorButton::HandleCollisionEnabled(uint8 bIsColActivated)
 	}
 }
 
-void AAElevatorButton::Debug_TowerTo_1stFloor()
+void AAElevatorButton::TowerrMoveTo_1stFloor()
 {
 	for (TScriptInterface<IIEquipmentInitInterface> Equip : EquipmentWorldSubSystem->GetEquipmentArr())
 	{
@@ -199,7 +237,7 @@ void AAElevatorButton::Debug_TowerTo_1stFloor()
 	TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
 }
 
-void AAElevatorButton::Debug_TowerTo_2ndFloor()
+void AAElevatorButton::TowerrMoveTo_2ndFloor()
 {
 	for (TScriptInterface<IIEquipmentInitInterface> Equip : EquipmentWorldSubSystem->GetEquipmentArr())
 	{
@@ -219,7 +257,7 @@ void AAElevatorButton::Debug_TowerTo_2ndFloor()
 	TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
 }
 
-void AAElevatorButton::Debug_TowerTo_3rdFloor()
+void AAElevatorButton::TowerrMoveTo_3rdFloor()
 {
 	for (TScriptInterface<IIEquipmentInitInterface> Equip : EquipmentWorldSubSystem->GetEquipmentArr())
 	{
@@ -264,35 +302,42 @@ void AAElevatorButton::EBBOverlapBegin(UPrimitiveComponent* OverlappedComp, AAct
 					continue;
 			}
 
-			if (OverlappedComp == CLB1F) // 1st Button Overlap Begin!
+			if (TempVRGameInstRef->GetCurrTapeType() == 0 && TempVRGameInstRef->GetCurrTapeNum() == 0)
 			{
-				this->SetPressedFloorNum(1);
+				bIsEBOperationSuccessForTutoL2 = true;
 			}
-			else if (OverlappedComp == CLB2F) // 2nd Button Overlap Begin!
+			else
 			{
-				this->SetPressedFloorNum(2);
-			}
-			else if (OverlappedComp == CLB3F) // 3rd Button Overlap Begin!
-			{
-				this->SetPressedFloorNum(3);
-			}
-
-			if (GetCurrFloorNum() != GetPressedFloorNum())
-			{
-				if (IsValid(EquipmentWorldSubSystem))
+				if (OverlappedComp == CLB1F) // 1st Button Overlap Begin!
 				{
-					EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
-					this->SetCurrFloorNum(PressedFloorNum);
-					TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
+					this->SetPressedFloorNum(1);
+				}
+				else if (OverlappedComp == CLB2F) // 2nd Button Overlap Begin!
+				{
+					this->SetPressedFloorNum(2);
+				}
+				else if (OverlappedComp == CLB3F) // 3rd Button Overlap Begin!
+				{
+					this->SetPressedFloorNum(3);
+				}
+
+				if (GetCurrFloorNum() != GetPressedFloorNum())
+				{
+					if (IsValid(EquipmentWorldSubSystem))
+					{
+						EquipmentWorldSubSystem->NotifyMoveOrderBroadCast(FName("EB"), this->GetPressedFloorNum());
+						this->SetCurrFloorNum(PressedFloorNum);
+						TowerBuildingRef->HandleSplinePointValue(GetPressedFloorNum());
+					}
+					else
+					{
+						return;
+					}
 				}
 				else
 				{
 					return;
 				}
-			}
-			else
-			{
-				return;
 			}
 		}
 	}
@@ -453,7 +498,106 @@ void AAElevatorButton::HandleEBReceiveByJail(uint8 InEBControlFlag)
 	SetEBColEnabled(InEBControlFlag);
 }
 
+void AAElevatorButton::HandleTuto2Event(int32 InEventID)
+{
+	switch (InEventID)
+	{
+	case 11: // Arrow Symbols On Elevator Button
+		ArrowPointingToTheEB();
+		break;
+	case 12:
+		UE_LOG(LogTemp, Log, TEXT("Waiting for input on the 1st floor of the EB building~"));
+		GetWorld()->GetTimerManager().SetTimer(
+			EBCheckTimerForTutoL2,
+			this,
+			&AAElevatorButton::CheckEBCol1F,
+			0.3f,
+			true
+		);
+		break;
+	case 14:
+		SetEBColEnabledForTuto2(false);
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+		break;
+	case 15:
+		SetEBColEnabledForTuto2(true);
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+		break;
+	default:
+		break;
+	}
+}
+
+void AAElevatorButton::ArrowPointingToTheEB()
+{
+	SM_Arrow->SetVisibility(true);
+	SM_Arrow->SetHiddenInGame(false);
+
+	if (UWorld* MyWorld = GetWorld())
+	{
+		MyWorld->GetTimerManager().SetTimer(
+			EBArrowTimer,
+			this,
+			&AAElevatorButton::PointingEBAfterArrowHide,
+			3.0f,
+			false
+		);
+	}
+
+	TempDialogueMgrRef->NotifyTutorialEventFinished();
+}
+
+void AAElevatorButton::PointingEBAfterArrowHide()
+{
+	SM_Arrow->SetVisibility(false);
+	SM_Arrow->SetHiddenInGame(true);
+	GetWorld()->GetTimerManager().PauseTimer(EBArrowTimer);
+	GetWorld()->GetTimerManager().ClearTimer(EBArrowTimer);
+}
+
+void AAElevatorButton::SetEBColEnabledForTuto2(uint8 InFlag)
+{
+	if (InFlag) // Collision Operate Possible
+	{
+		CLB1F->SetGenerateOverlapEvents(true);
+	}
+	else // Collision Operate ImPossible
+	{
+		CLB1F->SetGenerateOverlapEvents(false);
+		CLB2F->SetGenerateOverlapEvents(false);
+		CLB3F->SetGenerateOverlapEvents(false);
+	}
+}
+
+void AAElevatorButton::CheckEBCol1F()
+{
+	if (bIsEBOperationSuccessForTutoL2)
+	{
+		TowerrMoveTo_1stFloor();
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+
+		if (GetWorld()->GetTimerManager().IsTimerActive(EBCheckTimerForTutoL2))
+		{
+			GetWorld()->GetTimerManager().PauseTimer(EBCheckTimerForTutoL2);
+			GetWorld()->GetTimerManager().ClearTimer(EBCheckTimerForTutoL2);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Haven't pressed the EB 1st button yet."));
+		return;
+	}
+}
+
 void AAElevatorButton::UpdatePullingBackMoveCompleted()
 {
 	ActorBaseMesh->SetCollisionProfileName(FName("PhysicsActor"));
+
+	/*if (IsValid(TempDialogueMgrRef))
+	{
+		if (bIsTuto2Playing)
+		{
+			TempDialogueMgrRef->NotifyTutorialEventFinished();
+		}
+	}*/
 }

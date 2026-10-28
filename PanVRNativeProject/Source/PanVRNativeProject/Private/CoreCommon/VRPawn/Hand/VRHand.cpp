@@ -24,16 +24,16 @@ AVRHand::AVRHand()
 	CLGrabSphere->SetupAttachment(HandMesh);
 	CLGrabSphere->SetSphereRadius(6.0f);
 	CLGrabSphere->SetRelativeLocation(FVector(0.0f, 7.0f, -2.0f));
-	//CLGrabSphere->SetVisibility(true); // Debug;
-	//CLGrabSphere->SetHiddenInGame(false); // Debug;
+	CLGrabSphere->SetVisibility(false);
+	CLGrabSphere->SetHiddenInGame(true);
 
 	CLBox = CreateDefaultSubobject<UBoxComponent>("CLOverlapBox");
 	CLBox->SetupAttachment(HandMesh);
 	CLBox->SetRelativeLocation(FVector(0.0f, 7.0f, -1.5f));
 	CLBox->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
 	CLBox->SetBoxExtent(FVector(5.0f, 3.0f, 2.5f));
-	CLBox->SetVisibility(true); // Debug;
-	CLBox->SetHiddenInGame(false); // Debug;
+	CLBox->SetVisibility(false);
+	CLBox->SetHiddenInGame(true);
 	CLBox->SetGenerateOverlapEvents(true);
 
 	CLCapsuleIndex = CreateDefaultSubobject<UCapsuleComponent>("HandIndex_Collision");
@@ -43,7 +43,7 @@ AVRHand::AVRHand()
 	CLCapsuleIndex->SetCapsuleRadius(1.1f);
 	CLCapsuleIndex->SetCapsuleHalfHeight(2.2f);
 	CLCapsuleIndex->ComponentTags.Add(FName("HandIndex"));
-	CLCapsuleIndex->SetHiddenInGame(false); // Debug;
+	CLCapsuleIndex->SetHiddenInGame(true);
 }
 
 void AVRHand::OnConstruction(const FTransform& InTransform)
@@ -130,57 +130,9 @@ void AVRHand::GrabObject()
 		// Finally HandMesh Nearest GC
 		if (GrabbleActorGC)
 		{
-			//UE_LOG(LogTemp, Log, TEXT("First Overlap GC Name : %s"), *GrabbleActorGC->GetName()); // Debug
 			GrabbleActorGC->GCTryGrab(MC, HandMesh, this);
 		}
 	}
-
-	/*
-	TArray<AActor*> OverlappingActors;
-	CLGrabSphere->GetOverlappingActors(OverlappingActors);
-
-	const FVector CurrentHandPos = HandMesh->GetComponentLocation(); // Current Hand Mesh Location Variable
-	float NearestRelativeDis = TNumericLimits<float>::Max();
-
-	if (!OverlappingActors.IsEmpty()) // Check OverlappingActors Not Empty
-	{
-		for (AActor* TempOverlpaiingActors : OverlappingActors)
-		{
-			if (!TempOverlpaiingActors) continue; // Check TempOverlappingActors Not Empty
-
-			TArray<UActorComponent*> TempDoNotComps = TempOverlpaiingActors->GetComponentsByTag(UBoxComponent::StaticClass(), FName("DoNotGrab"));
-			if (TempDoNotComps.Num() > 0)
-			{
-				UE_LOG(LogTemp, Log, TEXT("Don't Lever Grab!"));
-				continue;
-			}
-
-			TArray<UUGrabComp*> TempGCs; // TempOverlappingActors in All GC Array
-			TempOverlpaiingActors->GetComponents<UUGrabComp>(TempGCs);
-
-			if (TempGCs.Num() == 0) continue; // Check TempGCs Not Empty
-
-			for (UUGrabComp* TempGC : TempGCs)
-			{
-				if (!TempGC) continue; // Check TempGC Not Empty
-
-				const float CalcDistsq = FVector::DistSquared(TempGC->GetComponentLocation(), CurrentHandPos);
-				if (CalcDistsq < NearestRelativeDis)
-				{
-					NearestRelativeDis = CalcDistsq;
-					GrabbleActorGC = TempGC;
-				}
-			}
-		}
-
-		// Finally HandMesh Nearest GC
-		if (GrabbleActorGC)
-		{
-			//UE_LOG(LogTemp, Log, TEXT("First Overlap GC Name : %s"), *GrabbleActorGC->GetName()); // Debug
-			GrabbleActorGC->GCTryGrab(MC, HandMesh, this);
-		}
-	}
-	*/
 
 	return;
 }

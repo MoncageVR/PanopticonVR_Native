@@ -45,8 +45,8 @@ public:
 	FORCEINLINE void SetCurrTapeNum(uint32 InNum) { CurrTapeNum = InNum; }
 	FORCEINLINE void ClearCurrTapeRelatedInfo()
 	{
-		CurrTapeType = 0; // DebugValue : 0 , Defautl : 10
-		CurrTapeNum = 0; // DebugValue : 0 , Defautl : 10
+		CurrTapeType = 10; // DebugValue : 0 , Defautl : 10
+		CurrTapeNum = 10; // DebugValue : 0 , Defautl : 10
 	}
 #pragma endregion
 

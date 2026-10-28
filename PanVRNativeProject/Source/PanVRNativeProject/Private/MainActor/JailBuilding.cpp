@@ -134,7 +134,7 @@ AJailBuilding::AJailBuilding()
 		CLSubdueHatch->SetRelativeLocation(FVector(0.0f, 0.0f, -125.0f));
 		CLSubdueHatch->SetBoxExtent(FVector(200.0f, 200.0f, 200.0f));
 		CLSubdueHatch->SetGenerateOverlapEvents(false);
-		CLSubdueHatch->SetHiddenInGame(false); // Debug
+		CLSubdueHatch->SetHiddenInGame(true);
 	}
 	// Setting AffectNavigation - 1F,2F,3F WeaponDoor , ExitDoor
 	Jail1FWeaponDoor->SetCanEverAffectNavigation(false);

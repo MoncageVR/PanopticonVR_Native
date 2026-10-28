@@ -45,9 +45,9 @@ void APrisonerController::HandleNextTask()
 		MyPrisonerCha->GetAudioPlayer()->Stop();
 	}
 
-	if (!Debug_Upper_State.IsValidIndex(Debug_CurrStateIndex) || !Debug_Lower_State.IsValidIndex(Debug_CurrStateIndex))
+	if (!Upper_States.IsValidIndex(CurrStateIndex) || !Lower_States.IsValidIndex(CurrStateIndex))
 	{
-		Debug_CurrStateIndex = 0;
+		CurrStateIndex = 0;
 		this->GetBBComp()->SetValueAsEnum(TEXT("CurrUpperState"), 0);
 		this->GetBBComp()->SetValueAsEnum(TEXT("CurrLowerState"), 0);
 		this->GetBBComp()->SetValueAsBool(TEXT("bIsPatrolBlocked"), true);
@@ -61,11 +61,9 @@ void APrisonerController::HandleNextTask()
 	}
 	else
 	{
-		BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), Debug_Upper_State[Debug_CurrStateIndex]);
-		BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), Debug_Lower_State[Debug_CurrStateIndex]);
-		Debug_CurrStateIndex++;
-		/*UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"),GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);
-		UE_LOG(LogTemp, Log, TEXT("%d : Current Index : %d, Current Length : %d"), GetBBComp()->GetValueAsInt(FName("UniqueNum")), Debug_CurrStateIndex, Debug_Length);*/
+		BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), Upper_States[CurrStateIndex]);
+		BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), Lower_States[CurrStateIndex]);
+		CurrStateIndex++;
 		if (FOnPrisonerLowerStateChangedSignature.IsBound())
 		{
 			FOnPrisonerLowerStateChangedSignature.Broadcast(this, this->GetCurrLowerState());
@@ -78,14 +76,14 @@ void APrisonerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	Debug_Upper_State.Empty();
-	Debug_Lower_State.Empty();
+	Upper_States.Empty();
+	Lower_States.Empty();
 
-	Debug_Upper_State.Add(0);
-	Debug_Lower_State.Add(0);
+	Upper_States.Add(0);
+	Lower_States.Add(0);
 
-	Debug_Length = Debug_Upper_State.Num();
-	Debug_CurrStateIndex = 0;
+	States_Length = Upper_States.Num();
+	CurrStateIndex = 0;
 
 	MyPrisonerCha = Cast<APrisonerCharacter>(this->GetCharacter());
 	UAnimInstance* TempAnimInst = nullptr;
@@ -116,21 +114,17 @@ void APrisonerController::Tick(float DeltaTimes)
 
 void APrisonerController::State_based_ExecutionTasks_GiventoSomeone(TArray<uint8> InUpperStates, TArray<uint8> InLowerStates)
 {
-	Debug_Upper_State.Empty();
-	Debug_Lower_State.Empty();
-	Debug_Length = InUpperStates.Num();
-
-	//Debug_Upper_State = InUpperStates;
-	//Debug_Lower_State = InLowerStates;
-	//Debug_Length = InUpperStates.Num();
+	Upper_States.Empty();
+	Lower_States.Empty();
+	States_Length = InUpperStates.Num();
 
 	this->BlackboardComp->SetValueAsEnum(TEXT("CurrUpperState"), InUpperStates[0]);
 	this->BlackboardComp->SetValueAsEnum(TEXT("CurrLowerState"), InLowerStates[0]);
 
-	for (int32 i = 1; i < Debug_Length; i++)
+	for (int32 i = 1; i < States_Length; i++)
 	{
-		Debug_Upper_State.Add(InUpperStates[i]);
-		Debug_Lower_State.Add(InLowerStates[i]);
+		Upper_States.Add(InUpperStates[i]);
+		Lower_States.Add(InLowerStates[i]);
 	}
 
 }
@@ -145,10 +139,10 @@ void APrisonerController::InitializeStatesFromLogicDT()
 {
 	//UE_LOG(LogTemp, Log, TEXT("Logic DT Init And State Init Start!"));
 
-	Debug_Upper_State.Empty();
-	Debug_Lower_State.Empty();
-	Debug_Length = 0;
-	Debug_CurrStateIndex = 0;
+	Upper_States.Empty();
+	Lower_States.Empty();
+	States_Length = 0;
+	CurrStateIndex = 0;
 
 	/*if (mLogicDT)
 	{
@@ -175,18 +169,12 @@ void APrisonerController::InitializeStatesFromLogicDT()
 			EPrisonerUpperStateType TempUpperStates = MyRow->ActionUpperState[y];
 			EPrisonerLowerStateType TempLowerStates = MyRow->ActionLowerState[y];
 
-			// Enum String Print Debugging
 			FString UpperStr = UpperEnum->GetNameStringByValue((int64)TempUpperStates);
 			FString LowerStr = LowerEnum->GetNameStringByValue((int64)TempLowerStates);
 
-			//UE_LOG(LogTemp, Log, TEXT("Upper : %s(%d) | Lower : %s(%d)"), *UpperStr, (uint8)TempUpperStates, *LowerStr, (uint8)TempLowerStates);
-
-			Debug_Upper_State.Add((uint8)TempUpperStates);
-			Debug_Lower_State.Add((uint8)TempLowerStates);
-			Debug_Length = MyRow->ActionUpperState.Num();
-
-			//UE_LOG(LogTemp, Log, TEXT("Index : %s = Upper : %s | Lower : %s"), *TempRowNames[RowRandomChoice].ToString(), *UpperStr, *LowerStr);
-
+			Upper_States.Add((uint8)TempUpperStates);
+			Lower_States.Add((uint8)TempLowerStates);
+			States_Length = MyRow->ActionUpperState.Num();
 		}
 	}
 	else
@@ -270,7 +258,7 @@ void APrisonerController::AttachSphereCollision()
 		CL_FlameTransition = Cast<USphereComponent>(TempCha->AddComponentByClass(USphereComponent::StaticClass(), false, FTransform::Identity, false));
 
 		CL_FlameTransition->SetSphereRadius(900.0f, true);
-		CL_FlameTransition->SetHiddenInGame(false);// Debug
+		CL_FlameTransition->SetHiddenInGame(true);
 		CL_FlameTransition->SetCollisionProfileName(FName("OverlapAll"));
 		CL_FlameTransition->SetGenerateOverlapEvents(true);
 	}

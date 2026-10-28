@@ -29,7 +29,7 @@ AAFuelRodStorage::AAFuelRodStorage()
 		FRCLStorage->SetupAttachment(ActorBaseMesh);
 		FRCLStorage->SetRelativeLocation(FVector(0.f, 0.f, 8.3f));
 		FRCLStorage->SetBoxExtent(FVector(16.f, 21.f, 8.f));
-		FRCLStorage->SetHiddenInGame(false); // Debug
+		FRCLStorage->SetHiddenInGame(true);
 	}
 
 	TArray<UPrimitiveComponent*> AllComps;

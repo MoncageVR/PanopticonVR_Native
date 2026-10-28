@@ -29,7 +29,7 @@ AAToggleSwitch::AAToggleSwitch()
 		CL_Switch->SetCapsuleRadius(1.0f);
 		CL_Switch->SetCapsuleHalfHeight(3.0f);
 		CL_Switch->SetGenerateOverlapEvents(true);
-		CL_Switch->SetHiddenInGame(false); // Debug
+		CL_Switch->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_On(TEXT("/Game/VRContent/Sound/Wavs/ToggleSwitch/Sfx_ToggleSwitch_On.Sfx_ToggleSwitch_On"));

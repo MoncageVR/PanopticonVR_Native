@@ -35,7 +35,7 @@ AAPunchPrinter::AAPunchPrinter()
 		CLPPSandbag->SetRelativeLocation(FVector(0.f, 4.f, 20.7f));
 		CLPPSandbag->SetRelativeRotation(FRotator(0.f, 0.f, -8.f));
 		CLPPSandbag->SetBoxExtent(FVector(8.0f, 5.25f, 11.0f));
-		CLPPSandbag->SetHiddenInGame(false); // Debug
+		CLPPSandbag->SetHiddenInGame(true);
 	}
 
 	PPMovementTimeline = CreateDefaultSubobject<UTimelineComponent>("PP_TimelineComp");
@@ -56,7 +56,7 @@ AAPunchPrinter::AAPunchPrinter()
 		CLPPPaper->SetBoxExtent(FVector(10.5f, 15.f, 1.f));
 		CLPPPaper->OnComponentBeginOverlap.AddDynamic(this, &AAPunchPrinter::CLPPEntranceOverlapBegin);
 		CLPPPaper->OnComponentEndOverlap.AddDynamic(this, &AAPunchPrinter::CLPPEntranceFOverlapEnd);
-		CLPPPaper->SetHiddenInGame(false); // Debug
+		CLPPPaper->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<USoundBase> SoundFinder_Move(TEXT("/Game/VRContent/Sound/Wavs/FastGod/sfx_printer_move.sfx_printer_move"));

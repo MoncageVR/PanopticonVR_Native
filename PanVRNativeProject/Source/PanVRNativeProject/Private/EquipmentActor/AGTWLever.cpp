@@ -3,6 +3,8 @@
 #include "Components/AudioComponent.h"
 #include "CoreCommon/Component/UGrabComp.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
+#include "CoreObj/Manager/VRGameInstance.h"
 
 AAGTWLever::AAGTWLever()
 {
@@ -39,7 +41,7 @@ AAGTWLever::AAGTWLever()
 	HandleCapsule->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f));
 	HandleCapsule->SetCapsuleRadius(2.7f, true);
 	HandleCapsule->SetCapsuleHalfHeight(10.0f);
-	HandleCapsule->SetHiddenInGame(false); // Debug
+	HandleCapsule->SetHiddenInGame(true);
 
 	// Setting Various Component Pos And Rot
 	GC->SetupAttachment(SM_Handle);
@@ -96,15 +98,13 @@ void AAGTWLever::BeginPlay()
 		GTWSoundPlayer->SetSound(SFXQueGTWPulling);
 	}
 
-	// Debug
-	/*GetWorldTimerManager().SetTimer(
-		CountGameStartTimer,
-		this,
-		&AAGTWLever::CountForGameStart,
-		3.0f,
-		false
-	);*/
-	// Debug
+	UVRGameInstance* TempVRGameInst = Cast<UVRGameInstance>(GetGameInstance());
+	if (TempVRGameInst->GetCurrTapeType() == 0 && TempVRGameInst->GetCurrTapeNum() == 0)
+	{
+		TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>();
+		if (TempDialogueMgrRef)
+			TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &AAGTWLever::HandleTuto2EventForGTWLever);
+	}
 }
 
 void AAGTWLever::EquipmentRegistrable(AActor* InActor)
@@ -130,6 +130,25 @@ void AAGTWLever::OverlapCapsuleEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 	if (OtherComp && OtherComp->ComponentHasTag(FName("HandCLBox")))
 	{
 		bIsHanding = false;
+	}
+}
+
+void AAGTWLever::LeverDisable()
+{
+	SM_Handle->SetCollisionProfileName(FName("NoCollision"));
+	HandleCapsule->SetCollisionProfileName(FName("NoCollision"));
+}
+
+void AAGTWLever::HandleTuto2EventForGTWLever(int32 InEventID)
+{
+	switch (InEventID)
+	{
+	case 13:
+		LeverDisable();
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+		break;
+	default:
+		break;
 	}
 }
 

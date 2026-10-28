@@ -11,7 +11,6 @@ ACPrisonerCharacterBase::ACPrisonerCharacterBase()
 
 	this->GetCapsuleComponent()->SetCapsuleHalfHeight(130.f);
 	this->GetCapsuleComponent()->SetCapsuleRadius(22.f);
-	this->GetCapsuleComponent()->SetHiddenInGame(false); // Debug
 
 	SMMoustache = CreateDefaultSubobject<UStaticMeshComponent>("MoustacheParts");
 	SMBeard = CreateDefaultSubobject<UStaticMeshComponent>("BeardParts");

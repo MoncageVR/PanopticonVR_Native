@@ -11,6 +11,7 @@
 #include "CoreCommon/VRPawn/VRCharacterBase.h"
 #include "CoreCommon/VRPawn/CVRPawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h"
 
 void AVRGameMode::InitGameState() { }
 
@@ -42,7 +43,6 @@ void AVRGameMode::StartPlay()
 
 		UPrisonerMgrSubSyPtr->HandleClearVarsForGameStart();
 		UPrisonerMgrSubSyPtr->CreateAllPrisoner();
-		//UPrisonerMgrSubSyPtr->Create_Paranormal_Phenomenon(); // Debug
 
 		UMapObjMgrSubSyPtr->CreateAllGratings();
 
@@ -50,6 +50,10 @@ void AVRGameMode::StartPlay()
 	}
 
 	MyVRPawn = Cast<ACVRPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (MyVRPawn)
+	{
+		MyVRPawn->GetVRPawnWidgetComp()->SetVisibility(true);
+	}
 
 	if (UWorld* MyWorld = GetWorld())
 	{

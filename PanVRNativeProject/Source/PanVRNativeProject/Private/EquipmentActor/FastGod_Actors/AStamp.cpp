@@ -38,7 +38,7 @@ AAStamp::AAStamp()
 		CLPaperTarget->SetupAttachment(ActorBaseMesh);
 		CLPaperTarget->SetRelativeLocation(FVector(0.f, -5.0f, -3.7f));
 		CLPaperTarget->SetBoxExtent(FVector(8.f, 3.f, 0.2f));
-		CLPaperTarget->SetHiddenInGame(false); // Debug
+		CLPaperTarget->SetHiddenInGame(true);
 
 		CLPaperTarget->OnComponentBeginOverlap.AddDynamic(this, &AAStamp::CLPaperTargetOverlapBegin);
 		CLPaperTarget->OnComponentEndOverlap.AddDynamic(this, &AAStamp::CLPaperTargetOverlapEnd);
@@ -79,7 +79,7 @@ AAStamp::AAStamp()
 		CLStamp->SetupAttachment(SMStampHandleHead);
 		CLStamp->SetRelativeLocation(FVector(0.f, -5.1f, -1.7f));
 		CLStamp->SetBoxExtent(FVector(3.8f, 2.0f, 1.0f));
-		//CLStamp->SetHiddenInGame(false); // Debug
+		CLStamp->SetHiddenInGame(true);
 		CLStamp->OnComponentBeginOverlap.AddDynamic(this, &AAStamp::CLStampOverlapBegin);
 
 		CLStamp->SetGenerateOverlapEvents(false);
@@ -191,7 +191,7 @@ void AAStamp::CLPaperTargetOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 					AttachingPaper->AttachToComponent(CLPaperTarget, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 					CLStamp->SetGenerateOverlapEvents(true);
-					CLStamp->SetHiddenInGame(false); // Debug
+					CLStamp->SetHiddenInGame(true);
 				}
 			}
 		}
@@ -207,7 +207,7 @@ void AAStamp::CLPaperTargetOverlapEnd(UPrimitiveComponent* OverlappedComp, AActo
 			AttachingPaper->SetIsStampAttaching(0);
 
 			CLStamp->SetGenerateOverlapEvents(false);
-			CLStamp->SetHiddenInGame(true); // Debug
+			CLStamp->SetHiddenInGame(true);
 
 			AttachingPaper = nullptr;
 		}

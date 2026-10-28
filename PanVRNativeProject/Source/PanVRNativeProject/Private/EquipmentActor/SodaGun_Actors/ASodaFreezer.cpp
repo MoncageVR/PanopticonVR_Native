@@ -63,7 +63,6 @@ AASodaFreezer::AASodaFreezer()
 
 	DownwardFreezerDoorMesh->SetRelativeLocation(FVector(26.0f, 16.2f, 13.3f));
 	DownwardFreezerDoorMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-	// Debug : Default Value FRotator(0.0f, 90.0f, 0.0f)
 	
 	DownwardDoorGC = CreateDefaultSubobject<UUGrabComp>("GC_Door2");
 	DownwardDoorGC->SetupAttachment(DownwardFreezerDoorMesh);

@@ -93,8 +93,8 @@ void AAGolfBall::BallFlyPlayEvent(float InFlyTimeValue)
 {
 	this->GetRootComponent()->SetRelativeLocation(SP_BallTrajectoryRoute->GetLocationAtTime(InFlyTimeValue, ESplineCoordinateSpace::Local, false), true, nullptr, ETeleportType::None);
 
-	// Debug
-	DrawDebugPoint(GetWorld(), this->RootComponent->GetComponentLocation(), 5.0f, FColor::Red, false, 3.0f);
+	// Points that draw a golf trajectory
+	// DrawDebugPoint(GetWorld(), this->RootComponent->GetComponentLocation(), 5.0f, FColor::Red, false, 3.0f);
 }
 
 void AAGolfBall::BallFlyFinishedEvent()

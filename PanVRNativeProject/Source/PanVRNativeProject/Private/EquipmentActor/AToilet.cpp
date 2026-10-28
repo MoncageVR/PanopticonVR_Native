@@ -55,7 +55,7 @@ AAToilet::AAToilet()
 		TCLLever->SetRelativeLocation(FVector(7.f, 0.f, 57.72f));
 		TCLLever->SetCapsuleRadius(3.f);
 		TCLLever->SetCapsuleHalfHeight(7.76f);
-		TCLLever->SetHiddenInGame(false); // Debug
+		TCLLever->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_Door(TEXT("/Game/VRContent/Modeling/18_23_Toilet/SM_ToiletDoor.SM_ToiletDoor"));
@@ -77,7 +77,7 @@ AAToilet::AAToilet()
 		TCLOvenDoor->SetRelativeLocation(FVector(8.f, -29.6f, 11.f));
 		TCLOvenDoor->SetCapsuleRadius(1.53f);
 		TCLOvenDoor->SetCapsuleHalfHeight(7.f);
-		TCLOvenDoor->SetHiddenInGame(false); // Debug
+		TCLOvenDoor->SetHiddenInGame(true);
 	}
 
 	OvenDoorGC = CreateDefaultSubobject<UUGrabComp>("OvenDoorGrabComp");

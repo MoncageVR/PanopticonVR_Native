@@ -21,8 +21,7 @@ AAGrating::AAGrating()
 		CollisionComp->SetBoxExtent(FVector(200.0f, 300.0f, 360.0f));
 		CollisionComp->SetCollisionProfileName(FName("OverlapAll"));
 		CollisionComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		CollisionComp->ShapeColor = FColor::Yellow; // Debug
-		CollisionComp->SetHiddenInGame(false); // Debug
+		CollisionComp->SetHiddenInGame(true);
 	}
 
 	StaticMeshSceneRoot = CreateDefaultSubobject<USceneComponent>("SM_SceneRoot");

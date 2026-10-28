@@ -44,13 +44,13 @@ public:
 #pragma region BPDebugFunc
 	// Functions callable from the Spectator : Tower's floor movement function
 	UFUNCTION(BlueprintCallable)
-	void Debug_TowerTo_1stFloor();
+	void TowerrMoveTo_1stFloor();
 
 	UFUNCTION(BlueprintCallable)
-	void Debug_TowerTo_2ndFloor();
+	void TowerrMoveTo_2ndFloor();
 
 	UFUNCTION(BlueprintCallable)
-	void Debug_TowerTo_3rdFloor();
+	void TowerrMoveTo_3rdFloor();
 #pragma endregion
 
 protected:
@@ -87,6 +87,9 @@ protected:
 	// Box Collision Component Elevator Button 3 Floor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|CollisionComp")
 	TObjectPtr<class UBoxComponent> CLB3F;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SM_Arrow;
 #pragma endregion
 
 #pragma region CollisionFunc
@@ -145,6 +148,20 @@ private:
 	UPROPERTY()
 	TObjectPtr<class ATowerBuilding> TowerBuildingRef;
 
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgrRef;
+
+	UPROPERTY()
+	TObjectPtr<class UVRGameInstance> TempVRGameInstRef;
+
+	FTimerHandle EBArrowTimer;
+
+	FTimerHandle EBCheckTimerForTutoL2;
+
+	bool bIsEBOperationSuccessForTutoL2 = false;
+
+	bool bIsTuto2Playing = false;
+
 private:
 	// After overlap End, to give a delay of 1 second.
 	// Using : OverlapDelayTimer
@@ -160,4 +177,14 @@ private:
 	// Jail ¡æ EB : Receive Function
 	void HandleEBReceiveByJail(uint8 InEBControlFlag);
 
+	UFUNCTION()
+	void HandleTuto2Event(int32 InEventID);
+
+	void ArrowPointingToTheEB();
+
+	void PointingEBAfterArrowHide();
+
+	void SetEBColEnabledForTuto2(uint8 InFlag);
+
+	void CheckEBCol1F();
 };

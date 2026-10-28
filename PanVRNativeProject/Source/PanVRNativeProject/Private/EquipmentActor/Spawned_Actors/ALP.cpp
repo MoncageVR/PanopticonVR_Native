@@ -1,6 +1,5 @@
 #include "EquipmentActor/Spawned_Actors/ALP.h"
 #include "Components/BoxComponent.h"
-#include "Debug/FDebugLib.h"
 
 AALP::AALP()
 {
@@ -29,8 +28,7 @@ AALP::AALP()
 	{
 		CLLP->SetupAttachment(ActorBaseMesh);
 		CLLP->SetBoxExtent(FVector(4.8f, 4.8f, 2.0f));
-		CLLP->SetHiddenInGame(false); // Debug
-		CLLP->ShapeColor = FColor::Red; // Debug
+		CLLP->SetHiddenInGame(true);
 	}
 
 	CLLP->ComponentTags.Add(FName("LP"));

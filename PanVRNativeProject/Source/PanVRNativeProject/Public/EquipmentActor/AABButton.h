@@ -25,7 +25,7 @@ public:
 #pragma region DebugBP
 
 	UFUNCTION(BlueprintCallable)
-	void Debug_TopEscapeStatePrisonerSubdue();
+	void TopEscapeStatePrisonerSubdue();
 #pragma endregion
 
 protected:

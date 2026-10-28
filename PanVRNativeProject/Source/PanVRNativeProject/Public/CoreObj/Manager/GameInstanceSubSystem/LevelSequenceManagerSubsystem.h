@@ -18,6 +18,12 @@ class PANVRNATIVEPROJECT_API ULevelSequenceManagerSubsystem : public UVRGameInst
 public:
 	void PlaySequence(ULevelSequence* Sequence, FOnSequenceFinishedSignature OnFinished);
 
+	void OnlyPlaySequence(ULevelSequence* InSequence);
+
+	void PlayBeamProjSequence(ULevelSequence* Sequence, FOnSequenceFinishedSignature OnFinished);
+
+	void OnlyPlayBeamProjSequence(ULevelSequence* Sequence);
+
 public:
 	FOnSequenceFinishedSignature PendingCallback;
 
@@ -33,5 +39,7 @@ private:
 	UPROPERTY()
 	TObjectPtr<ALevelSequenceActor> CurrentActor;
 
+	UPROPERTY()
+	TObjectPtr<class AABeamProjectors> DynBeamProjector;
 	
 };

@@ -100,7 +100,7 @@ AALobbyRoom::AALobbyRoom()
 		CL_Handle->SetCollisionProfileName(TEXT("OverlapAll"));
 		CL_Handle->SetCapsuleRadius(4.0f, true);
 		CL_Handle->SetCapsuleHalfHeight(10.0f);
-		CL_Handle->SetHiddenInGame(false); // Debug
+		CL_Handle->SetHiddenInGame(true);
 	}
 
 	if (GC)
@@ -116,7 +116,7 @@ AALobbyRoom::AALobbyRoom()
 		CL_TapeTarget->SetRelativeLocation(FVector(26.5f, 13.0f, 0.5f));
 		CL_TapeTarget->SetBoxExtent(FVector(20.2f, 15.0f, 3.1f));
 		CL_TapeTarget->ComponentTags.Add(FName("DoNotGrab"));
-		CL_TapeTarget->SetHiddenInGame(false); // Debug
+		CL_TapeTarget->SetHiddenInGame(true);
 	}
 
 	SM_SL_Roller01 = CreateDefaultSubobject<UStaticMeshComponent>("SM_Roller01_Comp");
@@ -226,7 +226,7 @@ AALobbyRoom::AALobbyRoom()
 	{
 		SM_TapeHintArrow->SetupAttachment(SC_MainRoot);
 
-		SM_TapeHintArrow->SetRelativeLocation(FVector(-105.0f, -20.0f, 123.6f));
+		SM_TapeHintArrow->SetRelativeLocation(FVector(-105.0f, -20.0f, 77.3f));
 		SM_TapeHintArrow->SetRelativeRotation(FRotator(90.f, 90.0f, 0.f));
 
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Arrow(TEXT("/Game/VRContent/Modeling/Arrow/Tuto_Arrow.Tuto_Arrow"));
@@ -269,7 +269,6 @@ void AALobbyRoom::BeginPlay()
 	TL_TapeMove->SetTimelineFinishedFunc(TapeMoveFinishedEvent);
 	bIsTapeMoveingFlag = 0;
 
-	ActorBaseMesh->SetRelativeLocation(FVector(-23.8f, -47.0f, 62.9f));
 	CL_TapeTarget->SetBoxExtent(FVector(15.0f, 7.0f, 3.1f));
 
 	//(X = 15.000000, Y = 7.000000, Z = 3.100000)
@@ -457,6 +456,9 @@ void AALobbyRoom::DestroySpawnNewTape()
 void AALobbyRoom::StartRollerLQLobbyRoom()
 {
 	SpawnNewTape = nullptr;
+	//NewTape->HandleDontGrabPhysics(true);
+
+
 	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
 	if (LQMgr)
 	{
@@ -559,7 +561,7 @@ void AALobbyRoom::SwitchGameStartLeverStatus(bool InStatusFlag)
 {
 	if (InStatusFlag) // True : Game Start Lever Enabled
 	{
-		UE_LOG(LogTemp, Log, TEXT("GmaeStart Lever Enabled"));
+		UE_LOG(LogTemp, Log, TEXT("GameStart Lever Enabled"));
 		CL_Handle->SetCollisionProfileName(FName("PhysicsActor"));
 		if (IsValid(NewTape))
 		{
@@ -569,7 +571,7 @@ void AALobbyRoom::SwitchGameStartLeverStatus(bool InStatusFlag)
 	}
 	else // False : Game Start Lever Disabled
 	{
-		UE_LOG(LogTemp, Log, TEXT("GamStart Lever Disabled"));
+		UE_LOG(LogTemp, Log, TEXT("GameStart Lever Disabled"));
 		CL_Handle->SetCollisionProfileName(FName("NoCollision"));
 	}
 }

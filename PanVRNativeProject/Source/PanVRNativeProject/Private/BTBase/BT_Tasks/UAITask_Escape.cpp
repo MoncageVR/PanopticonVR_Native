@@ -25,7 +25,6 @@ EBTNodeResult::Type UUAITask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	{
 		if (!(MyWolrd->GetTimerManager().IsTimerActive(ExitDoorControlTimer)))
 		{
-			// Debug Value : 1.9f , DefaultValue : 17.9f;
 			GetWorld()->GetTimerManager().SetTimer(
 				ExitDoorControlTimer,
 				this,

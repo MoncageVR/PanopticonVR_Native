@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "MainActor/AGameResultScreen.h"
 #include "EquipmentActor/Spawned_Actors/ATape.h"
+#include "Components/WidgetComponent.h"
 
 AVRLobbyGameMode::AVRLobbyGameMode()
 {
@@ -19,12 +20,12 @@ void AVRLobbyGameMode::StartPlay()
 
 	mVRGameInstanceRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
 	check(mVRGameInstanceRef);
-	// Debug
-	if (!mVRGameInstanceRef->GetIsFirstLobbyEntryFlag())
+
+	ACVRPawn* TempVRPawnPlayer = Cast<ACVRPawn>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (TempVRPawnPlayer)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Player is Lobby First Entry!"));
+		TempVRPawnPlayer->GetVRPawnWidgetComp()->SetVisibility(false);
 	}
-	// Debug
 
 	if (UWorld* MyWorld = GetWorld())
 	{

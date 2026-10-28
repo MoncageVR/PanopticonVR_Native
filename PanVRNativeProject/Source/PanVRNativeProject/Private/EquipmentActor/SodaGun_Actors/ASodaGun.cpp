@@ -30,7 +30,7 @@ AASodaGun::AASodaGun()
 	CL_SodaCanLoadBox->SetRelativeLocation(FVector(-7.3f, 0.0f, 14.5f));
 	CL_SodaCanLoadBox->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
 	CL_SodaCanLoadBox->SetBoxExtent(FVector(4.6f, 7.6f, 4.6f));
-	CL_SodaCanLoadBox->SetHiddenInGame(false); // Debug
+	CL_SodaCanLoadBox->SetHiddenInGame(true);
 
 	// In Constructor Setting Related SceneComponent(Muzzle, Ejaculation)
 	MuzzleStandardLocation = CreateDefaultSubobject<USceneComponent>("MuzzleLocation");

@@ -26,7 +26,7 @@ AAPaper::AAPaper()
 		CLA4->SetBoxExtent(FVector(6.0f, 8.5f, 0.5f));
 		CLA4->ComponentTags.Add(FName("Paper"));
 		CLA4->ComponentTags.Add(FName("Trash"));
-		CLA4->SetHiddenInGame(false); // Debug
+		CLA4->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatFinder_CharPrinterFont(TEXT("/Game/VRContent/Font/MI_Panopticon_Font.MI_Panopticon_Font"));

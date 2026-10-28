@@ -1,6 +1,5 @@
 #include "CoreCommon/Component/UGrabComp.h"
 #include "MotionControllerComponent.h"
-#include "Debug/FDebugLib.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "ActorBase/VRGrabActorBase.h"
 #include "CoreCommon/Interface/IGrabInterface.h"
@@ -210,7 +209,7 @@ void UUGrabComp::SetPrimitiveCompPhysics(bool InSimulate)
 	}
 	else
 	{
-		DEBUG_PRINTSCREEN(10.0f, FColor::Yellow, TEXT("LEEEEEE"));
+		return;
 	}
 }
 
@@ -240,10 +239,8 @@ void UUGrabComp::AttachGCParentToMotionController(UMotionControllerComponent* In
 		{
 			return;
 		}
-		else // Debug
+		else
 		{
-			FString a = TEXT("Attaching MotionController To GrabComp Failed-Object, Not Grabbed!");
-			DEBUG_PRINTSCREEN(100.0f, FColor::Red, a);
 			return;
 		}
 	}

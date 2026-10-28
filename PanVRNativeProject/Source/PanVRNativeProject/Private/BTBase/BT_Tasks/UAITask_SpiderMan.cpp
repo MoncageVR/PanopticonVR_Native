@@ -11,7 +11,7 @@ UUAITask_SpiderMan::UUAITask_SpiderMan()
 	bNotifyTick = true;
 
 	bIsCanMoveAlongSpline = 0;
-	TimeOfSplineRoute_InSpiderManState = 30.0f; // DebugValue : 10.0f, DefaultValue : 30.0f;
+	TimeOfSplineRoute_InSpiderManState = 30.0f;
 
 	static ConstructorHelpers::FObjectFinder<USoundBase> SFXFinder_SpiderManWalk(TEXT("/Game/VRContent/Sound/Wavs/PrisonerRelated/Run/sfx_walk.sfx_walk"));
 	if (SFXFinder_SpiderManWalk.Succeeded())

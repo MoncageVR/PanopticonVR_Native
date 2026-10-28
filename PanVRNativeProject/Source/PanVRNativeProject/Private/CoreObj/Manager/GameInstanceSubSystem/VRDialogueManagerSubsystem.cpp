@@ -24,6 +24,8 @@ void UVRDialogueManagerSubsystem::StartTuto01Dialogue()
 
 void UVRDialogueManagerSubsystem::StartTuto02Dialogue()
 {
+	OnTutorialEvent.Broadcast(14); // In MainMap, ElevatorButton Disabled
+	OnTutorialEvent.Broadcast(13); // In MainMap, AGTWLever Disabled
 	PlayDialogue(DTDialogueTuto2);
 }
 
@@ -186,7 +188,30 @@ bool UVRDialogueManagerSubsystem::TryTriggerTutorialLevel2Event(int32 InFinished
 		return true;
 		break;
 	case 7:
-		OnTutorialEvent.Broadcast(8);
+		OnTutorialEvent.Broadcast(8); // BeamProjector Level Sequence Play 
+		return true;
+		break;
+	case 14:
+		OnTutorialEvent.Broadcast(9); // BeamProjector End(Up Move) Level Sequence Play
+		return true;
+		break;
+	case 16:
+		OnTutorialEvent.Broadcast(10); // Wait 2Second
+		return true;
+		break;
+	case 18:
+		OnTutorialEvent.Broadcast(11); // Arrow Symbols On Elevator Button
+		OnTutorialEvent.Broadcast(15); // In MainMap, ElevatorButton Enabled
+		return true;
+		break;
+	case 19:
+		OnTutorialEvent.Broadcast(12); // Waiting for elevator button input And Elvator Descending
+		return true;
+		break;
+	case 27:
+		OnTutorialEvent.Broadcast(18); // Main Level Tape Unlock
+		OnTutorialEvent.Broadcast(16); // Keypad Actor Boss Monitor Change Default Mode
+		OnTutorialEvent.Broadcast(17); // Send the Player Home
 		return true;
 		break;
 	default:

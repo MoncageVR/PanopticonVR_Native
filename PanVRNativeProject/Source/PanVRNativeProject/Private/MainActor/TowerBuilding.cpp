@@ -1,5 +1,7 @@
 #include "MainActor/TowerBuilding.h"
 #include "CoreObj/Manager/WorldSubSystem/VREquipmentWorldSubsystem.h"
+#include "CoreObj/Manager/GameInstanceSubSystem/VRDialogueManagerSubsystem.h"
+#include "CoreObj/Manager/VRGameInstance.h"
 #include "CoreCommon/PrisonerRelated/PrisonerCharacter.h"
 #include "CoreCommon/PrisonerRelated/PrisonerController.h"
 #include "Components/BoxComponent.h"
@@ -68,7 +70,7 @@ ATowerBuilding::ATowerBuilding()
 	{
 		CLSubdueForToilet->SetupAttachment(MainRoot);
 		CLSubdueForToilet->SetBoxExtent(FVector(350.0f, 250.0f, 1700.0f));
-		CLSubdueForToilet->SetHiddenInGame(false); // Debug
+		CLSubdueForToilet->SetHiddenInGame(true);
 		CLSubdueForToilet->SetGenerateOverlapEvents(false);
 	}
 
@@ -210,6 +212,11 @@ void ATowerBuilding::HandleRaidSubdueReceiveByToilet(uint8 bIsSubdueFlag)
 	else { CLSubdueForToilet->SetGenerateOverlapEvents(false); }
 }
 
+void ATowerBuilding::HandleTuto2EventInTower(int32 InEventID)
+{
+	
+}
+
 void ATowerBuilding::BeginPlay()
 {
 	Super::BeginPlay();
@@ -232,6 +239,11 @@ void ATowerBuilding::BeginPlay()
 	{
 		TBAudioPlayer->Stop();
 		TBAudioPlayer->SetSound(TowerMoveSFXCue);
+	}
+
+	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	{
+		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &ATowerBuilding::HandleTuto2EventInTower);
 	}
 }
 
@@ -276,4 +288,7 @@ void ATowerBuilding::ActuallyMoveTower(float TargetTowerHeight)
 }
 
 // Actually Tower Move After Stop
-void ATowerBuilding::ActuallyTowerMoveCompleted() { TBAudioPlayer->Stop(); }// Move Sound Stop 
+void ATowerBuilding::ActuallyTowerMoveCompleted() 
+{ 
+	TBAudioPlayer->Stop(); // Move Sound Stop 
+}

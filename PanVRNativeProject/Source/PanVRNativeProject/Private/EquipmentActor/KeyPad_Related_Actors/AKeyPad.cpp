@@ -212,11 +212,6 @@ AAKeyPad::AAKeyPad()
 
 		if(MatFinder_PanFont.Succeeded())
 			TR_ScoreBoard_Text[j - 1]->SetMaterial(0, MatFinder_PanFont.Object);
-
-		// Debug
-		FString TempNum = FString::Printf(TEXT("%d"), j);
-		TR_ScoreBoard_Text[j - 1]->SetText(FText::FromString(TempNum));
-		// Debug
 	}
 
 	// Arrange the 9 key collisions as a 3x3 grid: (i%3)->column X, (i/3)->row Z
@@ -335,20 +330,7 @@ AAKeyPad::AAKeyPad()
 	}
 
 	LQ_BeamProjector = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/VRContent/LevelSequence/LS_Sequence1.LS_Sequence1")));
-
-	// Debug
-	TArray<UBoxComponent*> AllCollisionComps;
-	GetComponents<UBoxComponent>(AllCollisionComps);
-	for (UBoxComponent* AllColComp : AllCollisionComps)
-	{
-		if (!AllColComp) continue;
-
-		if (AllColComp->bHiddenInGame)
-			AllColComp->SetHiddenInGame(false);
-		else
-			continue;
-	}
-	// Debug
+	LQ_BeamProjector_Up = TSoftObjectPtr<ULevelSequence>(FSoftObjectPath(TEXT("/Game/VRContent/LevelSequence/LS_sequence1_1.LS_sequence1_1")));
 
 	// Disable navigation on all components so they do not affect the NavMesh
 	TArray<UPrimitiveComponent*> AllComps;
@@ -404,7 +386,6 @@ void AAKeyPad::BeginPlay()
 
 	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[KeyPad] Bind to Subsystem ptr: %p"), TempDialogueMgrRef);
 		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &AAKeyPad::HandleTutoL2Event);
 	}
 }
@@ -694,6 +675,26 @@ void AAKeyPad::HandleTutoL2Event(int32 InTuto2EventID)
 		UE_LOG(LogTemp, Log, TEXT("BeamProjector LevelSequence Play!"));
 		StartBeamProjectorLQInMainMap();
 		break;
+	case 9:
+		UE_LOG(LogTemp, Log, TEXT("BeamProjector Up Move LevelSequence Play!"));
+		StartBeamProjectorUpLQInMainMap();
+		break;
+	case 10:
+		UE_LOG(LogTemp, Log, TEXT("Wait 2Second!"));
+		if (UWorld* MyWorld = GetWorld())
+		{
+			MyWorld->GetTimerManager().SetTimer(
+				WaitTimer,
+				this,
+				&AAKeyPad::OnMainMapBeamProjectorLQDone,
+				2.0f,
+				false
+			);
+		}
+		break;
+	case 16:
+		SwitchBossMonitorMode(false);
+		break;
 	default:
 		break;
 	}
@@ -708,14 +709,38 @@ void AAKeyPad::StartBeamProjectorLQInMainMap()
 
 	if (LQMgr)
 	{
+		LQMgr->OnlyPlayBeamProjSequence(TempLQ);
+
+		//LQMgr->OnlyPlaySequence(TempLQ);
+		TempDialogueMgrRef->NotifyTutorialEventFinished();
+		//FOnSequenceFinishedSignature CallBack;
+		//CallBack.BindDynamic(this, &AAKeyPad::OnMainMapBeamProjectorLQDone);
+		//LQMgr->PlaySequence(TempLQ, CallBack);
+	}
+}
+
+void AAKeyPad::StartBeamProjectorUpLQInMainMap()
+{
+	UE_LOG(LogTemp, Error, TEXT("BeamProjector Up Move Sequence Play!!"));
+	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
+	ULevelSequence* TempUpLQ = LQ_BeamProjector_Up.LoadSynchronous();
+
+	if (LQMgr)
+	{
 		FOnSequenceFinishedSignature CallBack;
 		CallBack.BindDynamic(this, &AAKeyPad::OnMainMapBeamProjectorLQDone);
-		LQMgr->PlaySequence(TempLQ, CallBack);
+		LQMgr->PlayBeamProjSequence(TempUpLQ, CallBack);
 	}
 }
 
 void AAKeyPad::OnMainMapBeamProjectorLQDone()
 {
+	if (GetWorld()->GetTimerManager().IsTimerActive(WaitTimer))
+	{
+		GetWorld()->GetTimerManager().PauseTimer(WaitTimer);
+		GetWorld()->GetTimerManager().ClearTimer(WaitTimer);
+	}
+
 	UE_LOG(LogTemp, Error, TEXT("BeamProjector Sequence Play End!!"));
 	TempDialogueMgrRef->NotifyTutorialEventFinished();
 }

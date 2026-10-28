@@ -59,7 +59,7 @@ AAFuelTank::AAFuelTank()
 		FTCLRod->SetupAttachment(FTMainBody);
 		FTCLRod->SetRelativeLocation(FVector(0.f, 0.f, -43.5f));
 		FTCLRod->SetBoxExtent(FVector(1.5f, 1.5f, 12.7f));
-		FTCLRod->SetHiddenInGame(false); // Debug
+		FTCLRod->SetHiddenInGame(true);
 	}
 
 	FTCLGrab = CreateDefaultSubobject<UCapsuleComponent>("FuelTankGrab_Col");
@@ -69,7 +69,7 @@ AAFuelTank::AAFuelTank()
 		FTCLGrab->SetRelativeRotation(FRotator(90.0f, 0.f, 0.f));
 		FTCLGrab->SetCapsuleRadius(2.0f);
 		FTCLGrab->SetCapsuleHalfHeight(8.0f);
-		FTCLGrab->SetHiddenInGame(false); // Debug
+		FTCLGrab->SetHiddenInGame(true);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MaterialFinder_Main(TEXT("/Game/VRContent/Material/SRS_STAGE_Main.SRS_STAGE_Main"));

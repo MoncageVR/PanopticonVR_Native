@@ -81,6 +81,9 @@ private:
 	TArray<FVector> Second_SplinePointValueArrs;
 	TArray<FVector> Third_SplinePointValueArrs;
 
+	UPROPERTY()
+	TObjectPtr<class UVRDialogueManagerSubsystem> TempDialogueMgrRef;
+
 private:
 	void ActuallyMoveTower(float TargetTowerHeight);
 	void Init_TowerSplinePointValue();
@@ -89,4 +92,7 @@ private:
 	// T(1) : Subdue On / F(0) : Subdue Off
 	UFUNCTION()
 	void HandleRaidSubdueReceiveByToilet(uint8 bIsSubdueFlag);
+
+	UFUNCTION()
+	void HandleTuto2EventInTower(int32 InEventID);
 };

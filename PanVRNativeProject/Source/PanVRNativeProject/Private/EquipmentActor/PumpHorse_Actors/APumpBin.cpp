@@ -48,7 +48,7 @@ AAPumpBin::AAPumpBin()
 		CLRemover->SetRelativeLocation(FVector(24.0f, 0.f, 3.f));
 		CLRemover->SetRelativeRotation(FRotator(-17.5f, 0.f, 0.f));
 		CLRemover->SetBoxExtent(FVector(3.f, 9.f, 5.f));
-		CLRemover->SetHiddenInGame(false); // Debug
+		CLRemover->SetHiddenInGame(true);
 		CLRemover->OnComponentBeginOverlap.AddDynamic(this, &AAPumpBin::OverlapTrashBoxBegin);
 	}
 
@@ -92,7 +92,6 @@ void AAPumpBin::BeginPlay()
 	Super::BeginPlay();
 	this->EquipmentRegistrable(this);
 	RemoveTrashNum = 0;
-	// RemoveTrashNum = 4; // Debug
 
 	TRTrashNum->SetText(FText::FromString(FString::FromInt(RemoveTrashNum)));
 }

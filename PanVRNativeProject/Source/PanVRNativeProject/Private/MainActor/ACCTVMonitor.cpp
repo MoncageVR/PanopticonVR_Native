@@ -46,6 +46,12 @@ AACCTVMonitor::AACCTVMonitor()
 		CCTVArm->SetMaterial(0, MatFinder_Main.Object);
 		ActorBaseMesh->SetMaterial(0, MatFinder_Main.Object);
 	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterial> MatFinder_CCTV_Hologram(TEXT("/Game/VRContent/Material/M_Hologram.M_Hologram"));
+	if (MatFinder_CCTV_Hologram.Succeeded())
+	{
+		CCTVGlass->SetMaterial(0, MatFinder_CCTV_Hologram.Object);
+	}
 }
 
 void AACCTVMonitor::BeginPlay()

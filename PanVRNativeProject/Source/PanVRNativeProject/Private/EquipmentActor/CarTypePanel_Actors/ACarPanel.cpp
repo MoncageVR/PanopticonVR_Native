@@ -155,14 +155,15 @@ AACarPanel::AACarPanel()
 
 	// Setting Glasses
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ModelingFinder_GlassOne(TEXT("/Game/VRContent/Modeling/03_CarTypePanel/SM_Car_Glass1.SM_Car_Glass1"));
-
+	static ConstructorHelpers::FObjectFinder<UMaterial> MatFinder_CPHologram(TEXT("/Game/VRContent/Material/M_Hologram.M_Hologram"));
 	CarPanelGlass1 = CreateDefaultSubobject<UStaticMeshComponent>("SM_Glass1");
 	if (CarPanelGlass1)//&& CarPanelGlass2)
 	{
 		CarPanelGlass1->SetupAttachment(CarMainBody);
-		if (ModelingFinder_GlassOne.Succeeded())
+		if (ModelingFinder_GlassOne.Succeeded() && MatFinder_CPHologram.Succeeded())
 		{
 			CarPanelGlass1->SetStaticMesh(ModelingFinder_GlassOne.Object);
+			CarPanelGlass1->SetMaterial(0, MatFinder_CPHologram.Object);
 		}
 	}
 

@@ -70,7 +70,6 @@ void AVRGameMode::StartPlay()
 		if (MyVRGameInstance->GetCurrTapeType() == 0 && MyVRGameInstance->GetCurrTapeNum() == 0)
 		{
 			UE_LOG(LogTemp, Error, TEXT("In MainMap Play Tutorial Level 2 Play!!!!"));
-			//VRDialogueSubSyPtr->StartTuto02Dialogue();
 		}
 		else if (MyVRGameInstance->GetCurrTapeType() == 0 && MyVRGameInstance->GetCurrTapeNum() == 1)
 		{

@@ -183,7 +183,7 @@ void AAElevatorButton::BeginPlay()
 		EquipmentWorldSubSystem->FEBOperateControlSignature.BindUObject(this, &AAElevatorButton::HandleEBReceiveByJail);
 	}
 
-	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	if ((TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>()))
 	{
 		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &AAElevatorButton::HandleTuto2Event);
 	}

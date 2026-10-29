@@ -241,7 +241,7 @@ void ATowerBuilding::BeginPlay()
 		TBAudioPlayer->SetSound(TowerMoveSFXCue);
 	}
 
-	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	if ((TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>()))
 	{
 		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &ATowerBuilding::HandleTuto2EventInTower);
 	}

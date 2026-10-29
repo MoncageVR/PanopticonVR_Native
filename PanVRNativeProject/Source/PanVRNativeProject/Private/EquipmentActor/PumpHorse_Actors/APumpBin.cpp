@@ -206,7 +206,7 @@ void AAPumpBin::PumpOperation()
 	SpawnPumpHorse = this->GetWorld()->SpawnActor<ACPumpHorse>(ACPumpHorse::StaticClass(),
 		FTransform(
 			FRotator(0.f, 180.0f, 0.f),
-			FVector(-400.0f, 0.0f, 150.15f),
+			FVector(-550.0f, 0.0f, 150.15f),
 			FVector::OneVector
 		)
 	);

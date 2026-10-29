@@ -233,6 +233,8 @@ void ACVRPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	bAlreadyMovedDown = false;
+
 	VRGameInstRef = Cast<UVRGameInstance>(GetWorld()->GetGameInstance());
 	check(VRGameInstRef);
 
@@ -322,6 +324,8 @@ void ACVRPawn::BeginPlay()
 	}
 	else if (Cast<AVRGameMode>(CurrGM))
 	{
+		bAlreadyMovedDown = false;
+
 		FOnTimelineFloat UpMoveChangeValue;
 		FOnTimelineEvent UpMoveFinishedEvent;
 		UpMoveChangeValue.BindUFunction(this, FName("VRPawnMoveUpTLFunc"));
@@ -560,6 +564,9 @@ void ACVRPawn::HandleMovePlayerToFloor(FName InTag, int32 InTargetFloor)
 
 void ACVRPawn::HandleDownMovePlayer()
 {
+	if (bAlreadyMovedDown) return;
+	bAlreadyMovedDown = true;
+
 	UVREquipmentWorldSubsystem* TempVREquipmentWorldSubSystemRef = GetWorld()->GetSubsystem<UVREquipmentWorldSubsystem>();
 	ATowerBuilding* TempTowerObj = nullptr;
 

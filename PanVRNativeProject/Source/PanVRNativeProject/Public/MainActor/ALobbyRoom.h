@@ -65,9 +65,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TArray<TObjectPtr<UStaticMeshComponent>> LobbyMonitor_Glasses;
 
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> SM_TapeHintArrow;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UStaticMeshComponent> SM_SpaceBackGround;
 
 protected:
 

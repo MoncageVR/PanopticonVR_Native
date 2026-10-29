@@ -157,6 +157,8 @@ private:
 	int32 PressedFloorNum;
 	TArray<float> TargetPlayerHeights;
 
+	bool bAlreadyMovedDown = false;
+
 private:
 	void InitFloorData();
 

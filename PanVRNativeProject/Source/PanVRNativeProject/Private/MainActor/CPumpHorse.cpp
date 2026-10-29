@@ -115,9 +115,8 @@ void ACPumpHorse::HandleMoveEndAndDestroySelf()
 	if (AICon)
 	{
 		AICon->ReceiveMoveCompleted.AddDynamic(this, &ACPumpHorse::MoveEndCompleted);
-		//EPathFollowingRequestResult
 		AICon->MoveToLocation(
-			FVector(-300.0f, 0.0f, 151.0f),
+			FVector(-550.0f, 0.0f, 151.0f),
 			1.0f,
 			true
 		);

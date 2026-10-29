@@ -249,6 +249,25 @@ AALobbyRoom::AALobbyRoom()
 	{
 		SFX_LeverFail = SFXFinder_LobbyLeverFail.Object;
 	}
+
+	SM_SpaceBackGround = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("SpaceSMComp")));
+	if (SM_SpaceBackGround)
+	{
+		SM_SpaceBackGround->SetupAttachment(SC_MainRoot);
+		SM_SpaceBackGround->SetRelativeLocation(FVector(0.f, 0.f, 900.0f));
+		SM_SpaceBackGround->SetRelativeRotation(FRotator(0.f, 15.f, 0.f));
+		SM_SpaceBackGround->SetRelativeScale3D(FVector(4.0f));
+		SM_SpaceBackGround->SetCollisionProfileName(FName("NoCollision"));
+	}
+
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> SMFinder_Space(TEXT("/Game/VRContent/Modeling/14_Lobby/space2.space2"));
+	static ConstructorHelpers::FObjectFinder<UMaterial> MatFinder_Space(TEXT("/Game/VRContent/Material/Master_Material_Space.Master_Material_Space"));
+
+	if (SMFinder_Space.Succeeded() && MatFinder_Space.Succeeded())
+	{
+		SM_SpaceBackGround->SetStaticMesh(SMFinder_Space.Object);
+		SM_SpaceBackGround->SetMaterial(0, MatFinder_Space.Object);
+	}
 }
 
 void AALobbyRoom::BeginPlay()
@@ -273,7 +292,7 @@ void AALobbyRoom::BeginPlay()
 
 	//(X = 15.000000, Y = 7.000000, Z = 3.100000)
 
-	if (TempDialogueMgr = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	if ((TempDialogueMgr = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>()))
 	{
 		TempDialogueMgr->OnTutorialEvent.AddDynamic(this, &AALobbyRoom::HandleTutoEvent);
 	}
@@ -390,12 +409,13 @@ void AALobbyRoom::UpdateStartLever()
 
 	FVector HandleMoveDir = (GC->GetComponentLocation()) - (FTransform_Between_MCAndGC_MakeRelative.GetLocation());
 
-	float TargetRoll = FMath::Clamp(SM_StartLeverHandle->GetRelativeRotation().Roll + HandleMoveDir.Y, 0.0f, 89.0f);
+	float TargetRoll = FMath::Clamp(SM_StartLeverHandle->GetRelativeRotation().Roll + HandleMoveDir.Y, 0.0f, 90.0f);
 
 	SM_StartLeverHandle->SetRelativeRotation(FRotator(0.0f, 0.0f, TargetRoll));
 
 	if (SM_StartLeverHandle->GetRelativeRotation().Roll >= 89.0f)
 	{
+		UE_LOG(LogTemp, Log, TEXT("In LobbyRoom GameStart Lever Operate Success!"));
 		LeverOnGameStartEvent();
 	}
 }
@@ -456,8 +476,6 @@ void AALobbyRoom::DestroySpawnNewTape()
 void AALobbyRoom::StartRollerLQLobbyRoom()
 {
 	SpawnNewTape = nullptr;
-	//NewTape->HandleDontGrabPhysics(true);
-
 
 	ULevelSequenceManagerSubsystem* LQMgr = GetWorld()->GetGameInstance()->GetSubsystem<ULevelSequenceManagerSubsystem>();
 	if (LQMgr)

@@ -384,7 +384,7 @@ void AAKeyPad::BeginPlay()
 	ExitDist = 8.0f;
 	ReArmDist = 12.0f;
 
-	if (TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>())
+	if ((TempDialogueMgrRef = GetGameInstance()->GetSubsystem<UVRDialogueManagerSubsystem>()))
 	{
 		TempDialogueMgrRef->OnTutorialEvent.AddDynamic(this, &AAKeyPad::HandleTutoL2Event);
 	}
